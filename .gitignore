@@ -1,0 +1,13 @@
+# Node modules (all subfolders)
+**/node_modules/
+
+# CDK outputs
+infrastructure/cdk.out/
+infrastructure/dist/
+
+# Frontend builds
+frontend/build/
+frontend/dist/
+
+# Backend build artifacts (if TypeScript)
+backend/dist/

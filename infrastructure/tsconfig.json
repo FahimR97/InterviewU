@@ -1,0 +1,37 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+
+    "lib": ["es2022"],
+    "types": ["node"],
+
+    "rootDir": ".",
+    "outDir": "dist",
+
+    "declaration": true,
+    "sourceMap": true,
+    "strict": true,
+
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noImplicitThis": true,
+    "alwaysStrict": true,
+    "noImplicitReturns": true,
+
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": false,
+
+    "experimentalDecorators": true,
+    "strictPropertyInitialization": false,
+
+    "skipLibCheck": true
+  },
+  "exclude": [
+    "node_modules",
+    "cdk.out",
+    "dist"
+  ]
+}
