@@ -1,17 +1,31 @@
-steps:
-  - name: Checkout repository
-    uses: actions/checkout@v4
+name: CI
 
-  - name: Set up Python
-    uses: actions/setup-python@v5
-    with:
-      python-version: '3.11'
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
-  - name: Install dependencies
-    run: |
-      pip install -r requirements.txt
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
 
-  - name: Run tests
-    run: |
-      pytest
+    steps:
+      # 1. Check out your repository code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2. Set up Node.js (change version if you need)
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 3. Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # 4. Run tests
+      - name: Run tests
+        run: npm test
 
