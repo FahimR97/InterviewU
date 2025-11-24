@@ -26,7 +26,7 @@ export class InfrastructureStack extends cdk.Stack {
     // Public HTTP endpoint using API Gateway
     const api = new apigw.LambdaRestApi(this, 'TestApi', {
       handler: helloFn,
-      proxy: true,
+      proxy: false,
       description: 'Simple test API to verify CDK deployments',
     });
 
