@@ -7,8 +7,5 @@
     "infrastructure"
   ],
   "scripts": {
-    "test": "npm run test --workspaces",
-    "lint": "npm run lint --workspaces",
-    "build": "npm run build --workspaces"
   }
 }
