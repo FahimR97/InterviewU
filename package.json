@@ -7,5 +7,7 @@
     "infrastructure"
   ],
   "scripts": {
+    "start": "node index.js",
+    "test": "echo \"no test yet\""
   }
 }
