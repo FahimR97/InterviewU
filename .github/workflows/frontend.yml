@@ -37,6 +37,19 @@ jobs:
           role-to-assume: arn:aws:iam::839185960743:role/github-actions-deploy
           aws-region: eu-west-1
 
+      - name: Check frontend infra stack exists
+        id: check_stack
+        run: |
+          STACK_NAME=ServiceStack
+
+          if aws cloudformation describe-stacks --stack-name "$STACK_NAME" > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Stack $STACK_NAME exists."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Stack $STACK_NAME does NOT exist yet. Skipping deploy."
+          fi
+
       - name: Get frontend infra outputs
         id: infra
         run: |
