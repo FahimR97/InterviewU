@@ -59,25 +59,10 @@ jobs:
             --stack-name "$STACK_NAME" \
             --query "Stacks[0].Outputs[?OutputKey=='FrontendBucketName'].OutputValue" \
             --output text)
-
-          DIST_ID=$(aws cloudformation describe-stacks \
-            --stack-name "$STACK_NAME" \
-            --query "Stacks[0].Outputs[?OutputKey=='FrontendDistributionId'].OutputValue" \
-            --output text)
-
           echo "Bucket: $BUCKET"
           echo "Distribution: $DIST_ID"
-
-          echo "bucket=$BUCKET" >> "$GITHUB_OUTPUT"
-          echo "distribution_id=$DIST_ID" >> "$GITHUB_OUTPUT"
-
+          
       - name: Upload to S3
         working-directory: frontend
         run: |
           aws s3 sync dist s3://${{ steps.infra.outputs.bucket }} --delete
-
-      - name: Invalidate CloudFront cache
-        run: |
-          aws cloudfront create-invalidation \
-            --distribution-id ${{ steps.infra.outputs.distribution_id }} \
-            --paths "/*"
