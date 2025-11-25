@@ -18,6 +18,10 @@ export class ServiceStack extends cdk.Stack {
       autoDeleteObjects: false
     });
 
+    new cdk.CfnOutput(this, 'FrontendBucketName', {
+      value: frontendS3.bucketName,
+    });
+
 
     // Simple Lambda function
     const helloFn = new lambda.Function(this, 'HelloFunction', {

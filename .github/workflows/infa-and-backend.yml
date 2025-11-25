@@ -6,6 +6,7 @@ on:
     paths:
       - 'infrastructure/**'
       - 'backend/**'
+      - '.github/workflows/**'
   pull_request:
     branches: [ main ]
     paths:

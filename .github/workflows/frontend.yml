@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths:
       - 'frontend/**'
+      - '.github/workflows/**'
 
 permissions:
   id-token: write
@@ -36,13 +37,34 @@ jobs:
           role-to-assume: arn:aws:iam::839185960743:role/github-actions-deploy
           aws-region: eu-west-1
 
-      - name: Upload to S3
+      - name: Get frontend infra outputs
+        id: infra
         run: |
-          aws s3 sync frontend/out s3://my-frontend-bucket --delete
+          STACK_NAME=ServiceStack
+
+          BUCKET=$(aws cloudformation describe-stacks \
+            --stack-name "$STACK_NAME" \
+            --query "Stacks[0].Outputs[?OutputKey=='FrontendBucketName'].OutputValue" \
+            --output text)
+
+          DIST_ID=$(aws cloudformation describe-stacks \
+            --stack-name "$STACK_NAME" \
+            --query "Stacks[0].Outputs[?OutputKey=='FrontendDistributionId'].OutputValue" \
+            --output text)
+
+          echo "Bucket: $BUCKET"
+          echo "Distribution: $DIST_ID"
+
+          echo "bucket=$BUCKET" >> "$GITHUB_OUTPUT"
+          echo "distribution_id=$DIST_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Upload to S3
+        working-directory: frontend
+        run: |
+          aws s3 sync dist s3://${{ steps.infra.outputs.bucket }} --delete
 
       - name: Invalidate CloudFront cache
         run: |
           aws cloudfront create-invalidation \
-            --distribution-id MY_DISTRIBUTION_ID \
+            --distribution-id ${{ steps.infra.outputs.distribution_id }} \
             --paths "/*"
-
