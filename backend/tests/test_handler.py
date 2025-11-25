@@ -1,4 +1,4 @@
-from src.handler import handler
+from handler import handler
 
 def test_handler_returns_hello():
     response = handler({}, {})
