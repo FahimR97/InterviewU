@@ -60,8 +60,14 @@ jobs:
             --query "Stacks[0].Outputs[?OutputKey=='FrontendBucketName'].OutputValue" \
             --output text)
           echo "Bucket: $BUCKET"
-          echo "Distribution: $DIST_ID"
-          
+
+          if [ -z "$BUCKET" ] || [ "$BUCKET" = "None" ]; then
+            echo "ERROR: Could not find FrontendBucketName output on stack $STACK_NAME"
+            exit 1
+          fi
+
+          echo "bucket=$BUCKET" >> "$GITHUB_OUTPUT"
+
       - name: Upload to S3
         working-directory: frontend
         run: |
