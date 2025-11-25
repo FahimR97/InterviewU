@@ -30,7 +30,7 @@ export class InfrastructureStack extends cdk.Stack {
       description: 'Simple test API to verify CDK deployments',
     });
 
-    const test = api.root.addResource('test')
+    const test = api.root.addResource('testing')
     test.addMethod('GET')
 
     // Output the URL so you can curl it after deploy
