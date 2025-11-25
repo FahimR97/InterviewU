@@ -10,17 +10,9 @@ export class ServiceStack extends cdk.Stack {
 
     // Simple Lambda function
     const helloFn = new lambda.Function(this, 'HelloFunction', {
-      runtime: lambda.Runtime.NODEJS_20_X,
-      handler: 'index.handler',
-      code: lambda.Code.fromInline(`
-        exports.handler = async () => {
-          return {
-            statusCode: 200,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: 'CDK deploy works! 🎉' }),
-          };
-        };
-      `),
+      runtime: lambda.Runtime.PYTHON_3_11,
+      handler: 'handler.handler',
+      code: lambda.Code.fromAsset("../backend")
     });
 
     // Public HTTP endpoint using API Gateway

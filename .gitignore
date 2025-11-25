@@ -9,5 +9,14 @@ infrastructure/dist/
 frontend/build/
 frontend/dist/
 
-# Backend build artifacts (if TypeScript)
-backend/dist/
+# Backend
+.venv/
+venv/
+env/
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+
