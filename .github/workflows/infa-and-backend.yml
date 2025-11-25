@@ -1,28 +1,55 @@
-name: Infra Deploy
+name: Infra & Backend Deploy
 
 on:
   push:
     branches: [ main ]
     paths:
       - 'infrastructure/**'
+      - 'backend/**'
   pull_request:
     branches: [ main ]
     paths:
       - 'infrastructure/**'
+      - 'backend/**'
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: |
+          pytest
+
   cdk-check:
+    needs: backend-tests          # 👈 only runs if backend-tests SUCCESS
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: infrastructure
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -36,7 +63,7 @@ jobs:
         run: npx cdk synth
 
   deploy:
-    needs: cdk-check
+    needs: [backend-tests, cdk-check]   # 👈 both must be green
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     defaults:
@@ -44,7 +71,8 @@ jobs:
         working-directory: infrastructure
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repo
+        uses: actions/checkout@v4
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -57,8 +85,11 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::839185960743:role/github-actions-deploy
+          role-to-assume: arn:aws:iam::839185960743:role/GithubActionsRole
           aws-region: eu-west-1
+
+      - name: Verify AWS caller
+        run: aws sts get-caller-identity
 
       - name: CDK deploy
         run: npx cdk deploy --require-approval never

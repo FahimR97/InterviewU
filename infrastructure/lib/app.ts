@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import * as cdk from 'aws-cdk-lib/core';
-import { InfrastructureStack } from '../lib/infrastructure-stack';
+import * as stacks from '../lib/stacks/stacks';
 
 const app = new cdk.App();
-new InfrastructureStack(app, 'InfrastructureStack', {
+new stacks.ServiceStack(app, 'ServiceStack', {
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
    * but a single synthesized template can be deployed anywhere. */
