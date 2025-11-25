@@ -2,11 +2,22 @@ import * as cdk from 'aws-cdk-lib/core';
 import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigw from 'aws-cdk-lib/aws-apigateway';
+import * as s3 from 'aws-cdk-lib/aws-s3';
 
 
 export class ServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
+    
+    const frontendS3 = new s3.Bucket(this, 'FrontendBucket', {
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      publicReadAccess: false,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      enforceSSL: true,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      autoDeleteObjects: false
+    });
+
 
     // Simple Lambda function
     const helloFn = new lambda.Function(this, 'HelloFunction', {
