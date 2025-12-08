@@ -18,7 +18,8 @@ export default function Login() {
   return (
     <div className="login-container">
       <div className="login-card">
-        <h2>Login</h2>
+        <h2>Welcome Back</h2>
+        <p>Sign in to access your question bank</p>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label htmlFor="email">Email</label>
@@ -43,11 +44,11 @@ export default function Login() {
             />
           </div>
           <button type="submit" className="btn btn-primary btn-full">
-            Login
+            Sign In
           </button>
         </form>
         <p className="login-note">
-          Note: Authentication will be implemented with AWS Cognito
+          🔒 Authentication will be implemented with AWS Cognito
         </p>
       </div>
     </div>
