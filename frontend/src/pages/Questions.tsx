@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 import './Questions.css';
 
 interface Question {
@@ -58,6 +59,7 @@ export default function Questions() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
+  const { user } = useAuth();
 
   const categories = useMemo(() => {
     const cats = new Set(mockQuestions.map(q => q.category));
@@ -87,7 +89,12 @@ export default function Questions() {
     <div className="questions-container">
       <header className="questions-header">
         <h1>Question Bank</h1>
-        <p>Browse and search technical interview questions</p>
+        <p>
+          {user
+            ? 'Browse and search technical interview questions'
+            : '⚠️ Please login to access protected API features'}
+        </p>
+        {user && <span className="auth-badge">✓ Authenticated</span>}
       </header>
 
       <div className="filters">

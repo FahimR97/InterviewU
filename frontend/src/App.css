@@ -76,6 +76,41 @@
   width: 100%;
 }
 
+.nav-button {
+  background: none;
+  border: none;
+  padding: 0.5rem 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: inherit;
+}
+
+.nav-button:hover {
+  background: none;
+}
+
+.user-email {
+  color: var(--text-dark);
+  font-weight: 600;
+  font-size: 0.9rem;
+  background: var(--bg-secondary);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.logout-btn {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 700;
+}
+
+.logout-btn:hover {
+  opacity: 0.8;
+}
+
 .main-content {
   flex: 1;
   width: 100%;
