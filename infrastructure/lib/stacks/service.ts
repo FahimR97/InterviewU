@@ -5,8 +5,6 @@ import * as apigw from 'aws-cdk-lib/aws-apigateway';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
-import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
-import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 import * as route53 from 'aws-cdk-lib/aws-route53';
 
 
@@ -71,42 +69,6 @@ export class ServiceStack extends cdk.Stack {
       enforceSSL: true,
       removalPolicy: cdk.RemovalPolicy.RETAIN,
       autoDeleteObjects: false,
-      websiteIndexDocument: 'index.html',
-      websiteErrorDocument: 'index.html',
-    });
-
-    const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OAI', {
-      comment: 'OAI for Interview Question Bank Frontend',
-    });
-
-    frontendS3.grantRead(originAccessIdentity);
-
-    const distribution = new cloudfront.Distribution(this, 'FrontendDistribution', {
-      defaultBehavior: {
-        origin: new origins.S3Origin(frontendS3, {
-          originAccessIdentity: originAccessIdentity,
-        }),
-        viewerProtocolPolicy: cloudfront.ViewerProtocolPolicy.REDIRECT_TO_HTTPS,
-        allowedMethods: cloudfront.AllowedMethods.ALLOW_GET_HEAD_OPTIONS,
-        cachedMethods: cloudfront.CachedMethods.CACHE_GET_HEAD_OPTIONS,
-        compress: true,
-      },
-      defaultRootObject: 'index.html',
-      errorResponses: [
-        {
-          httpStatus: 403,
-          responseHttpStatus: 200,
-          responsePagePath: '/index.html',
-          ttl: cdk.Duration.minutes(5),
-        },
-        {
-          httpStatus: 404,
-          responseHttpStatus: 200,
-          responsePagePath: '/index.html',
-          ttl: cdk.Duration.minutes(5),
-        },
-      ],
-      priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
     });
 
     const hostedZone = new route53.PublicHostedZone(this, 'HostedZone', {
@@ -116,16 +78,6 @@ export class ServiceStack extends cdk.Stack {
 
     new cdk.CfnOutput(this, 'FrontendBucketName', {
       value: frontendS3.bucketName,
-    });
-
-    new cdk.CfnOutput(this, 'CloudFrontDistributionId', {
-      value: distribution.distributionId,
-      description: 'CloudFront Distribution ID',
-    });
-
-    new cdk.CfnOutput(this, 'CloudFrontDomainName', {
-      value: distribution.distributionDomainName,
-      description: 'CloudFront Domain Name',
     });
 
     new cdk.CfnOutput(this, 'HostedZoneId', {
