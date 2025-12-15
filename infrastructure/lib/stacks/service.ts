@@ -70,8 +70,6 @@ export class ServiceStack extends cdk.Stack {
       enforceSSL: true,
       removalPolicy: cdk.RemovalPolicy.RETAIN,
       autoDeleteObjects: false,
-      websiteIndexDocument: 'index.html',
-      websiteErrorDocument: 'index.html',
     });
 
     const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OAI', {
