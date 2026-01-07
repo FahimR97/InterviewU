@@ -166,7 +166,7 @@ export class ServiceStack extends cdk.Stack {
     // Simple Lambda function
     const helloFn = new lambda.Function(this, 'HelloFunction', {
       runtime: lambda.Runtime.PYTHON_3_11,
-      handler: 'handler.handler',
+      handler: 'src.handler.handler',
       code: lambda.Code.fromAsset("../backend"),
       environment: {
         TABLE_NAME: table.tableName,
