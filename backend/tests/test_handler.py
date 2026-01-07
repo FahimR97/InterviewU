@@ -1,10 +1,14 @@
 import json
 import os
+import sys
 from unittest.mock import patch, MagicMock
+
+# Add src directory to Python path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 # Mock environment variable before importing handler
 with patch.dict(os.environ, {'TABLE_NAME': 'test-table'}):
-    from src.handler import handler
+    from handler import handler
 
 def test_handler_hello_endpoint():
     event = {"path": "/testing"}
@@ -13,7 +17,7 @@ def test_handler_hello_endpoint():
     body = json.loads(response["body"])
     assert body["message"] == "Hello from Lambda!"
 
-@patch('src.handler.table')
+@patch('handler.table')
 def test_get_all_questions(mock_table):
     mock_table.scan.return_value = {
         'Items': [
@@ -30,7 +34,7 @@ def test_get_all_questions(mock_table):
     assert body[0]["title"] == "Test Question"
     assert isinstance(body[0]["tags"], list)
 
-@patch('src.handler.table')
+@patch('handler.table')
 def test_get_single_question(mock_table):
     mock_table.get_item.return_value = {
         'Item': {'id': '1', 'title': 'Test Question', 'difficulty': 'Easy', 'tags': {'Networking'}}
@@ -44,7 +48,7 @@ def test_get_single_question(mock_table):
     assert body["title"] == "Test Question"
     assert isinstance(body["tags"], list)
 
-@patch('src.handler.table')
+@patch('handler.table')
 def test_question_not_found(mock_table):
     mock_table.get_item.return_value = {}
     
@@ -53,7 +57,7 @@ def test_question_not_found(mock_table):
     
     assert response["statusCode"] == 404
 
-@patch('src.handler.table')
+@patch('handler.table')
 def test_error_handling(mock_table):
     mock_table.scan.side_effect = Exception("DynamoDB error")
     
