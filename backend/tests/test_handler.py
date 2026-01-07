@@ -1,6 +1,10 @@
 import json
+import os
 from unittest.mock import patch, MagicMock
-from src.handler import handler
+
+# Mock environment variable before importing handler
+with patch.dict(os.environ, {'TABLE_NAME': 'test-table'}):
+    from src.handler import handler
 
 def test_handler_hello_endpoint():
     event = {"path": "/testing"}
@@ -13,7 +17,7 @@ def test_handler_hello_endpoint():
 def test_get_all_questions(mock_table):
     mock_table.scan.return_value = {
         'Items': [
-            {'id': '1', 'title': 'Test Question', 'difficulty': 'Easy'}
+            {'id': '1', 'title': 'Test Question', 'difficulty': 'Easy', 'tags': {'Networking', 'Fundamentals'}}
         ]
     }
     
@@ -24,11 +28,12 @@ def test_get_all_questions(mock_table):
     body = json.loads(response["body"])
     assert len(body) == 1
     assert body[0]["title"] == "Test Question"
+    assert isinstance(body[0]["tags"], list)
 
 @patch('src.handler.table')
 def test_get_single_question(mock_table):
     mock_table.get_item.return_value = {
-        'Item': {'id': '1', 'title': 'Test Question', 'difficulty': 'Easy'}
+        'Item': {'id': '1', 'title': 'Test Question', 'difficulty': 'Easy', 'tags': {'Networking'}}
     }
     
     event = {"path": "/questions/1"}
@@ -37,6 +42,7 @@ def test_get_single_question(mock_table):
     assert response["statusCode"] == 200
     body = json.loads(response["body"])
     assert body["title"] == "Test Question"
+    assert isinstance(body["tags"], list)
 
 @patch('src.handler.table')
 def test_question_not_found(mock_table):
@@ -46,4 +52,15 @@ def test_question_not_found(mock_table):
     response = handler(event, {})
     
     assert response["statusCode"] == 404
+
+@patch('src.handler.table')
+def test_error_handling(mock_table):
+    mock_table.scan.side_effect = Exception("DynamoDB error")
+    
+    event = {"path": "/questions"}
+    response = handler(event, {})
+    
+    assert response["statusCode"] == 500
+    body = json.loads(response["body"])
+    assert "error" in body
 
