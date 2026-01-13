@@ -58,11 +58,6 @@ export class ServiceStack extends cdk.Stack {
       description: 'Cognito User Pool Client ID',
     });
 
-    new cdk.CfnOutput(this, 'CognitoRegion', {
-      value: this.region,
-      description: 'AWS Region for Cognito',
-    });
-
     const frontendS3 = new s3.Bucket(this, 'FrontendBucket', {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       publicReadAccess: false,
