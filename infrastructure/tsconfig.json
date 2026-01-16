@@ -5,7 +5,7 @@
     "moduleResolution": "NodeNext",
 
     "lib": ["es2022"],
-    "types": ["node"],
+    "types": ["node","jest"],
 
     "rootDir": ".",
     "outDir": "dist",
