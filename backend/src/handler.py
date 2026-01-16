@@ -7,6 +7,7 @@ dynamodb = boto3.resource('dynamodb')
 table = dynamodb.Table(os.environ['TABLE_NAME'])
 deserializer = TypeDeserializer()
 
+
 def convert_dynamodb_item(item):
     """Convert DynamoDB item to regular Python dict"""
     if isinstance(item, dict):
@@ -16,9 +17,9 @@ def convert_dynamodb_item(item):
     else:
         return item
 
+
 def handler(event, context):
     path = event['path']
-    
     try:
         if path == '/questions':
             response = table.scan()
@@ -31,7 +32,6 @@ def handler(event, context):
         elif path.startswith('/questions/'):
             question_id = path.split('/')[-1]
             response = table.get_item(Key={'id': question_id})
-            
             if 'Item' in response:
                 item = convert_dynamodb_item(response['Item'])
                 return {
@@ -55,4 +55,3 @@ def handler(event, context):
             "headers": {"Access-Control-Allow-Origin": "*"},
             "body": json.dumps({"error": str(e)})
         }
-
