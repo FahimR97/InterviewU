@@ -11,8 +11,11 @@ mock_table = MagicMock()
 mock_dynamodb = MagicMock()
 mock_dynamodb.Table.return_value = mock_table
 
-with patch.dict(os.environ, {'TABLE_NAME': 'test-table', 'AWS_DEFAULT_REGION': 'us-east-1'}):
-    with patch('boto3.resource', return_value=mock_dynamodb):
+with patch.dict(
+    os.environ,
+    {"TABLE_NAME": "test-table", "AWS_DEFAULT_REGION": "us-east-1"},
+):
+    with patch("boto3.resource", return_value=mock_dynamodb):
         from handler import handler
 
 
