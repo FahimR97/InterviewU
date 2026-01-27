@@ -1,14 +1,19 @@
 import json
 import os
 import sys
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 # Add src directory to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-# Mock environment variable before importing handler
-with patch.dict(os.environ, {'TABLE_NAME': 'test-table'}):
-    from handler import handler
+# Mock boto3 and environment before importing handler
+mock_table = MagicMock()
+mock_dynamodb = MagicMock()
+mock_dynamodb.Table.return_value = mock_table
+
+with patch.dict(os.environ, {'TABLE_NAME': 'test-table', 'AWS_DEFAULT_REGION': 'us-east-1'}):
+    with patch('boto3.resource', return_value=mock_dynamodb):
+        from handler import handler
 
 
 def test_handler_hello_endpoint():
