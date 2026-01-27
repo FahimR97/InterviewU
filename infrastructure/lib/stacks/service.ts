@@ -163,8 +163,8 @@ export class ServiceStack extends cdk.Stack {
       description: 'DynamoDB table name',
     });
     
-    // Simple Lambda function
-    const helloFn = new lambda.Function(this, 'HelloFunction', {
+    // Lambda function for handling interview questions 
+    const questionsHandler = new lambda.Function(this, 'QuestionsHandler', {
       runtime: lambda.Runtime.PYTHON_3_11,
       handler: 'src.handler.handler',
       code: lambda.Code.fromAsset("../backend"),
@@ -174,9 +174,9 @@ export class ServiceStack extends cdk.Stack {
     });
 
     // Grant the Lambda function read/write permissions to the table
-    table.grantReadWriteData(helloFn);
+    table.grantReadWriteData(questionsHandler);
 
-    const lambdaIntegration = new apigw.LambdaIntegration(helloFn);
+    const lambdaIntegration = new apigw.LambdaIntegration(questionsHandler);
 
     const cognitoAuthorizer = new apigw.CognitoUserPoolsAuthorizer(this, 'CognitoAuthorizer', {
       cognitoUserPools: [userPool],
@@ -186,7 +186,7 @@ export class ServiceStack extends cdk.Stack {
 
     // Public HTTP endpoint using API Gateway
     const api = new apigw.LambdaRestApi(this, 'TestApi', {
-      handler: helloFn,
+      handler: questionsHandler,
       proxy: false,
       description: 'Interview Question Bank API',
       defaultCorsPreflightOptions: {
