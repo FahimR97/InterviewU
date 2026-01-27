@@ -1,1 +1,1 @@
-# EPAMainProject
+# EPAMainProject - Interview question bank

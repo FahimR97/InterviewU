@@ -5,9 +5,7 @@ import * as apigw from 'aws-cdk-lib/aws-apigateway';
 import * as s3 from 'aws-cdk-lib/aws-s3';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
-import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
-import * as targets from 'aws-cdk-lib/aws-route53-targets';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
 
 
@@ -60,11 +58,6 @@ export class ServiceStack extends cdk.Stack {
       description: 'Cognito User Pool Client ID',
     });
 
-    new cdk.CfnOutput(this, 'CognitoRegion', {
-      value: this.region,
-      description: 'AWS Region for Cognito',
-    });
-
     const frontendS3 = new s3.Bucket(this, 'FrontendBucket', {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       publicReadAccess: false,
@@ -72,13 +65,6 @@ export class ServiceStack extends cdk.Stack {
       enforceSSL: true,
       removalPolicy: cdk.RemovalPolicy.RETAIN,
       autoDeleteObjects: false,
-      websiteIndexDocument: 'index.html',
-      websiteErrorDocument: 'index.html',
-    });
-
-    const hostedZone = new route53.PublicHostedZone(this, 'HostedZone', {
-      zoneName: 'epa-interview.apprentice.aws.dev',
-      comment: 'Hosted zone for Interview Question Bank',
     });
 
     const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OAI', {
@@ -115,11 +101,6 @@ export class ServiceStack extends cdk.Stack {
       priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
     });
 
-    new route53.ARecord(this, 'CloudFrontAliasRecord', {
-      zone: hostedZone,
-      target: route53.RecordTarget.fromAlias(new targets.CloudFrontTarget(distribution)),
-    });
-
     new cdk.CfnOutput(this, 'FrontendBucketName', {
       value: frontendS3.bucketName,
     });
@@ -132,21 +113,6 @@ export class ServiceStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'CloudFrontDomainName', {
       value: distribution.distributionDomainName,
       description: 'CloudFront Domain Name',
-    });
-
-    new cdk.CfnOutput(this, 'HostedZoneId', {
-      value: hostedZone.hostedZoneId,
-      description: 'Route53 Hosted Zone ID',
-    });
-
-    new cdk.CfnOutput(this, 'HostedZoneArn', {
-      value: hostedZone.hostedZoneArn,
-      description: 'Route53 Hosted Zone ARN for Nova onboarding',
-    });
-
-    new cdk.CfnOutput(this, 'HostedZoneNameServers', {
-      value: cdk.Fn.join(', ', hostedZone.hostedZoneNameServers || []),
-      description: 'Route53 Name Servers',
     });
 
     // Dynamo DB Table
