@@ -1,75 +1,52 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { getAllQuestions } from '../services/api';
+import type { Question } from '../services/api';
 import './Questions.css';
-
-interface Question {
-  id: string;
-  title: string;
-  description: string;
-  tags: string[];
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  category: string;
-}
-
-// Mock data for testing
-const mockQuestions: Question[] = [
-  {
-    id: '1',
-    title: 'Explain the OSI Model',
-    description: 'Describe each layer of the OSI model and its purpose in networking.',
-    tags: ['Networking', 'Fundamentals'],
-    difficulty: 'Easy',
-    category: 'Networking'
-  },
-  {
-    id: '2',
-    title: 'What is TCP vs UDP?',
-    description: 'Compare and contrast TCP and UDP protocols. When would you use each?',
-    tags: ['Networking', 'Protocols'],
-    difficulty: 'Medium',
-    category: 'Networking'
-  },
-  {
-    id: '3',
-    title: 'Implement a Binary Search Tree',
-    description: 'Design and implement a binary search tree with insert, delete, and search operations.',
-    tags: ['Data Structures', 'Algorithms'],
-    difficulty: 'Hard',
-    category: 'Algorithms'
-  },
-  {
-    id: '4',
-    title: 'What is a RESTful API?',
-    description: 'Explain REST principles and best practices for designing RESTful APIs.',
-    tags: ['API', 'Web Development'],
-    difficulty: 'Easy',
-    category: 'Web Development'
-  },
-  {
-    id: '5',
-    title: 'Design a URL Shortener',
-    description: 'Design a system like bit.ly that can shorten URLs and redirect users.',
-    tags: ['System Design', 'Scalability'],
-    difficulty: 'Hard',
-    category: 'System Design'
-  }
-];
 
 export default function Questions() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDifficulty, setSelectedDifficulty] = useState('All');
-  const { user } = useAuth();
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { user, getAuthToken } = useAuth();
+
+  useEffect(() => {
+    loadQuestions();
+  }, [user]);
+
+  const loadQuestions = async () => {
+    if (!user) {
+      setLoading(false);
+      setQuestions([]);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setError(null);
+      const token = await getAuthToken();
+      const data = await getAllQuestions(token);
+      setQuestions(data);
+    } catch (err) {
+      console.error('Error loading questions:', err);
+      setError(err instanceof Error ? err.message : 'Failed to load questions');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const categories = useMemo(() => {
-    const cats = new Set(mockQuestions.map(q => q.category));
+    const cats = new Set(questions.map(q => q.category));
     return ['All', ...Array.from(cats)];
-  }, []);
+  }, [questions]);
 
   const difficulties = ['All', 'Easy', 'Medium', 'Hard'];
 
   const filteredQuestions = useMemo(() => {
-    return mockQuestions.filter(question => {
+    return questions.filter(question => {
       const matchesSearch = question.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            question.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            question.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
@@ -79,7 +56,7 @@ export default function Questions() {
 
       return matchesSearch && matchesCategory && matchesDifficulty;
     });
-  }, [searchTerm, selectedCategory, selectedDifficulty]);
+  }, [questions, searchTerm, selectedCategory, selectedDifficulty]);
 
   const getDifficultyClass = (difficulty: string) => {
     return `difficulty difficulty-${difficulty.toLowerCase()}`;
@@ -92,69 +69,118 @@ export default function Questions() {
         <p>
           {user
             ? 'Browse and search technical interview questions'
-            : '⚠️ Please login to access protected API features'}
+            : '⚠️ Please login to access the question bank'}
         </p>
         {user && <span className="auth-badge">✓ Authenticated</span>}
       </header>
 
-      <div className="filters">
-        <div className="search-box">
-          <input
-            type="text"
-            placeholder="Search questions..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
+      {!user && (
+        <div className="warning-box">
+          <p>You need to be logged in to view questions. Please sign in or create an account.</p>
         </div>
+      )}
 
-        <div className="filter-group">
-          <label>Category:</label>
-          <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
-            {categories.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className="filter-group">
-          <label>Difficulty:</label>
-          <select value={selectedDifficulty} onChange={(e) => setSelectedDifficulty(e.target.value)}>
-            {difficulties.map(diff => (
-              <option key={diff} value={diff}>{diff}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="questions-list">
-        {filteredQuestions.length === 0 ? (
-          <p className="no-results">No questions found matching your filters.</p>
-        ) : (
-          filteredQuestions.map(question => (
-            <div key={question.id} className="question-card">
-              <div className="question-header">
-                <h3>{question.title}</h3>
-                <span className={getDifficultyClass(question.difficulty)}>
-                  {question.difficulty}
-                </span>
-              </div>
-              <p className="question-description">{question.description}</p>
-              <div className="question-footer">
-                <div className="question-tags">
-                  {question.tags.map(tag => (
-                    <span key={tag} className="tag">{tag}</span>
-                  ))}
-                </div>
-                <button className="btn btn-small">View Details</button>
-              </div>
+      {user && (
+        <>
+          <div className="filters">
+            <div className="search-box">
+              <input
+                type="text"
+                placeholder="Search questions..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                disabled={loading}
+              />
             </div>
-          ))
-        )}
-      </div>
 
-      <div className="results-count">
-        Showing {filteredQuestions.length} of {mockQuestions.length} questions
-      </div>
+            <div className="filter-group">
+              <label>Category:</label>
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                disabled={loading}
+              >
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="filter-group">
+              <label>Difficulty:</label>
+              <select
+                value={selectedDifficulty}
+                onChange={(e) => setSelectedDifficulty(e.target.value)}
+                disabled={loading}
+              >
+                {difficulties.map(diff => (
+                  <option key={diff} value={diff}>{diff}</option>
+                ))}
+              </select>
+            </div>
+
+            <button
+              className="btn btn-small"
+              onClick={loadQuestions}
+              disabled={loading}
+            >
+              {loading ? 'Loading...' : '🔄 Refresh'}
+            </button>
+          </div>
+
+          {loading && (
+            <div className="loading-container">
+              <div className="loading-spinner"></div>
+              <p>Loading questions...</p>
+            </div>
+          )}
+
+          {error && (
+            <div className="error-box">
+              <p>❌ Error: {error}</p>
+              <button className="btn" onClick={loadQuestions}>Retry</button>
+            </div>
+          )}
+
+          {!loading && !error && (
+            <>
+              <div className="questions-list">
+                {filteredQuestions.length === 0 ? (
+                  <p className="no-results">
+                    {questions.length === 0
+                      ? 'No questions available yet. Add some questions to get started!'
+                      : 'No questions found matching your filters.'}
+                  </p>
+                ) : (
+                  filteredQuestions.map(question => (
+                    <div key={question.id} className="question-card">
+                      <div className="question-header">
+                        <h3>{question.title}</h3>
+                        <span className={getDifficultyClass(question.difficulty)}>
+                          {question.difficulty}
+                        </span>
+                      </div>
+                      <p className="question-description">{question.description}</p>
+                      <div className="question-footer">
+                        <div className="question-tags">
+                          {question.tags.map(tag => (
+                            <span key={tag} className="tag">{tag}</span>
+                          ))}
+                        </div>
+                        <button className="btn btn-small">View Details</button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+
+              <div className="results-count">
+                Showing {filteredQuestions.length} of {questions.length} questions
+              </div>
+            </>
+          )}
+        </>
+      )}
     </div>
   );
 }
