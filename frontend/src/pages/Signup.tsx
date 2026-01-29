@@ -35,9 +35,9 @@ export default function Signup() {
       setTimeout(() => {
         navigate('/verify-email', { state: { email } });
       }, 2000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Signup error:', err);
-      setError(err.message || 'Failed to create account. Please try again.');
+      setError(err instanceof Error ? err.message : 'Failed to create account. Please try again.');
     } finally {
       setLoading(false);
     }

@@ -34,7 +34,7 @@ export default function Login() {
     try {
       await login(email, password);
       navigate('/questions');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Login error:', err);
       setError('Login failed. Please check your username and password, or verify your account if you haven\'t already.');
     } finally {

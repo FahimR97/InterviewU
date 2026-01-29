@@ -13,10 +13,6 @@ export default function Questions() {
   const [error, setError] = useState<string | null>(null);
   const { user, getAuthToken } = useAuth();
 
-  useEffect(() => {
-    loadQuestions();
-  }, [user]);
-
   const loadQuestions = async () => {
     if (!user) {
       setLoading(false);
@@ -37,6 +33,11 @@ export default function Questions() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadQuestions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
 
   const categories = useMemo(() => {
     const cats = new Set(questions.map(q => q.category));
