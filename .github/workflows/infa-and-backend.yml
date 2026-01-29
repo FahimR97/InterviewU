@@ -104,6 +104,9 @@ jobs:
           aws sts get-caller-identity
 
       - name: CDK deploy (Alpha)
+        env:
+          CDK_DEFAULT_ACCOUNT: 954164445144
+          CDK_DEFAULT_REGION: eu-west-1
         run: npx cdk deploy --require-approval never
 
   deploy-prod:
@@ -140,4 +143,7 @@ jobs:
           aws sts get-caller-identity
 
       - name: CDK deploy (Prod)
+        env:
+          CDK_DEFAULT_ACCOUNT: 839185960743
+          CDK_DEFAULT_REGION: eu-west-1
         run: npx cdk deploy --require-approval never
