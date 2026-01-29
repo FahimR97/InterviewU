@@ -51,7 +51,7 @@ describe('ServiceStack CDK tests', () => {
 
     template.hasResourceProperties('AWS::Lambda::Function', {
       Runtime: 'python3.11',
-      Handler: 'handler.handler',
+      Handler: 'src.handler.handler',
       Environment: {
         Variables: {
           TABLE_NAME: Match.anyValue(),

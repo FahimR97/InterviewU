@@ -36,9 +36,9 @@ export default function VerifyEmail() {
       navigate('/login', {
         state: { message: 'Email verified! You can now login.' }
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Verification error:', err);
-      setError(err.message || 'Failed to verify email. Please check your code.');
+      setError(err instanceof Error ? err.message : 'Failed to verify email. Please check your code.');
     } finally {
       setLoading(false);
     }
@@ -56,9 +56,9 @@ export default function VerifyEmail() {
     try {
       await resendVerificationCode(email);
       setSuccess('Verification code resent! Check your email.');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Resend error:', err);
-      setError(err.message || 'Failed to resend code.');
+      setError(err instanceof Error ? err.message : 'Failed to resend code.');
     }
   };
 

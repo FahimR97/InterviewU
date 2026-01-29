@@ -37,13 +37,9 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Run flake8
+      - name: Run build (format, lint, test)
         run: |
-          flake8 src/ tests/
-
-      - name: Run tests
-        run: |
-          pytest
+          make build
 
   cdk-check:
     needs: backend-tests          # 👈 only runs if backend-tests SUCCESS
@@ -63,6 +59,15 @@ jobs:
 
       - name: Install deps
         run: npm ci
+
+      - name: Run infrastructure tests
+        run: npm test
+
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: Run linting (TypeScript check)
+        run: npx tsc --noEmit
 
       - name: CDK synth
         run: npx cdk synth
