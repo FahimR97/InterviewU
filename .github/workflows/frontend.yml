@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 jobs:
-  deploy-frontend:
+  deploy-alpha:
     runs-on: ubuntu-latest
 
     steps:
@@ -39,26 +39,27 @@ jobs:
         working-directory: frontend
         run: npm run build
 
-      - name: Configure AWS Credentials
+      - name: Configure AWS Credentials (Alpha)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::839185960743:role/github-actions-deploy
+          role-to-assume: arn:aws:iam::954164445144:role/github-actions-deploy
           aws-region: eu-west-1
 
-      - name: Check frontend infra stack exists
+      - name: Check frontend infra stack exists (Alpha)
         id: check_stack
         run: |
           STACK_NAME=ServiceStack
 
           if aws cloudformation describe-stacks --stack-name "$STACK_NAME" > /dev/null 2>&1; then
             echo "exists=true" >> "$GITHUB_OUTPUT"
-            echo "Stack $STACK_NAME exists."
+            echo "Stack $STACK_NAME exists in Alpha."
           else
             echo "exists=false" >> "$GITHUB_OUTPUT"
-            echo "Stack $STACK_NAME does NOT exist yet. Skipping deploy."
+            echo "Stack $STACK_NAME does NOT exist yet in Alpha. Skipping deploy."
           fi
 
-      - name: Get frontend infra outputs
+      - name: Get frontend infra outputs (Alpha)
+        if: steps.check_stack.outputs.exists == 'true'
         id: infra
         run: |
           STACK_NAME=ServiceStack
@@ -76,7 +77,84 @@ jobs:
 
           echo "bucket=$BUCKET" >> "$GITHUB_OUTPUT"
 
-      - name: Upload to S3
+      - name: Upload to S3 (Alpha)
+        if: steps.check_stack.outputs.exists == 'true'
         working-directory: frontend
         run: |
+          echo "Deploying to ALPHA S3 bucket..."
+          aws s3 sync dist s3://${{ steps.infra.outputs.bucket }} --delete
+
+  deploy-prod:
+    needs: deploy-alpha
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install frontend deps
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run linting
+        working-directory: frontend
+        run: npm run lint
+
+      - name: Type check
+        working-directory: frontend
+        run: npx tsc -b --noEmit
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Configure AWS Credentials (Prod)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::839185960743:role/github-actions-deploy
+          aws-region: eu-west-1
+
+      - name: Check frontend infra stack exists (Prod)
+        id: check_stack
+        run: |
+          STACK_NAME=ServiceStack
+
+          if aws cloudformation describe-stacks --stack-name "$STACK_NAME" > /dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Stack $STACK_NAME exists in Production."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Stack $STACK_NAME does NOT exist yet in Production. Skipping deploy."
+          fi
+
+      - name: Get frontend infra outputs (Prod)
+        if: steps.check_stack.outputs.exists == 'true'
+        id: infra
+        run: |
+          STACK_NAME=ServiceStack
+
+          BUCKET=$(aws cloudformation describe-stacks \
+            --stack-name "$STACK_NAME" \
+            --query "Stacks[0].Outputs[?OutputKey=='FrontendBucketName'].OutputValue" \
+            --output text)
+          echo "Bucket: $BUCKET"
+
+          if [ -z "$BUCKET" ] || [ "$BUCKET" = "None" ]; then
+            echo "ERROR: Could not find FrontendBucketName output on stack $STACK_NAME"
+            exit 1
+          fi
+
+          echo "bucket=$BUCKET" >> "$GITHUB_OUTPUT"
+
+      - name: Upload to S3 (Prod)
+        if: steps.check_stack.outputs.exists == 'true'
+        working-directory: frontend
+        run: |
+          echo "Deploying to PRODUCTION S3 bucket..."
           aws s3 sync dist s3://${{ steps.infra.outputs.bucket }} --delete
