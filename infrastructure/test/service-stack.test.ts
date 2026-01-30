@@ -13,7 +13,7 @@ describe('ServiceStack CDK tests', () => {
     const template = synthTemplate();
 
     template.resourceCountIs('AWS::DynamoDB::Table', 1);
-    template.resourceCountIs('AWS::Lambda::Function', 1);
+    template.resourceCountIs('AWS::Lambda::Function', 2); // QuestionsHandler + EvaluateAnswerFn
     template.resourceCountIs('AWS::S3::Bucket', 1);
     template.resourceCountIs('AWS::CloudFront::Distribution', 1);
     template.resourceCountIs('AWS::Cognito::UserPool', 1);
@@ -49,14 +49,22 @@ describe('ServiceStack CDK tests', () => {
   test('Lambda function uses Python 3.11 and has TABLE_NAME environment variable', () => {
     const template = synthTemplate();
 
+    // Test QuestionsHandler Lambda
     template.hasResourceProperties('AWS::Lambda::Function', {
       Runtime: 'python3.11',
-      Handler: 'src.handler.handler',
+      Handler: 'questions_handler.handler',
       Environment: {
         Variables: {
           TABLE_NAME: Match.anyValue(),
         },
       },
+    });
+
+    // Test EvaluateAnswerFn Lambda
+    template.hasResourceProperties('AWS::Lambda::Function', {
+      Runtime: 'python3.11',
+      Handler: 'evaluate_answer.handler',
+      Timeout: 30,
     });
   });
 

@@ -7,6 +7,7 @@ import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as cloudfront from 'aws-cdk-lib/aws-cloudfront';
 import * as origins from 'aws-cdk-lib/aws-cloudfront-origins';
+import * as iam from 'aws-cdk-lib/aws-iam';
 
 
 export class ServiceStack extends cdk.Stack {
@@ -116,7 +117,7 @@ export class ServiceStack extends cdk.Stack {
     });
 
     // Dynamo DB Table
-      const table = new dynamodb.Table(this, 'InterviewQuestions', {
+    const table = new dynamodb.Table(this, 'InterviewQuestions', {
       partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
       removalPolicy: cdk.RemovalPolicy.RETAIN,
@@ -124,7 +125,7 @@ export class ServiceStack extends cdk.Stack {
       pointInTimeRecovery: true,
     });
 
-      new cdk.CfnOutput(this, 'EPAproject', {
+    new cdk.CfnOutput(this, 'EPAproject', {
       value: table.tableName,
       description: 'DynamoDB table name',
     });
@@ -132,8 +133,8 @@ export class ServiceStack extends cdk.Stack {
     // Lambda function for handling interview questions 
     const questionsHandler = new lambda.Function(this, 'QuestionsHandler', {
       runtime: lambda.Runtime.PYTHON_3_11,
-      handler: 'src.handler.handler',
-      code: lambda.Code.fromAsset("../backend"),
+      handler: 'questions_handler.handler',
+      code: lambda.Code.fromAsset("../backend/src"),
       environment: {
         TABLE_NAME: table.tableName,
       },
@@ -142,7 +143,22 @@ export class ServiceStack extends cdk.Stack {
     // Grant the Lambda function read/write permissions to the table
     table.grantReadWriteData(questionsHandler);
 
+    // Lambda for Marcus evaluation (direct model invocation)
+    const evaluateAnswerFn = new lambda.Function(this, 'EvaluateAnswerFunction', {
+      runtime: lambda.Runtime.PYTHON_3_11,
+      handler: 'evaluate_answer.handler',
+      code: lambda.Code.fromAsset("../backend/src"),
+      timeout: cdk.Duration.seconds(30),
+    });
+
+    // Grant Bedrock model invocation permission
+    evaluateAnswerFn.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['bedrock:InvokeModel'],
+      resources: ['arn:aws:bedrock:eu-west-2::foundation-model/anthropic.claude-3-7-sonnet-20250219-v1:0'],
+    }));
+
     const lambdaIntegration = new apigw.LambdaIntegration(questionsHandler);
+    const evaluateIntegration = new apigw.LambdaIntegration(evaluateAnswerFn);
 
     const cognitoAuthorizer = new apigw.CognitoUserPoolsAuthorizer(this, 'CognitoAuthorizer', {
       cognitoUserPools: [userPool],
@@ -196,6 +212,13 @@ export class ServiceStack extends cdk.Stack {
     });
 
     questionById.addMethod('DELETE', lambdaIntegration, {
+      authorizer: cognitoAuthorizer,
+      authorizationType: apigw.AuthorizationType.COGNITO,
+    });
+
+    // Marcus evaluation endpoint
+    const answers = api.root.addResource('answers');
+    answers.addMethod('POST', evaluateIntegration, {
       authorizer: cognitoAuthorizer,
       authorizationType: apigw.AuthorizationType.COGNITO,
     });

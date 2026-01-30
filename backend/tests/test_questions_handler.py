@@ -6,7 +6,7 @@ from unittest.mock import patch, MagicMock
 # Add src directory to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
-# Mock boto3 and environment before importing handler
+# Mock boto3 and environment before importing questions_handler
 mock_table = MagicMock()
 mock_dynamodb = MagicMock()
 mock_dynamodb.Table.return_value = mock_table
@@ -16,7 +16,7 @@ with patch.dict(
     {"TABLE_NAME": "test-table", "AWS_DEFAULT_REGION": "us-east-1"},
 ):
     with patch("boto3.resource", return_value=mock_dynamodb):
-        from handler import handler
+        from questions_handler import handler
 
 
 def test_handler_hello_endpoint():
@@ -27,7 +27,7 @@ def test_handler_hello_endpoint():
     assert body["message"] == "Hello from Lambda!"
 
 
-@patch('handler.table')
+@patch('questions_handler.table')
 def test_get_all_questions(mock_table):
     mock_table.scan.return_value = {
         'Items': [
@@ -50,7 +50,7 @@ def test_get_all_questions(mock_table):
     assert isinstance(body[0]["tags"], list)
 
 
-@patch('handler.table')
+@patch('questions_handler.table')
 def test_get_single_question(mock_table):
     mock_table.get_item.return_value = {
         'Item': {
@@ -70,7 +70,7 @@ def test_get_single_question(mock_table):
     assert isinstance(body["tags"], list)
 
 
-@patch('handler.table')
+@patch('questions_handler.table')
 def test_question_not_found(mock_table):
     mock_table.get_item.return_value = {}
 
@@ -80,7 +80,7 @@ def test_question_not_found(mock_table):
     assert response["statusCode"] == 404
 
 
-@patch('handler.table')
+@patch('questions_handler.table')
 def test_error_handling(mock_table):
     mock_table.scan.side_effect = Exception("DynamoDB error")
 
