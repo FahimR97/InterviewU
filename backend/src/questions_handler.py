@@ -155,6 +155,7 @@ def handler(event, context):
             logger.info("Fallback route accessed", extra=log_extra)
             return {
                 "statusCode": 200,
+                "headers": {"Access-Control-Allow-Origin": "*"},
                 "body": json.dumps({"message": "Hello from Lambda!"}),
             }
 
