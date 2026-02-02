@@ -1,3 +1,15 @@
+"""
+Questions Handler Lambda
+Manages CRUD operations for interview questions in DynamoDB.
+
+Endpoints:
+- GET /questions - List all questions
+- GET /questions/{id} - Get single question by ID
+- POST /questions - Create new question
+- PUT /questions/{id} - Update existing question
+- DELETE /questions/{id} - Delete question
+"""
+
 import json
 import boto3
 import os
@@ -7,7 +19,10 @@ table = dynamodb.Table(os.environ["TABLE_NAME"])
 
 
 def convert_dynamodb_item(item):
-    """Convert DynamoDB item to regular Python dict"""
+    """
+    Convert DynamoDB item to regular Python dict.
+    Handles DynamoDB-specific types like sets.
+    """
     if isinstance(item, dict):
         return {k: convert_dynamodb_item(v) for k, v in item.items()}
     elif isinstance(item, set):
@@ -17,10 +32,15 @@ def convert_dynamodb_item(item):
 
 
 def handler(event, context):
+    """
+    Main Lambda handler for question operations.
+    Routes requests based on HTTP method and path.
+    """
     path = event["path"]
     method = event.get("httpMethod", "GET")
 
     try:
+        # List all questions
         if path == "/questions":
             if method == "GET":
                 # Scan with pagination handling
@@ -42,6 +62,7 @@ def handler(event, context):
                     "body": json.dumps(items),
                 }
 
+        # Get single question by ID
         elif path.startswith("/questions/"):
             question_id = path.split("/")[-1]
 
@@ -60,6 +81,7 @@ def handler(event, context):
                     "body": json.dumps({"error": "Not found"}),
                 }
 
+        # Default response
         else:
             return {
                 "statusCode": 200,
