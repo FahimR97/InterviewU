@@ -79,7 +79,7 @@ def handler(event, context):
     """
     path = event["path"]
     method = event.get("httpMethod", "GET")
-    request_id = context.request_id if context else "local"
+    request_id = context.aws_request_id if context else "local"
 
     # Create logger adapter with request context
     log_extra = {'request_id': request_id, 'method': method, 'path': path}
