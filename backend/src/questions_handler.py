@@ -51,9 +51,9 @@ class JsonFormatter(logging.Formatter):
         return json.dumps(log_data)
 
 # Apply JSON formatter to handler
-handler = logging.StreamHandler(sys.stdout)
-handler.setFormatter(JsonFormatter())
-logger.handlers = [handler]
+log_handler = logging.StreamHandler(sys.stdout)
+log_handler.setFormatter(JsonFormatter())
+logger.handlers = [log_handler]
 
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(os.environ["TABLE_NAME"])
