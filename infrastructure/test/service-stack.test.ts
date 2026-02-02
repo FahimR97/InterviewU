@@ -13,7 +13,8 @@ describe('ServiceStack CDK tests', () => {
     const template = synthTemplate();
 
     template.resourceCountIs('AWS::DynamoDB::Table', 1);
-    template.resourceCountIs('AWS::Lambda::Function', 2); // QuestionsHandler + EvaluateAnswerFn
+    // Expect 3: QuestionsHandler + EvaluateAnswerFn + LogRetention custom resource Lambda
+    template.resourceCountIs('AWS::Lambda::Function', 3);
     template.resourceCountIs('AWS::S3::Bucket', 1);
     template.resourceCountIs('AWS::CloudFront::Distribution', 1);
     template.resourceCountIs('AWS::Cognito::UserPool', 1);

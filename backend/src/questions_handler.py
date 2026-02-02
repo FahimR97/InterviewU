@@ -11,8 +11,49 @@ Endpoints:
 """
 
 import json
-import boto3
+import logging
 import os
+import sys
+import boto3
+
+# Configure JSON structured logging for CloudWatch
+logger = logging.getLogger()
+log_level = os.environ.get('LOG_LEVEL', 'INFO')
+logger.setLevel(getattr(logging, log_level))
+
+# JSON formatter for structured logs
+class JsonFormatter(logging.Formatter):
+    def format(self, record):
+        log_data = {
+            'timestamp': self.formatTime(record),
+            'level': record.levelname,
+            'message': record.getMessage(),
+            'logger': record.name,
+        }
+
+        # Add extra fields if present
+        if hasattr(record, 'request_id'):
+            log_data['request_id'] = record.request_id
+        if hasattr(record, 'path'):
+            log_data['path'] = record.path
+        if hasattr(record, 'method'):
+            log_data['method'] = record.method
+        if hasattr(record, 'error_type'):
+            log_data['error_type'] = record.error_type
+        if hasattr(record, 'question_id'):
+            log_data['question_id'] = record.question_id
+        if hasattr(record, 'question_count'):
+            log_data['question_count'] = record.question_count
+
+        if record.exc_info:
+            log_data['exception'] = self.formatException(record.exc_info)
+
+        return json.dumps(log_data)
+
+# Apply JSON formatter to handler
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(JsonFormatter())
+logger.handlers = [handler]
 
 dynamodb = boto3.resource("dynamodb")
 table = dynamodb.Table(os.environ["TABLE_NAME"])
@@ -26,7 +67,7 @@ def convert_dynamodb_item(item):
     if isinstance(item, dict):
         return {k: convert_dynamodb_item(v) for k, v in item.items()}
     elif isinstance(item, set):
-        return list(item)  # Convert sets to lists
+        return list(item)
     else:
         return item
 
@@ -38,12 +79,19 @@ def handler(event, context):
     """
     path = event["path"]
     method = event.get("httpMethod", "GET")
+    request_id = context.request_id if context else "local"
+
+    # Create logger adapter with request context
+    log_extra = {'request_id': request_id, 'method': method, 'path': path}
+
+    logger.info("Incoming request", extra=log_extra)
 
     try:
         # List all questions
         if path == "/questions":
             if method == "GET":
-                # Scan with pagination handling
+                logger.info("Fetching all questions from DynamoDB", extra=log_extra)
+
                 items = []
                 response = table.scan()
                 items.extend(response.get("Items", []))
@@ -56,6 +104,12 @@ def handler(event, context):
                     items.extend(response.get("Items", []))
 
                 items = [convert_dynamodb_item(item) for item in items]
+
+                logger.info(
+                    "Successfully retrieved questions",
+                    extra={**log_extra, 'question_count': len(items)}
+                )
+
                 return {
                     "statusCode": 200,
                     "headers": {"Access-Control-Allow-Origin": "*"},
@@ -67,14 +121,29 @@ def handler(event, context):
             question_id = path.split("/")[-1]
 
             if method == "GET":
+                logger.info(
+                    "Fetching single question",
+                    extra={**log_extra, 'question_id': question_id}
+                )
+
                 response = table.get_item(Key={"id": question_id})
+
                 if "Item" in response:
                     item = convert_dynamodb_item(response["Item"])
+                    logger.info(
+                        "Question found",
+                        extra={**log_extra, 'question_id': question_id}
+                    )
                     return {
                         "statusCode": 200,
                         "headers": {"Access-Control-Allow-Origin": "*"},
                         "body": json.dumps(item),
                     }
+
+                logger.warning(
+                    "Question not found",
+                    extra={**log_extra, 'question_id': question_id}
+                )
                 return {
                     "statusCode": 404,
                     "headers": {"Access-Control-Allow-Origin": "*"},
@@ -83,12 +152,22 @@ def handler(event, context):
 
         # Default response
         else:
+            logger.info("Fallback route accessed", extra=log_extra)
             return {
                 "statusCode": 200,
                 "body": json.dumps({"message": "Hello from Lambda!"}),
             }
 
     except Exception as e:
+        logger.error(
+            "Error processing request",
+            extra={
+                **log_extra,
+                'error_type': type(e).__name__,
+            },
+            exc_info=True
+        )
+
         return {
             "statusCode": 500,
             "headers": {"Access-Control-Allow-Origin": "*"},
