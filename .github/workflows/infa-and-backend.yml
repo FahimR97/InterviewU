@@ -109,8 +109,47 @@ jobs:
           CDK_DEFAULT_REGION: eu-west-1
         run: npx cdk deploy --require-approval never
 
-  deploy-prod:
+  integration-tests-alpha:
     needs: deploy-alpha
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Configure AWS Credentials (Alpha)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::954164445144:role/github-actions-deploy
+          aws-region: eu-west-1
+
+      - name: Get Alpha API URL from CloudFormation
+        id: get-api-url
+        run: |
+          API_URL=$(aws cloudformation describe-stacks \
+            --stack-name ServiceStack \
+            --query 'Stacks[0].Outputs[?OutputKey==`ApiUrl`].OutputValue' \
+            --output text)
+          echo "ALPHA_API_URL=$API_URL" >> $GITHUB_ENV
+          echo "Alpha API URL: $API_URL"
+
+      - name: Run integration tests against Alpha
+        run: pytest tests/test_alpha_integration.py -v
+
+  deploy-prod:
+    needs: [deploy-alpha, integration-tests-alpha]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     defaults:
