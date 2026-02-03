@@ -51,7 +51,6 @@ jobs:
           severity: 'CRITICAL,HIGH'
           ignore-unfixed: true
         continue-on-error: false
-        working-directory: .
 
   cdk-check:
     needs: backend-tests
@@ -92,7 +91,6 @@ jobs:
           format: 'table'
           exit-code: '0'
           severity: 'CRITICAL,HIGH,MEDIUM'
-        working-directory: .
 
   deploy-alpha:
     needs: [backend-tests, cdk-check]
@@ -162,9 +160,9 @@ jobs:
         run: |
           API_URL=$(aws cloudformation describe-stacks \
             --stack-name ServiceStack \
-            --query 'Stacks[0].Outputs[?OutputKey==`ApiUrl`].OutputValue' \
+            --query "Stacks[0].Outputs[?OutputKey==\`ApiUrl\`].OutputValue" \
             --output text)
-          echo "ALPHA_API_URL=$API_URL" >> $GITHUB_ENV
+          echo "ALPHA_API_URL=$API_URL" >> "$GITHUB_ENV"
           echo "Alpha API URL: $API_URL"
 
       - name: Run integration tests against Alpha
