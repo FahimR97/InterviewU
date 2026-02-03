@@ -35,11 +35,15 @@ jobs:
         working-directory: frontend
         run: npx tsc -b --noEmit
 
-      - name: Run Trivy vulnerability scanner (Frontend)
+      - name: Run Trivy vulnerability scanner (npm dependencies only)
+        # Only scans frontend npm dependencies from package-lock.json
+        # Skips backend/infrastructure to avoid blocking frontend on unrelated issues
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
-          scan-ref: './frontend'
+          scan-ref: '.'
+          scanners: 'vuln'
+          skip-dirs: 'backend,infrastructure'
           format: 'table'
           exit-code: '1'
           severity: 'CRITICAL,HIGH'
