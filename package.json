@@ -9,5 +9,8 @@
   "scripts": {
     "start": "node index.js",
     "test": "echo \"no test yet\""
+  },
+  "overrides": {
+    "fast-xml-parser": "^5.3.4"
   }
 }
