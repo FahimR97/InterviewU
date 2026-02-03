@@ -35,6 +35,17 @@ jobs:
         working-directory: frontend
         run: npx tsc -b --noEmit
 
+      - name: Run Trivy vulnerability scanner (Frontend)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: './frontend'
+          format: 'table'
+          exit-code: '1'
+          severity: 'CRITICAL,HIGH'
+          ignore-unfixed: true
+        working-directory: .
+
       - name: Build frontend
         working-directory: frontend
         run: npm run build
