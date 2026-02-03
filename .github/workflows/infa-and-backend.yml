@@ -41,11 +41,14 @@ jobs:
         run: |
           make build
 
-      - name: Run Trivy vulnerability scanner
+      - name: Run Trivy vulnerability scanner (All Dependencies)
+        # Scans backend + infrastructure dependencies:
+        # - Backend Python (backend/requirements.txt)
+        # - Infrastructure npm (package-lock.json)
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
-          scan-ref: './backend'
+          scan-ref: '.'
           format: 'table'
           exit-code: '1'
           severity: 'CRITICAL,HIGH'
@@ -82,15 +85,6 @@ jobs:
 
       - name: CDK synth
         run: npx cdk synth
-
-      - name: Run Trivy for Infrastructure security
-        uses: aquasecurity/trivy-action@master
-        with:
-          scan-type: 'config'
-          scan-ref: './infrastructure'
-          format: 'table'
-          exit-code: '0'
-          severity: 'CRITICAL,HIGH,MEDIUM'
 
   deploy-alpha:
     needs: [backend-tests, cdk-check]

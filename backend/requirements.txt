@@ -1,5 +1,5 @@
-pytest
-boto3
-flake8
-black
-requests
+pytest==9.0.2
+boto3==1.42.37
+flake8==7.3.0
+black==26.1.0
+requests==2.31.0
