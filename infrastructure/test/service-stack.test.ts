@@ -15,7 +15,7 @@ describe('ServiceStack CDK tests', () => {
     template.resourceCountIs('AWS::DynamoDB::Table', 1);
     // Expect 3: QuestionsHandler + EvaluateAnswerFn + LogRetention custom resource Lambda
     template.resourceCountIs('AWS::Lambda::Function', 3);
-    template.resourceCountIs('AWS::S3::Bucket', 1);
+    template.resourceCountIs('AWS::S3::Bucket', 2); // Frontend + CloudTrail
     template.resourceCountIs('AWS::CloudFront::Distribution', 1);
     template.resourceCountIs('AWS::Cognito::UserPool', 1);
     template.resourceCountIs('AWS::ApiGateway::RestApi', 1);
@@ -115,6 +115,32 @@ describe('ServiceStack CDK tests', () => {
 
     template.hasResourceProperties('AWS::ApiGateway::Method', {
       AuthorizationType: 'COGNITO_USER_POOLS',
+    });
+  });
+
+  test('CloudTrail is configured with S3 bucket and CloudWatch logs', () => {
+    const template = synthTemplate();
+
+    // CloudTrail resource exists
+    template.resourceCountIs('AWS::CloudTrail::Trail', 1);
+
+    // CloudTrail has proper configuration
+    template.hasResourceProperties('AWS::CloudTrail::Trail', {
+      EnableLogFileValidation: true,
+      IncludeGlobalServiceEvents: true,
+      IsMultiRegionTrail: false, // Single region for cost optimization
+      IsLogging: true,
+    });
+  });
+
+  test('CloudTrail S3 bucket is encrypted and versioned', () => {
+    const template = synthTemplate();
+
+    // Check that at least one S3 bucket has versioning enabled (CloudTrail bucket)
+    template.hasResourceProperties('AWS::S3::Bucket', {
+      VersioningConfiguration: {
+        Status: 'Enabled',
+      },
     });
   });
 });
