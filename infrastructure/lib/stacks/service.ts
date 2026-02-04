@@ -12,6 +12,7 @@ import * as cloudwatch from 'aws-cdk-lib/aws-cloudwatch';
 import * as sns from 'aws-cdk-lib/aws-sns';
 import * as cloudwatch_actions from 'aws-cdk-lib/aws-cloudwatch-actions';
 import * as iam from 'aws-cdk-lib/aws-iam';
+import * as cloudtrail from 'aws-cdk-lib/aws-cloudtrail';
 
 export interface ServiceStackProps extends cdk.StackProps {
   enableMonitoring?: boolean;
@@ -406,5 +407,64 @@ export class ServiceStack extends cdk.Stack {
         description: 'CloudWatch Dashboard URL',
       });
     }
+
+    // CloudTrail for audit logging and API activity monitoring
+    // Demonstrates K11 (monitoring technologies) and S6 (install/manage monitoring tools)
+
+    // S3 bucket for CloudTrail logs
+    const trailBucket = new s3.Bucket(this, 'CloudTrailBucket', {
+      bucketName: `cloudtrail-logs-${this.account}-${this.region}`,
+      encryption: s3.BucketEncryption.S3_MANAGED,
+      versioned: true,
+      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      lifecycleRules: [
+        {
+          id: 'DeleteOldLogs',
+          enabled: true,
+          expiration: cdk.Duration.days(90), // Keep logs for 90 days
+        },
+        {
+          id: 'TransitionToIA',
+          enabled: true,
+          transitions: [
+            {
+              storageClass: s3.StorageClass.INFREQUENT_ACCESS,
+              transitionAfter: cdk.Duration.days(30), // Move to IA after 30 days
+            },
+          ],
+        },
+      ],
+      removalPolicy: cdk.RemovalPolicy.RETAIN, // Keep logs even if stack is deleted
+    });
+
+    // CloudWatch Log Group for CloudTrail
+    const trailLogGroup = new logs.LogGroup(this, 'CloudTrailLogGroup', {
+      logGroupName: `/aws/cloudtrail/${this.stackName}`,
+      retention: logs.RetentionDays.ONE_MONTH, // Cost optimization
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+    });
+
+    // CloudTrail Trail
+    const trail = new cloudtrail.Trail(this, 'ApiActivityTrail', {
+      trailName: 'ApiActivityTrail',
+      bucket: trailBucket,
+      cloudWatchLogGroup: trailLogGroup,
+      enableFileValidation: true, // Ensure log integrity
+      includeGlobalServiceEvents: true, // Include IAM, CloudFront, etc.
+      isMultiRegionTrail: false, // Single region (eu-west-1) to save costs
+      managementEvents: cloudtrail.ReadWriteType.ALL, // Track all API calls
+      sendToCloudWatchLogs: true,
+    });
+
+    // Outputs
+    new cdk.CfnOutput(this, 'CloudTrailBucketName', {
+      value: trailBucket.bucketName,
+      description: 'S3 bucket storing CloudTrail logs',
+    });
+
+    new cdk.CfnOutput(this, 'CloudTrailLogGroupName', {
+      value: trailLogGroup.logGroupName,
+      description: 'CloudWatch Log Group for CloudTrail events',
+    });
   }
 }
