@@ -5,7 +5,6 @@ import Login from './pages/Login';
 import Questions from './pages/Questions';
 import Signup from './pages/Signup';
 import ChangePassword from './pages/ChangePassword';
-import VerifyEmail from './pages/VerifyEmail';
 import './App.css';
 
 function NavBar() {
@@ -62,7 +61,6 @@ function AppContent() {
             <Route path="/questions" element={<Questions />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/change-password" element={<ChangePassword />} />
-            <Route path="/verify-email" element={<VerifyEmail />} />
           </Routes>
         </main>
 

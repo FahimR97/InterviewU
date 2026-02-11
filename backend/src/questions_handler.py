@@ -18,37 +18,39 @@ import boto3
 
 # Configure JSON structured logging for CloudWatch
 logger = logging.getLogger()
-log_level = os.environ.get('LOG_LEVEL', 'INFO')
+log_level = os.environ.get("LOG_LEVEL", "INFO")
 logger.setLevel(getattr(logging, log_level))
+
 
 # JSON formatter for structured logs
 class JsonFormatter(logging.Formatter):
     def format(self, record):
         log_data = {
-            'timestamp': self.formatTime(record),
-            'level': record.levelname,
-            'message': record.getMessage(),
-            'logger': record.name,
+            "timestamp": self.formatTime(record),
+            "level": record.levelname,
+            "message": record.getMessage(),
+            "logger": record.name,
         }
 
         # Add extra fields if present
-        if hasattr(record, 'request_id'):
-            log_data['request_id'] = record.request_id
-        if hasattr(record, 'path'):
-            log_data['path'] = record.path
-        if hasattr(record, 'method'):
-            log_data['method'] = record.method
-        if hasattr(record, 'error_type'):
-            log_data['error_type'] = record.error_type
-        if hasattr(record, 'question_id'):
-            log_data['question_id'] = record.question_id
-        if hasattr(record, 'question_count'):
-            log_data['question_count'] = record.question_count
+        if hasattr(record, "request_id"):
+            log_data["request_id"] = record.request_id
+        if hasattr(record, "path"):
+            log_data["path"] = record.path
+        if hasattr(record, "method"):
+            log_data["method"] = record.method
+        if hasattr(record, "error_type"):
+            log_data["error_type"] = record.error_type
+        if hasattr(record, "question_id"):
+            log_data["question_id"] = record.question_id
+        if hasattr(record, "question_count"):
+            log_data["question_count"] = record.question_count
 
         if record.exc_info:
-            log_data['exception'] = self.formatException(record.exc_info)
+            log_data["exception"] = self.formatException(record.exc_info)
 
         return json.dumps(log_data)
+
 
 # Apply JSON formatter to handler
 log_handler = logging.StreamHandler(sys.stdout)
@@ -82,7 +84,7 @@ def handler(event, context):
     request_id = context.aws_request_id if context else "local"
 
     # Create logger adapter with request context
-    log_extra = {'request_id': request_id, 'method': method, 'path': path}
+    log_extra = {"request_id": request_id, "method": method, "path": path}
 
     logger.info("Incoming request", extra=log_extra)
 
@@ -107,7 +109,7 @@ def handler(event, context):
 
                 logger.info(
                     "Successfully retrieved questions",
-                    extra={**log_extra, 'question_count': len(items)}
+                    extra={**log_extra, "question_count": len(items)},
                 )
 
                 return {
@@ -123,7 +125,7 @@ def handler(event, context):
             if method == "GET":
                 logger.info(
                     "Fetching single question",
-                    extra={**log_extra, 'question_id': question_id}
+                    extra={**log_extra, "question_id": question_id},
                 )
 
                 response = table.get_item(Key={"id": question_id})
@@ -132,7 +134,7 @@ def handler(event, context):
                     item = convert_dynamodb_item(response["Item"])
                     logger.info(
                         "Question found",
-                        extra={**log_extra, 'question_id': question_id}
+                        extra={**log_extra, "question_id": question_id},
                     )
                     return {
                         "statusCode": 200,
@@ -142,7 +144,7 @@ def handler(event, context):
 
                 logger.warning(
                     "Question not found",
-                    extra={**log_extra, 'question_id': question_id}
+                    extra={**log_extra, "question_id": question_id},
                 )
                 return {
                     "statusCode": 404,
@@ -164,9 +166,9 @@ def handler(event, context):
             "Error processing request",
             extra={
                 **log_extra,
-                'error_type': type(e).__name__,
+                "error_type": type(e).__name__,
             },
-            exc_info=True
+            exc_info=True,
         )
 
         return {
