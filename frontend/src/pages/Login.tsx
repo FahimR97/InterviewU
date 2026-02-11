@@ -36,7 +36,13 @@ export default function Login() {
       navigate('/questions');
     } catch (err: unknown) {
       console.error('Login error:', err);
-      setError('Login failed. Please check your username and password, or verify your account if you haven\'t already.');
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+
+      if (errorMessage === 'NEW_PASSWORD_REQUIRED') {
+        navigate('/change-password', { state: { email } });
+      } else {
+        setError('Login failed. Please check your username and password.');
+      }
     } finally {
       setLoading(false);
     }

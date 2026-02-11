@@ -27,6 +27,19 @@ export interface EvaluationResponse {
 const API_BASE_URL = awsConfig.API.REST.InterviewQuestionsAPI.endpoint;
 
 /**
+ * Public signup endpoint (no authentication required)
+ */
+export async function signupUser(email: string): Promise<{ message: string; username: string }> {
+  const response = await fetch(`${API_BASE_URL}signup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  if (!response.ok) throw new Error((await response.json()).error || 'Signup failed');
+  return response.json();
+}
+
+/**
  * Fetch all questions from the API
  */
 export async function getAllQuestions(authToken: string | null): Promise<Question[]> {

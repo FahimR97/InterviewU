@@ -2,9 +2,10 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { Amplify } from 'aws-amplify';
 import type { AuthUser } from 'aws-amplify/auth';
-import { signIn, signOut, signUp, confirmSignUp, resendSignUpCode, getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
-import type { SignInInput, SignUpInput, ConfirmSignUpInput, ResendSignUpCodeInput } from 'aws-amplify/auth';
+import { signIn, signOut, confirmSignIn, getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
+import type { SignInInput } from 'aws-amplify/auth';
 import { awsConfig } from '../aws-config';
+import { signupUser } from '../services/api';
 
 Amplify.configure(awsConfig);
 
@@ -12,11 +13,11 @@ interface AuthContextType {
   user: AuthUser | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
+  completeNewPassword: (newPassword: string) => Promise<void>;
   signup: (email: string, password: string) => Promise<void>;
-  verifyEmail: (email: string, code: string) => Promise<void>;
-  resendVerificationCode: (email: string) => Promise<void>;
   logout: () => Promise<void>;
   getAuthToken: () => Promise<string | null>;
+  requiresPasswordChange: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -24,6 +25,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const [requiresPasswordChange, setRequiresPasswordChange] = useState(false);
 
   useEffect(() => {
     checkUser();
@@ -45,34 +47,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       username: email,
       password: password,
     };
-    await signIn(signInInput);
+    const result = await signIn(signInInput);
+
+    // Check if user needs to change password (temporary password)
+    if (result.nextStep.signInStep === 'CONFIRM_SIGN_IN_WITH_NEW_PASSWORD_REQUIRED') {
+      setRequiresPasswordChange(true);
+      throw new Error('NEW_PASSWORD_REQUIRED');
+    }
+
+    await checkUser();
+  };
+
+  const completeNewPassword = async (newPassword: string) => {
+    await confirmSignIn({
+      challengeResponse: newPassword,
+    });
+
+    setRequiresPasswordChange(false);
     await checkUser();
   };
 
   const signup = async (email: string, password: string) => {
-    const signUpInput: SignUpInput = {
-      username: email,
-      password: password,
-      options: {
-        userAttributes: { email },
-      },
-    };
-    await signUp(signUpInput);
-  };
-
-  const verifyEmail = async (email: string, code: string) => {
-    const confirmInput: ConfirmSignUpInput = {
-      username: email,
-      confirmationCode: code,
-    };
-    await confirmSignUp(confirmInput);
-  };
-
-  const resendVerificationCode = async (email: string) => {
-    const resendInput: ResendSignUpCodeInput = {
-      username: email,
-    };
-    await resendSignUpCode(resendInput);
+    // Call our backend API which uses AdminCreateUser
+    // Cognito will email a temporary password
+    // Password parameter is ignored - temporary password sent via email
+    await signupUser(email);
+    // User will receive temporary password via email
+    // They must use it to login, then they'll be forced to change it
   };
 
   const logout = async () => {
@@ -91,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, signup, verifyEmail, resendVerificationCode, logout, getAuthToken }}>
+    <AuthContext.Provider value={{ user, loading, login, completeNewPassword, signup, logout, getAuthToken, requiresPasswordChange }}>
       {children}
     </AuthContext.Provider>
   );

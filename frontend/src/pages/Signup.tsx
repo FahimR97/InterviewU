@@ -5,8 +5,6 @@ import './Login.css';
 
 export default function Signup() {
   const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -17,24 +15,19 @@ export default function Signup() {
     e.preventDefault();
     setError('');
 
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters');
-      return;
-    }
-
     setLoading(true);
 
     try {
-      await signup(email, password);
+      // Call signup API - password parameter is ignored, temp password sent via email
+      await signup(email, '');
       setSuccess(true);
       setTimeout(() => {
-        navigate('/verify-email', { state: { email } });
-      }, 2000);
+        navigate('/login', {
+          state: {
+            message: 'Account created! Check your email for a temporary password.'
+          }
+        });
+      }, 3000);
     } catch (err: unknown) {
       console.error('Signup error:', err);
       setError(err instanceof Error ? err.message : 'Failed to create account. Please try again.');
@@ -52,7 +45,7 @@ export default function Signup() {
         {error && <div className="error-message">{error}</div>}
         {success && (
           <div className="success-message">
-            Account created! Check your email for verification code. Redirecting...
+            ✅ Account created! Check your email for a temporary password. You'll be required to change it on first login. Redirecting to login...
           </div>
         )}
 
@@ -68,34 +61,9 @@ export default function Signup() {
               placeholder="your@email.com"
               disabled={loading || success}
             />
-          </div>
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              placeholder="••••••••"
-              disabled={loading || success}
-              minLength={8}
-            />
             <small className="form-hint">
-              Must be at least 8 characters with uppercase, lowercase, and numbers
+              You'll receive a temporary password via email
             </small>
-          </div>
-          <div className="form-group">
-            <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
-              placeholder="••••••••"
-              disabled={loading || success}
-            />
           </div>
           <button type="submit" className="btn btn-primary btn-full" disabled={loading || success}>
             {loading ? 'Creating Account...' : 'Sign Up'}

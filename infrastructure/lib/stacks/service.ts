@@ -174,8 +174,23 @@ export class ServiceStack extends cdk.Stack {
       resources: ['arn:aws:bedrock:eu-west-2::foundation-model/anthropic.claude-3-7-sonnet-20250219-v1:0'],
     }));
 
+    // Lambda for user signup (bypasses selfSignUpEnabled restriction)
+    const signupHandler = new lambda.Function(this, 'SignupHandler', {
+      runtime: lambda.Runtime.PYTHON_3_11,
+      handler: 'admin_create_user.handler',
+      code: lambda.Code.fromAsset("../backend/src"),
+      timeout: cdk.Duration.seconds(30),
+      environment: {
+        USER_POOL_ID: userPool.userPoolId,
+      },
+    });
+
+    // Grant permission to create users
+    userPool.grant(signupHandler, 'cognito-idp:AdminCreateUser');
+
     const lambdaIntegration = new apigw.LambdaIntegration(questionsHandler);
     const evaluateIntegration = new apigw.LambdaIntegration(evaluateAnswerFn);
+    const signupIntegration = new apigw.LambdaIntegration(signupHandler);
 
     const cognitoAuthorizer = new apigw.CognitoUserPoolsAuthorizer(this, 'CognitoAuthorizer', {
       cognitoUserPools: [userPool],
@@ -245,6 +260,14 @@ export class ServiceStack extends cdk.Stack {
     answers.addMethod('POST', evaluateIntegration, {
       authorizer: cognitoAuthorizer,
       authorizationType: apigw.AuthorizationType.COGNITO,
+    });
+
+    // Public signup endpoint (no authentication required)
+    const signup = api.root.addResource('signup');
+    signup.addMethod('POST', signupIntegration); // No authorizer - public endpoint
+
+    new cdk.CfnOutput(this, 'SignupEndpoint', {
+      value: `${api.url}signup`,
     });
 
     // Output the URL so you can curl it after deploy
