@@ -8,19 +8,22 @@ This endpoint is PUBLIC but has security measures:
 - Cognito sends temporary password via email
 - User must change password on first login
 """
+
 import json
 import os
 import re
 import boto3
 from botocore.exceptions import ClientError
 
-cognito_client = boto3.client('cognito-idp')
-USER_POOL_ID = os.environ.get('USER_POOL_ID')
+cognito_client = boto3.client("cognito-idp")
+USER_POOL_ID = os.environ.get("USER_POOL_ID")
+
 
 def is_valid_email(email):
     """Basic email validation"""
-    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     return re.match(pattern, email) is not None
+
 
 def handler(event, context):
     """
@@ -33,95 +36,104 @@ def handler(event, context):
     - Rate limiting should be configured at API Gateway level
     """
     try:
-        body = json.loads(event.get('body', '{}'))
-        email = body.get('email', '').strip().lower()
+        body = json.loads(event.get("body", "{}"))
+        email = body.get("email", "").strip().lower()
 
         if not email:
             return {
-                'statusCode': 400,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
+                "statusCode": 400,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*",
                 },
-                'body': json.dumps({'error': 'Email is required'})
+                "body": json.dumps({"error": "Email is required"}),
             }
 
         if not is_valid_email(email):
             return {
-                'statusCode': 400,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
+                "statusCode": 400,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*",
                 },
-                'body': json.dumps({'error': 'Invalid email format'})
+                "body": json.dumps({"error": "Invalid email format"}),
             }
 
-        # Create user with AdminCreateUser - this bypasses self-registration restriction
+        # Create user with AdminCreateUser
+        # Bypasses self-registration restriction
         # Cognito will send a temporary password via email
-        response = cognito_client.admin_create_user(
+        cognito_client.admin_create_user(
             UserPoolId=USER_POOL_ID,
             Username=email,
             UserAttributes=[
-                {'Name': 'email', 'Value': email},
-                {'Name': 'email_verified', 'Value': 'true'}  # Mark as verified
+                {"Name": "email", "Value": email},
+                {"Name": "email_verified", "Value": "true"},
             ],
-            DesiredDeliveryMediums=['EMAIL'],  # Send temporary password via email
-            ForceAliasCreation=False
-            # MessageAction is NOT set, so Cognito will send welcome email with temp password
+            DesiredDeliveryMediums=["EMAIL"],
+            ForceAliasCreation=False,
+            # MessageAction NOT set - Cognito sends welcome email
         )
 
         return {
-            'statusCode': 200,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
+            "statusCode": 200,
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
             },
-            'body': json.dumps({
-                'message': 'Account created! Check your email for a temporary password. You will be required to change it on first login.',
-                'username': email
-            })
+            "body": json.dumps(
+                {
+                    "message": (
+                        "Account created! Check your email for a "
+                        "temporary password. You must change it on "
+                        "first login."
+                    ),
+                    "username": email,
+                }
+            ),
         }
 
     except ClientError as e:
-        error_code = e.response['Error']['Code']
+        error_code = e.response["Error"]["Code"]
 
-        if error_code == 'UsernameExistsException':
+        if error_code == "UsernameExistsException":
             return {
-                'statusCode': 400,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
+                "statusCode": 400,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*",
                 },
-                'body': json.dumps({'error': 'User already exists'})
+                "body": json.dumps({"error": "User already exists"}),
             }
 
-        if error_code == 'InvalidParameterException':
+        if error_code == "InvalidParameterException":
             return {
-                'statusCode': 400,
-                'headers': {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*',
+                "statusCode": 400,
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*",
                 },
-                'body': json.dumps({'error': 'Invalid parameters provided'})
+                "body": json.dumps({"error": "Invalid parameters provided"}),
             }
 
         print(f"Error creating user: {e}")
         return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
+            "statusCode": 500,
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
             },
-            'body': json.dumps({'error': 'Failed to create account. Please try again later.'})
+            "body": json.dumps(
+                {"error": "Failed to create account. Please try again later."}
+            ),
         }
 
     except Exception as e:
         print(f"Unexpected error: {e}")
         return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*',
+            "statusCode": 500,
+            "headers": {
+                "Content-Type": "application/json",
+                "Access-Control-Allow-Origin": "*",
             },
-            'body': json.dumps({'error': 'An unexpected error occurred'})
+            "body": json.dumps({"error": "An unexpected error occurred"}),
         }
