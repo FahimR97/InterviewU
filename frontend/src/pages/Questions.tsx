@@ -69,6 +69,10 @@ export default function Questions() {
     return `difficulty difficulty-${difficulty.toLowerCase()}`;
   };
 
+  const capitalizeCategory = (category: string) => {
+    return category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
+  };
+
   const handlePracticeAnswer = (question: Question) => {
     setSelectedQuestion(question);
     setUserAnswer('');
@@ -206,7 +210,7 @@ export default function Questions() {
                       </div>
                       <div className="question-footer">
                         <div className="question-tags">
-                          <span className="tag">{question.category}</span>
+                          <span className="tag">{capitalizeCategory(question.category)}</span>
                         </div>
                         <button
                           className="btn btn-small"
@@ -244,7 +248,7 @@ export default function Questions() {
                   <span className={getDifficultyClass(selectedQuestion.difficulty)}>
                     {selectedQuestion.difficulty}
                   </span>
-                  <span className="category-badge">{selectedQuestion.category}</span>
+                  <span className="category-badge">{capitalizeCategory(selectedQuestion.category)}</span>
                 </div>
                 {selectedQuestion.reference_answer && (
                   <details className="reference-answer">
