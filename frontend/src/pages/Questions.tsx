@@ -206,7 +206,6 @@ export default function Questions() {
                       </div>
                       <div className="question-footer">
                         <div className="question-tags">
-                          <span className="tag">{question.competency}</span>
                           <span className="tag">{question.category}</span>
                         </div>
                         <button
@@ -246,7 +245,6 @@ export default function Questions() {
                     {selectedQuestion.difficulty}
                   </span>
                   <span className="category-badge">{selectedQuestion.category}</span>
-                  <span className="category-badge">{selectedQuestion.competency}</span>
                 </div>
                 {selectedQuestion.reference_answer && (
                   <details className="reference-answer">
