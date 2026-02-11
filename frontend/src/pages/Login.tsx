@@ -93,11 +93,6 @@ export default function Login() {
         <p className="login-footer">
           Don't have an account? <Link to="/signup" className="link">Sign up</Link>
         </p>
-
-        <p className="login-footer" style={{ marginTop: '0.5rem' }}>
-          Need to verify your account?{' '}
-          <Link to="/verify-email" className="link">Verify email</Link>
-        </p>
       </div>
     </div>
   );
