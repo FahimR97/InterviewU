@@ -125,6 +125,7 @@ jobs:
         env:
           CDK_DEFAULT_ACCOUNT: 954164445144
           CDK_DEFAULT_REGION: eu-west-1
+          ENVIRONMENT: alpha
         run: npx cdk deploy --require-approval never
 
   integration-tests-alpha:
@@ -203,4 +204,5 @@ jobs:
         env:
           CDK_DEFAULT_ACCOUNT: 839185960743
           CDK_DEFAULT_REGION: eu-west-1
+          ENVIRONMENT: prod
         run: npx cdk deploy --require-approval never

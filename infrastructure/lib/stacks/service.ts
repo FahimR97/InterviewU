@@ -17,6 +17,7 @@ import * as cloudtrail from 'aws-cdk-lib/aws-cloudtrail';
 export interface ServiceStackProps extends cdk.StackProps {
   enableMonitoring?: boolean;
   notificationEmail?: string;
+  environment?: 'alpha' | 'prod';
 }
 
 export class ServiceStack extends cdk.Stack {
@@ -24,6 +25,7 @@ export class ServiceStack extends cdk.Stack {
     super(scope, id, props);
     
     const enableMonitoring = props?.enableMonitoring ?? true;
+    const environment = props?.environment ?? 'prod';
 
     const userPool = new cognito.UserPool(this, 'InterviewQuestionBankUserPool', {
       userPoolName: 'interview-question-bank-users',
@@ -200,9 +202,16 @@ export class ServiceStack extends cdk.Stack {
       },
     });
 
-    const test = api.root.addResource('testing');
-    test.addMethod('GET', lambdaIntegration);
+    // Only create the testing endpoint in Alpha environment
+    if (environment === 'alpha') {
+      const test = api.root.addResource('testing');
+      test.addMethod('GET', lambdaIntegration);
 
+      new cdk.CfnOutput(this, 'TestingEndpoint', {
+        value: `${api.url}testing`,
+        description: 'Testing endpoint (Alpha only)',
+      });
+    }
     const questions = api.root.addResource('questions');
 
     questions.addMethod('GET', lambdaIntegration, {

@@ -1,6 +1,7 @@
 """
 Integration tests for Alpha environment.
 Tests the deployed API Gateway and Lambda functions.
+Note: The /testing endpoint is ONLY deployed in Alpha, not in Production.
 
 These tests run after deployment to Alpha to verify:
 - API Gateway is accessible
@@ -23,7 +24,7 @@ def get_alpha_api_url():
 
 def test_alpha_api_testing_endpoint():
     """
-    Smoke test: Verify Alpha API Gateway is accessible.
+    Smoke test: Verify Alpha API Gateway /testing endpoint is accessible.
     Tests the /testing endpoint which doesn't require authentication.
     """
     api_url = get_alpha_api_url()
