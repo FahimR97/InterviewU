@@ -184,7 +184,7 @@ export class ServiceStack extends cdk.Stack {
     });
 
     // Public HTTP endpoint using API Gateway
-    const api = new apigw.LambdaRestApi(this, 'TestApi', {
+    const api = new apigw.LambdaRestApi(this, 'InterviewQuestionBankApi', {
       handler: questionsHandler,
       proxy: false,
       description: 'Interview Question Bank API',
