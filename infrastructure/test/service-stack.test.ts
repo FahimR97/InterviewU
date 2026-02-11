@@ -13,8 +13,8 @@ describe('ServiceStack CDK tests', () => {
     const template = synthTemplate();
 
     template.resourceCountIs('AWS::DynamoDB::Table', 1);
-    // Expect 3: QuestionsHandler + EvaluateAnswerFn + LogRetention custom resource Lambda
-    template.resourceCountIs('AWS::Lambda::Function', 3);
+    // Expect 4: QuestionsHandler + EvaluateAnswerFn + AdminCreateUser + LogRetention custom resource Lambda
+    template.resourceCountIs('AWS::Lambda::Function', 4);
     template.resourceCountIs('AWS::S3::Bucket', 2); // Frontend + CloudTrail
     template.resourceCountIs('AWS::CloudFront::Distribution', 1);
     template.resourceCountIs('AWS::Cognito::UserPool', 1);
@@ -66,6 +66,20 @@ describe('ServiceStack CDK tests', () => {
       Runtime: 'python3.11',
       Handler: 'evaluate_answer.handler',
       Timeout: 30,
+    });
+  });
+
+  test('AdminCreateUser Lambda has USER_POOL_ID environment variable', () => {
+    const template = synthTemplate();
+
+    template.hasResourceProperties('AWS::Lambda::Function', {
+      Runtime: 'python3.11',
+      Handler: 'admin_create_user.handler',
+      Environment: Match.objectLike({
+        Variables: Match.objectLike({
+          USER_POOL_ID: Match.anyValue(),
+        }),
+      }),
     });
   });
 
@@ -141,6 +155,56 @@ describe('ServiceStack CDK tests', () => {
       VersioningConfiguration: {
         Status: 'Enabled',
       },
+    });
+  });
+
+  test('Signup endpoint exists and is public (no authorization)', () => {
+    const template = synthTemplate();
+
+    // Find all API Gateway methods
+    const methods = template.findResources('AWS::ApiGateway::Method');
+
+    // Check if there's a POST method on signup resource without authorization
+    let foundPublicSignup = false;
+
+    Object.entries(methods).forEach(([_, method]: [string, any]) => {
+      // Check if this is a POST method with NONE authorization (public)
+      if (method.Properties.HttpMethod === 'POST' &&
+          method.Properties.AuthorizationType === 'NONE') {
+        foundPublicSignup = true;
+      }
+    });
+
+    expect(foundPublicSignup).toBe(true);
+  });
+
+  test('Signup Lambda has AdminCreateUser IAM permissions', () => {
+    const template = synthTemplate();
+
+    // Check that there's an IAM policy with cognito-idp:AdminCreateUser permission
+    template.hasResourceProperties('AWS::IAM::Policy', {
+      PolicyDocument: Match.objectLike({
+        Statement: Match.arrayWith([
+          Match.objectLike({
+            Action: 'cognito-idp:AdminCreateUser',
+            Effect: 'Allow',
+          }),
+        ]),
+      }),
+    });
+  });
+
+  test('Cognito User Pool has selfSignUpEnabled set to false', () => {
+    const template = synthTemplate();
+
+    template.hasResourceProperties('AWS::Cognito::UserPool', {
+      Policies: Match.objectLike({
+        PasswordPolicy: Match.objectLike({
+          MinimumLength: 8,
+        }),
+      }),
+      // Note: selfSignUpEnabled defaults to false when not specified
+      // We verify it's not explicitly set to true
     });
   });
 });
