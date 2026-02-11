@@ -5,6 +5,10 @@ from botocore.exceptions import ClientError
 import sys
 import os
 
+# Set AWS region before importing module to avoid NoRegionError in CI
+os.environ.setdefault('AWS_DEFAULT_REGION', 'eu-west-1')
+os.environ.setdefault('USER_POOL_ID', 'test-pool-id')
+
 # Add src to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 from admin_create_user import handler, is_valid_email
