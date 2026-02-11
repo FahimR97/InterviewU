@@ -5,7 +5,7 @@ export interface Question {
   category: string;
   competency: string;
   create_at: string;
-  difficulty: 'Easy' | 'Medium' | 'Hard';
+  difficulty: string;
   question_text: string;
   reference_answer: string;
 }

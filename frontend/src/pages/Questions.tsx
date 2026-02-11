@@ -50,16 +50,20 @@ export default function Questions() {
     return ['All', ...Array.from(cats)];
   }, [questions]);
 
-  const difficulties = ['All', 'Easy', 'Medium', 'Hard'];
+  const difficulties = useMemo(() => {
+    const diffs = new Set(questions.map(q => q.difficulty.toLowerCase()));
+    return ['All', ...Array.from(diffs)];
+  }, [questions]);
 
   const filteredQuestions = useMemo(() => {
     return questions.filter(question => {
       const matchesSearch = question.question_text.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           question.competency.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           question.difficulty.toLowerCase().includes(searchTerm.toLowerCase()) ||
                            question.category.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesCategory = selectedCategory === 'All' || question.category === selectedCategory;
-      const matchesDifficulty = selectedDifficulty === 'All' || question.difficulty === selectedDifficulty;
+      const matchesDifficulty = selectedDifficulty === 'All' ||
+                                question.difficulty.toLowerCase() === selectedDifficulty.toLowerCase();
 
       return matchesSearch && matchesCategory && matchesDifficulty;
     });
@@ -71,6 +75,10 @@ export default function Questions() {
 
   const capitalizeCategory = (category: string) => {
     return category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
+  };
+
+  const capitalizeDifficulty = (difficulty: string) => {
+    return difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase();
   };
 
   const handlePracticeAnswer = (question: Question) => {
@@ -162,7 +170,7 @@ export default function Questions() {
                 disabled={loading}
               >
                 {difficulties.map(diff => (
-                  <option key={diff} value={diff}>{diff}</option>
+                  <option key={diff} value={diff}>{capitalizeDifficulty(diff)}</option>
                 ))}
               </select>
             </div>
@@ -205,7 +213,7 @@ export default function Questions() {
                       <div className="question-header">
                         <h3>{question.question_text}</h3>
                         <span className={getDifficultyClass(question.difficulty)}>
-                          {question.difficulty}
+                          {capitalizeDifficulty(question.difficulty)}
                         </span>
                       </div>
                       <div className="question-footer">
@@ -246,7 +254,7 @@ export default function Questions() {
                 <h3>{selectedQuestion.question_text}</h3>
                 <div className="question-meta">
                   <span className={getDifficultyClass(selectedQuestion.difficulty)}>
-                    {selectedQuestion.difficulty}
+                    {capitalizeDifficulty(selectedQuestion.difficulty)}
                   </span>
                   <span className="category-badge">{capitalizeCategory(selectedQuestion.category)}</span>
                 </div>
