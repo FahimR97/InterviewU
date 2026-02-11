@@ -54,9 +54,9 @@ export default function Questions() {
 
   const filteredQuestions = useMemo(() => {
     return questions.filter(question => {
-      const matchesSearch = question.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           question.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           question.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+      const matchesSearch = question.question_text.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           question.competency.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                           question.category.toLowerCase().includes(searchTerm.toLowerCase());
 
       const matchesCategory = selectedCategory === 'All' || question.category === selectedCategory;
       const matchesDifficulty = selectedDifficulty === 'All' || question.difficulty === selectedDifficulty;
@@ -91,9 +91,9 @@ export default function Questions() {
       const token = await getAuthToken();
       const result = await evaluateAnswer(
         {
-          question: selectedQuestion.description,
+          question: selectedQuestion.question_text,
           answer: userAnswer,
-          competency_type: selectedQuestion.category,
+          competency_type: selectedQuestion.competency,
         },
         token
       );
@@ -199,17 +199,15 @@ export default function Questions() {
                   filteredQuestions.map(question => (
                     <div key={question.id} className="question-card">
                       <div className="question-header">
-                        <h3>{question.title}</h3>
+                        <h3>{question.question_text}</h3>
                         <span className={getDifficultyClass(question.difficulty)}>
                           {question.difficulty}
                         </span>
                       </div>
-                      <p className="question-description">{question.description}</p>
                       <div className="question-footer">
                         <div className="question-tags">
-                          {question.tags.map(tag => (
-                            <span key={tag} className="tag">{tag}</span>
-                          ))}
+                          <span className="tag">{question.competency}</span>
+                          <span className="tag">{question.category}</span>
                         </div>
                         <button
                           className="btn btn-small"
@@ -242,14 +240,20 @@ export default function Questions() {
 
             <div className="modal-body">
               <div className="question-display">
-                <h3>{selectedQuestion.title}</h3>
-                <p>{selectedQuestion.description}</p>
+                <h3>{selectedQuestion.question_text}</h3>
                 <div className="question-meta">
                   <span className={getDifficultyClass(selectedQuestion.difficulty)}>
                     {selectedQuestion.difficulty}
                   </span>
                   <span className="category-badge">{selectedQuestion.category}</span>
+                  <span className="category-badge">{selectedQuestion.competency}</span>
                 </div>
+                {selectedQuestion.reference_answer && (
+                  <details className="reference-answer">
+                    <summary>📚 Reference Answer (click to reveal)</summary>
+                    <p>{selectedQuestion.reference_answer}</p>
+                  </details>
+                )}
               </div>
 
               <div className="answer-section">

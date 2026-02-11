@@ -2,11 +2,12 @@ import { awsConfig } from '../aws-config';
 
 export interface Question {
   id: string;
-  title: string;
-  description: string;
-  tags: string[];
-  difficulty: 'Easy' | 'Medium' | 'Hard';
   category: string;
+  competency: string;
+  create_at: string;
+  difficulty: 'Easy' | 'Medium' | 'Hard';
+  question_text: string;
+  reference_answer: string;
 }
 
 export interface EvaluationRequest {

@@ -484,6 +484,37 @@
   color: var(--primary);
 }
 
+.reference-answer {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border: 2px solid #fbbf24;
+  border-radius: 12px;
+  cursor: pointer;
+}
+
+.reference-answer summary {
+  font-weight: 700;
+  color: #78350f;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.reference-answer summary:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.reference-answer p {
+  margin: 1rem 0 0 0;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  line-height: 1.7;
+}
+
 .answer-section {
   margin-bottom: 1.5rem;
 }
