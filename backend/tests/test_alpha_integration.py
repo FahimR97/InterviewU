@@ -80,3 +80,65 @@ def test_alpha_evaluate_endpoint_exists():
     # 404 means route isn't configured
     assert response.status_code in [200, 400, 401, 403], \
         f"Unexpected status {response.status_code} - evaluate endpoint may not be configured"
+
+
+def test_alpha_signup_endpoint_exists():
+    """
+    Verify /signup endpoint exists and is publicly accessible.
+    This endpoint should not require authentication.
+    """
+    api_url = get_alpha_api_url()
+
+    response = requests.post(f"{api_url}/signup", json={}, timeout=10)
+
+    # Should return 400 (missing email) not 401/403 (auth required) or 404 (not found)
+    assert response.status_code in [200, 400], \
+        f"Unexpected status {response.status_code} - signup endpoint may not be configured or requires auth"
+
+
+def test_alpha_signup_validates_email():
+    """
+    Verify signup endpoint validates email format.
+    """
+    api_url = get_alpha_api_url()
+
+    response = requests.post(
+        f"{api_url}/signup",
+        json={"email": "invalid-email"},
+        timeout=10
+    )
+
+    assert response.status_code == 400
+    body = response.json()
+    assert "error" in body
+    assert "email" in body["error"].lower() or "invalid" in body["error"].lower()
+
+
+def test_alpha_signup_requires_email():
+    """
+    Verify signup endpoint requires email field.
+    """
+    api_url = get_alpha_api_url()
+
+    response = requests.post(
+        f"{api_url}/signup",
+        json={},
+        timeout=10
+    )
+
+    assert response.status_code == 400
+    body = response.json()
+    assert "error" in body
+    assert "required" in body["error"].lower()
+
+
+def test_alpha_signup_has_cors_headers():
+    """
+    Verify signup endpoint has CORS headers for frontend compatibility.
+    """
+    api_url = get_alpha_api_url()
+
+    response = requests.post(f"{api_url}/signup", json={}, timeout=10)
+
+    assert "access-control-allow-origin" in response.headers, \
+        "Missing CORS header - frontend won't be able to call signup API"
