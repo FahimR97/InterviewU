@@ -18,8 +18,7 @@ export default function Signup() {
     setLoading(true);
 
     try {
-      // Call signup API - password parameter is ignored, temp password sent via email
-      await signup(email, '');
+      await signup(email);
       setSuccess(true);
       setTimeout(() => {
         navigate('/login', {

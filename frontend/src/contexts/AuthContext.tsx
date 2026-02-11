@@ -14,7 +14,7 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   completeNewPassword: (newPassword: string) => Promise<void>;
-  signup: (email: string, password: string) => Promise<void>;
+  signup: (email: string) => Promise<void>;
   logout: () => Promise<void>;
   getAuthToken: () => Promise<string | null>;
   requiresPasswordChange: boolean;
@@ -67,10 +67,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await checkUser();
   };
 
-  const signup = async (email: string, password: string) => {
+  const signup = async (email: string) => {
     // Call our backend API which uses AdminCreateUser
-    // Cognito will email a temporary password
-    // Password parameter is ignored - temporary password sent via email
+    // Cognito will email a temporary password to the user
     await signupUser(email);
     // User will receive temporary password via email
     // They must use it to login, then they'll be forced to change it
