@@ -113,8 +113,8 @@ jobs:
       - name: Configure AWS Credentials (Alpha)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::954164445144:role/github-actions-deploy
-          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::134667369518:role/github-actions-deploy
+          aws-region: eu-west-2
 
       - name: Verify AWS caller (Alpha)
         run: |
@@ -123,8 +123,8 @@ jobs:
 
       - name: CDK deploy (Alpha)
         env:
-          CDK_DEFAULT_ACCOUNT: 954164445144
-          CDK_DEFAULT_REGION: eu-west-1
+          CDK_DEFAULT_ACCOUNT: 134667369518
+          CDK_DEFAULT_REGION: eu-west-2
           ENVIRONMENT: alpha
         run: npx cdk deploy --require-approval never
 
@@ -151,8 +151,8 @@ jobs:
       - name: Configure AWS Credentials (Alpha)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::954164445144:role/github-actions-deploy
-          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::134667369518:role/github-actions-deploy
+          aws-region: eu-west-2
 
       - name: Get Alpha API URL from CloudFormation
         id: get-api-url
@@ -192,8 +192,8 @@ jobs:
       - name: Configure AWS Credentials (Prod)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::839185960743:role/github-actions-deploy
-          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::418107732011:role/github-actions-deploy
+          aws-region: eu-west-2
 
       - name: Verify AWS caller (Prod)
         run: |
@@ -202,7 +202,7 @@ jobs:
 
       - name: CDK deploy (Prod)
         env:
-          CDK_DEFAULT_ACCOUNT: 839185960743
-          CDK_DEFAULT_REGION: eu-west-1
+          CDK_DEFAULT_ACCOUNT: 418107732011
+          CDK_DEFAULT_REGION: eu-west-2
           ENVIRONMENT: prod
         run: npx cdk deploy --require-approval never
