@@ -23,3 +23,5 @@ __pycache__/
 .DS_Store
 .vscode/
 backend/lambda.zip
+backend/questions-export.json
+backend/import_to_alpha.py
