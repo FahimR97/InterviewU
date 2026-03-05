@@ -13,6 +13,9 @@ import * as sns from 'aws-cdk-lib/aws-sns';
 import * as cloudwatch_actions from 'aws-cdk-lib/aws-cloudwatch-actions';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as cloudtrail from 'aws-cdk-lib/aws-cloudtrail';
+import * as route53 from 'aws-cdk-lib/aws-route53';
+import * as route53Targets from 'aws-cdk-lib/aws-route53-targets';
+import * as acm from 'aws-cdk-lib/aws-certificatemanager';
 
 export interface ServiceStackProps extends cdk.StackProps {
   enableMonitoring?: boolean;
@@ -26,6 +29,35 @@ export class ServiceStack extends cdk.Stack {
     
     const enableMonitoring = props?.enableMonitoring ?? true;
     const environment = props?.environment ?? 'prod';
+    const isProduction = environment === 'prod';
+    const rootDomain = 'fahimray.people.aws.dev';
+
+    // DNS and certificates (production only)
+    let websiteDomain: string | undefined;
+    let apiDomain: string | undefined;
+    let hostedZone: route53.IHostedZone | undefined;
+    let certificate: acm.ICertificate | undefined;
+    let apiCertificate: acm.ICertificate | undefined;
+
+    if (isProduction) {
+      websiteDomain = rootDomain;
+      apiDomain = `api.${rootDomain}`;
+
+      hostedZone = route53.HostedZone.fromLookup(this, 'RootHostedZone', {
+        domainName: rootDomain,
+      });
+
+      certificate = new acm.DnsValidatedCertificate(this, 'WebsiteCertificate', {
+        domainName: websiteDomain,
+        hostedZone: hostedZone,
+        region: 'us-east-1',
+      });
+
+      apiCertificate = new acm.Certificate(this, 'ApiCertificate', {
+        domainName: apiDomain,
+        validation: acm.CertificateValidation.fromDns(hostedZone),
+      });
+    }
 
     const userPool = new cognito.UserPool(this, 'InterviewQuestionBankUserPool', {
       userPoolName: 'interview-question-bank-users',
@@ -113,6 +145,8 @@ export class ServiceStack extends cdk.Stack {
         },
       ],
       priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
+      domainNames: isProduction && websiteDomain ? [websiteDomain] : undefined,
+      certificate: isProduction ? certificate : undefined,
     });
 
     new cdk.CfnOutput(this, 'FrontendBucketName', {
@@ -128,6 +162,16 @@ export class ServiceStack extends cdk.Stack {
       value: distribution.distributionDomainName,
       description: 'CloudFront Domain Name',
     });
+
+    // Route53 A Record for CloudFront (production only)
+    if (isProduction && hostedZone) {
+      new route53.ARecord(this, 'WebsiteAliasRecord', {
+        zone: hostedZone,
+        target: route53.RecordTarget.fromAlias(
+          new route53Targets.CloudFrontTarget(distribution)
+        ),
+      });
+    }
 
     // Dynamo DB Table
     const table = new dynamodb.Table(this, 'InterviewQuestions', {
@@ -279,6 +323,31 @@ export class ServiceStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'QuestionsEndpoint', {
       value: `${api.url}questions`,
     });
+
+    // API Gateway Custom Domain (production only)
+    if (isProduction && apiDomain && apiCertificate && hostedZone) {
+      const customDomain = new apigw.DomainName(this, 'ApiCustomDomain', {
+        domainName: apiDomain,
+        certificate: apiCertificate,
+        endpointType: apigw.EndpointType.REGIONAL,
+        securityPolicy: apigw.SecurityPolicy.TLS_1_2,
+      });
+
+      customDomain.addBasePathMapping(api, { basePath: '' });
+
+      new route53.ARecord(this, 'ApiAliasRecord', {
+        zone: hostedZone,
+        recordName: 'api',
+        target: route53.RecordTarget.fromAlias(
+          new route53Targets.ApiGatewayDomain(customDomain)
+        ),
+      });
+
+      new cdk.CfnOutput(this, 'ApiCustomDomainName', {
+        value: `https://${apiDomain}`,
+        description: 'Custom domain URL for the API',
+      });
+    }
 
     // ============================================
     // CloudWatch Monitoring (Optional)

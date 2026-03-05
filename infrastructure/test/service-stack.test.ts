@@ -4,7 +4,9 @@ import { ServiceStack } from '../lib/stacks/service';
 
 function synthTemplate() {
   const app = new cdk.App();
-  const stack = new ServiceStack(app, 'TestServiceStack');
+  const stack = new ServiceStack(app, 'TestServiceStack', {
+    environment: 'alpha',
+  });
   return Template.fromStack(stack);
 }
 
