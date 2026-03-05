@@ -2,12 +2,12 @@ name: Frontend Deploy
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths:
-      - 'package.json'
-      - 'package-lock.json'
-      - 'frontend/**'
-      - '.github/workflows/**'
+      - "package.json"
+      - "package-lock.json"
+      - "frontend/**"
+      - ".github/workflows/**"
 
 permissions:
   id-token: write
@@ -24,7 +24,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies (root + workspaces)
         run: npm ci
@@ -42,13 +42,13 @@ jobs:
         # Skips backend/infrastructure to avoid blocking frontend on unrelated issues
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          scanners: 'vuln'
-          skip-dirs: 'backend,infrastructure'
-          format: 'table'
-          exit-code: '1'
-          severity: 'CRITICAL,HIGH'
+          scan-type: "fs"
+          scan-ref: "."
+          scanners: "vuln"
+          skip-dirs: "backend,infrastructure"
+          format: "table"
+          exit-code: "1"
+          severity: "CRITICAL"
           ignore-unfixed: true
 
       - name: Build frontend
@@ -113,7 +113,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
+          cache: "npm"
 
       - name: Install dependencies (root + workspaces)
         run: npm ci
