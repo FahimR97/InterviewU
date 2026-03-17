@@ -30,34 +30,13 @@ export class ServiceStack extends cdk.Stack {
     const enableMonitoring = props?.enableMonitoring ?? true;
     const environment = props?.environment ?? 'prod';
     const isProduction = environment === 'prod';
-    const rootDomain = 'fahimray.people.aws.dev';
-
-    // DNS and certificates (production only)
-    let websiteDomain: string | undefined;
-    let apiDomain: string | undefined;
-    let hostedZone: route53.IHostedZone | undefined;
-    let certificate: acm.ICertificate | undefined;
-    let apiCertificate: acm.ICertificate | undefined;
-
-    if (isProduction) {
-      websiteDomain = rootDomain;
-      apiDomain = `api.${rootDomain}`;
-
-      hostedZone = route53.HostedZone.fromLookup(this, 'RootHostedZone', {
-        domainName: rootDomain,
-      });
-
-      certificate = new acm.DnsValidatedCertificate(this, 'WebsiteCertificate', {
-        domainName: websiteDomain,
-        hostedZone: hostedZone,
-        region: 'us-east-1',
-      });
-
-      apiCertificate = new acm.Certificate(this, 'ApiCertificate', {
-        domainName: apiDomain,
-        validation: acm.CertificateValidation.fromDns(hostedZone),
-      });
-    }
+    // TODO: Enable custom domain after Supernova setup
+    // const rootDomain = 'fahimray.people.aws.dev';
+    const websiteDomain: string | undefined = undefined;
+    const apiDomain: string | undefined = undefined;
+    const hostedZone: route53.IHostedZone | undefined = undefined;
+    const certificate: acm.ICertificate | undefined = undefined;
+    const apiCertificate: acm.ICertificate | undefined = undefined;
 
     const userPool = new cognito.UserPool(this, 'InterviewUUserPool', {
       userPoolName: 'InterviewU-users',
