@@ -1,3 +1,4 @@
+"""User analytics handler — aggregates answer history from DynamoDB."""
 import json
 import os
 import boto3
