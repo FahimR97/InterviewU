@@ -133,9 +133,6 @@
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
   background: var(--bg-secondary);
   color: var(--text-dark);
-  /* Ensure typed text is always visible regardless of theme */
-  -webkit-text-fill-color: var(--text-dark);
-  caret-color: var(--text-dark);
 }
 
 .form-group input:focus {
@@ -150,23 +147,14 @@
   color: var(--text-light);
 }
 
-/* Prevent browser autofill from painting inputs white.
-   CSS vars don't resolve inside :-webkit-autofill so colours are hardcoded. */
+/* Force text to always be dark/readable regardless of browser autofill colour */
 .form-group input:-webkit-autofill,
 .form-group input:-webkit-autofill:hover,
-.form-group input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 30px #f4f3f0 inset !important;
+.form-group input:-webkit-autofill:focus,
+.form-group input:-webkit-autofill:active {
   -webkit-text-fill-color: #1e293b !important;
-  caret-color: #1e293b;
+  caret-color: #1e293b !important;
   transition: background-color 9999s ease-in-out 0s;
-}
-
-[data-theme="dark"] .form-group input:-webkit-autofill,
-[data-theme="dark"] .form-group input:-webkit-autofill:hover,
-[data-theme="dark"] .form-group input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 30px #1e293b inset !important;
-  -webkit-text-fill-color: #f1f5f9 !important;
-  caret-color: #f1f5f9;
 }
 
 /* Remember me */
