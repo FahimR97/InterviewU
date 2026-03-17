@@ -91,7 +91,14 @@ jobs:
             exit 1
           fi
 
+          DIST_ID=$(aws cloudformation describe-stacks \
+            --stack-name "$STACK_NAME" \
+            --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" \
+            --output text)
+          echo "CloudFront Distribution ID: $DIST_ID"
+
           echo "bucket=$BUCKET" >> "$GITHUB_OUTPUT"
+          echo "distribution_id=$DIST_ID" >> "$GITHUB_OUTPUT"
 
       - name: Upload to S3 (Alpha)
         if: steps.check_stack.outputs.exists == 'true'
@@ -99,6 +106,14 @@ jobs:
         run: |
           echo "Deploying to ALPHA S3 bucket..."
           aws s3 sync dist s3://${{ steps.infra.outputs.bucket }} --delete
+
+      - name: Invalidate CloudFront cache (Alpha)
+        if: steps.check_stack.outputs.exists == 'true' && steps.infra.outputs.distribution_id != ''
+        run: |
+          echo "Invalidating CloudFront distribution ${{ steps.infra.outputs.distribution_id }}..."
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ steps.infra.outputs.distribution_id }} \
+            --paths "/*"
 
   deploy-prod:
     needs: deploy-alpha
@@ -166,7 +181,14 @@ jobs:
             exit 1
           fi
 
+          DIST_ID=$(aws cloudformation describe-stacks \
+            --stack-name "$STACK_NAME" \
+            --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" \
+            --output text)
+          echo "CloudFront Distribution ID: $DIST_ID"
+
           echo "bucket=$BUCKET" >> "$GITHUB_OUTPUT"
+          echo "distribution_id=$DIST_ID" >> "$GITHUB_OUTPUT"
 
       - name: Upload to S3 (Prod)
         if: steps.check_stack.outputs.exists == 'true'
@@ -174,3 +196,11 @@ jobs:
         run: |
           echo "Deploying to PRODUCTION S3 bucket..."
           aws s3 sync dist s3://${{ steps.infra.outputs.bucket }} --delete
+
+      - name: Invalidate CloudFront cache (Prod)
+        if: steps.check_stack.outputs.exists == 'true' && steps.infra.outputs.distribution_id != ''
+        run: |
+          echo "Invalidating CloudFront distribution ${{ steps.infra.outputs.distribution_id }}..."
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ steps.infra.outputs.distribution_id }} \
+            --paths "/*"
