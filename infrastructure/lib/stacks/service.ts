@@ -94,6 +94,19 @@ export class ServiceStack extends cdk.Stack {
       preventUserExistenceErrors: true,
     });
 
+    // Admin group for privileged users — required for POST/PUT/DELETE on questions
+    const adminGroup = new cognito.CfnUserPoolGroup(this, 'AdminGroup', {
+      userPoolId: userPool.userPoolId,
+      groupName: 'Admin',
+      description: 'Administrators with access to create, update, and delete questions',
+      precedence: 1,
+    });
+
+    new cdk.CfnOutput(this, 'AdminGroupName', {
+      value: adminGroup.groupName || 'Admin',
+      description: 'Cognito Admin Group Name',
+    });
+
     new cdk.CfnOutput(this, 'UserPoolId', {
       value: userPool.userPoolId,
       description: 'Cognito User Pool ID',
@@ -203,6 +216,13 @@ export class ServiceStack extends cdk.Stack {
 
     // Grant the Lambda function read/write permissions to the table
     table.grantReadWriteData(questionsHandler);
+
+    // Grant permission to emit custom CloudWatch metrics
+    questionsHandler.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['cloudwatch:PutMetricData'],
+      resources: ['*'],
+      conditions: { StringEquals: { 'cloudwatch:namespace': 'InterviewU' } },
+    }));
 
     // Lambda for Marcus evaluation (direct model invocation)
     const evaluateAnswerFn = new lambda.Function(this, 'EvaluateAnswerFunction', {
