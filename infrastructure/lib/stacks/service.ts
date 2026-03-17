@@ -52,10 +52,6 @@ export class ServiceStack extends cdk.Stack {
           required: true,
           mutable: false,
         },
-        fullname: {
-          required: false,
-          mutable: true,
-        },
       },
       passwordPolicy: {
         minLength: 8,
