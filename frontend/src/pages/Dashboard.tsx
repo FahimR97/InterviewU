@@ -63,8 +63,10 @@ function InterviewCountdown() {
   const [editing, setEditing] = useState(false)
   const [inputVal, setInputVal] = useState(targetDate)
 
+  const [now] = useState(() => Date.now())
+
   const daysLeft = targetDate
-    ? Math.ceil((new Date(targetDate).getTime() - Date.now()) / 86400000)
+    ? Math.ceil((new Date(targetDate).getTime() - now) / 86400000)
     : null
 
   const save = () => {
@@ -243,7 +245,8 @@ export default function Dashboard() {
                     cx="50%"
                     cy="50%"
                     outerRadius={90}
-                    label={({ category, avg_score }) => `${category} ${avg_score}`}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    label={(props: any) => `${props.category} ${props.avg_score}`}
                     labelLine={false}
                   >
                     {analytics.by_category.map((_, idx) => (
@@ -252,7 +255,7 @@ export default function Dashboard() {
                   </Pie>
                   <Tooltip
                     contentStyle={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 8 }}
-                    formatter={(value: number) => [`${value}/100`, 'Avg Score']}
+                    formatter={(value: unknown) => [`${value}/100`, 'Avg Score']}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -269,7 +272,7 @@ export default function Dashboard() {
                 <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
                 <Tooltip
                   contentStyle={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 8 }}
-                  formatter={(value: number) => [`${value}/100`, 'Avg Score']}
+                  formatter={(value: unknown) => [`${value}/100`, 'Avg Score']}
                 />
                 <Legend wrapperStyle={{ color: 'var(--text-muted)', fontSize: 12 }} />
                 <Bar dataKey="avg_score" name="Avg Score" radius={[6, 6, 0, 0]}>
