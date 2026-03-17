@@ -117,9 +117,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const greeting = userName
-    ? `Hello ${userName.split(' ')[0]}, let's get to work`
-    : "Welcome back, let's get to work"
 
   useEffect(() => {
     if (!user) return
@@ -142,8 +139,8 @@ export default function Dashboard() {
     <div className="dashboard">
       <div className="dashboard-hero">
         <div>
-          <h1 className="dashboard-greeting">{greeting}</h1>
-          <p className="dashboard-sub">Track your progress and focus on what matters most.</p>
+          <h1 className="dashboard-greeting">{userName ? `Hello ${userName.split(' ')[0]}` : "Welcome back"}</h1>
+          <p className="dashboard-sub">Let's get to work.</p>
         </div>
         <InterviewCountdown />
       </div>
