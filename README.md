@@ -1,2 +1,2 @@
-# EPAMainProject - Interview question bank
+# InterviewU - Interview Preparation Platform
 

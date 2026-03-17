@@ -59,8 +59,8 @@ export class ServiceStack extends cdk.Stack {
       });
     }
 
-    const userPool = new cognito.UserPool(this, 'InterviewQuestionBankUserPool', {
-      userPoolName: 'interview-question-bank-users',
+    const userPool = new cognito.UserPool(this, 'InterviewUUserPool', {
+      userPoolName: 'InterviewU-users',
       selfSignUpEnabled: false,
       signInAliases: {
         email: true,
@@ -114,7 +114,7 @@ export class ServiceStack extends cdk.Stack {
     });
 
     const originAccessIdentity = new cloudfront.OriginAccessIdentity(this, 'OAI', {
-      comment: 'OAI for Interview Question Bank Frontend',
+      comment: 'OAI for InterviewU Frontend',
     });
 
     frontendS3.grantRead(originAccessIdentity);
@@ -243,10 +243,10 @@ export class ServiceStack extends cdk.Stack {
     });
 
     // Public HTTP endpoint using API Gateway
-    const api = new apigw.LambdaRestApi(this, 'InterviewQuestionBankApi', {
+    const api = new apigw.LambdaRestApi(this, 'InterviewUApi', {
       handler: questionsHandler,
       proxy: false,
-      description: 'Interview Question Bank API',
+      description: 'InterviewU API',
       defaultCorsPreflightOptions: {
         allowOrigins: apigw.Cors.ALL_ORIGINS,
         allowMethods: apigw.Cors.ALL_METHODS,
