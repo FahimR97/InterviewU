@@ -56,7 +56,7 @@ jobs:
         run: npm run build
 
       - name: Configure AWS Credentials (Alpha)
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::134667369518:role/github-actions-deploy
           aws-region: eu-west-2
@@ -131,7 +131,7 @@ jobs:
         run: npm run build
 
       - name: Configure AWS Credentials (Prod)
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::418107732011:role/github-actions-deploy
           aws-region: eu-west-2
