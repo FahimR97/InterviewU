@@ -14,6 +14,8 @@ import json
 import logging
 import os
 import sys
+import uuid
+from datetime import datetime, timezone
 import boto3
 
 # Configure JSON structured logging for CloudWatch
@@ -74,6 +76,54 @@ def convert_dynamodb_item(item):
         return item
 
 
+def get_user_groups(event):
+    """Extract Cognito groups from the API Gateway event claims."""
+    try:
+        claims = event.get("requestContext", {}).get("authorizer", {}).get("claims", {})
+        groups_claim = claims.get("cognito:groups", "")
+
+        if not groups_claim:
+            return []
+
+        if isinstance(groups_claim, str):
+            return [g.strip() for g in groups_claim.split(",") if g.strip()]
+        elif isinstance(groups_claim, list):
+            return groups_claim
+
+        return []
+    except Exception as e:
+        logger.warning(f"Failed to extract user groups: {str(e)}")
+        return []
+
+
+def is_admin(event):
+    """Return True if the authenticated user is in the Admin Cognito group."""
+    return "Admin" in get_user_groups(event)
+
+
+def require_admin(event):
+    """
+    Return a 403 response if the user is not an admin, otherwise None.
+    Use at the top of any write operation handler.
+    """
+    if not is_admin(event):
+        user_sub = (
+            event.get("requestContext", {})
+            .get("authorizer", {})
+            .get("claims", {})
+            .get("sub", "unknown")
+        )
+        logger.warning(f"Unauthorised admin access attempt by user: {user_sub}")
+        return {
+            "statusCode": 403,
+            "headers": {"Access-Control-Allow-Origin": "*"},
+            "body": json.dumps(
+                {"error": "Forbidden", "message": "Admin access required"}
+            ),
+        }
+    return None
+
+
 def handler(event, context):
     """
     Main Lambda handler for question operations.
@@ -118,7 +168,46 @@ def handler(event, context):
                     "body": json.dumps(items),
                 }
 
-        # Get single question by ID
+            elif method == "POST":
+                admin_check = require_admin(event)
+                if admin_check:
+                    return admin_check
+
+                body = json.loads(event.get("body", "{}"))
+
+                required_fields = ["question_text", "category", "difficulty"]
+                for field in required_fields:
+                    if field not in body:
+                        return {
+                            "statusCode": 400,
+                            "headers": {"Access-Control-Allow-Origin": "*"},
+                            "body": json.dumps(
+                                {"error": f"Missing required field: {field}"}
+                            ),
+                        }
+
+                question_id = str(uuid.uuid4())
+                item = {
+                    "id": question_id,
+                    "question_text": body["question_text"],
+                    "category": body["category"],
+                    "difficulty": body["difficulty"],
+                    "reference_answer": body.get("reference_answer", ""),
+                    "created_at": datetime.now(timezone.utc).isoformat(),
+                }
+
+                table.put_item(Item=item)
+                logger.info(
+                    "Question created", extra={**log_extra, "question_id": question_id}
+                )
+
+                return {
+                    "statusCode": 201,
+                    "headers": {"Access-Control-Allow-Origin": "*"},
+                    "body": json.dumps(item),
+                }
+
+        # Get, update, or delete a single question by ID
         elif path.startswith("/questions/"):
             question_id = path.split("/")[-1]
 
@@ -150,6 +239,77 @@ def handler(event, context):
                     "statusCode": 404,
                     "headers": {"Access-Control-Allow-Origin": "*"},
                     "body": json.dumps({"error": "Not found"}),
+                }
+
+            elif method == "PUT":
+                admin_check = require_admin(event)
+                if admin_check:
+                    return admin_check
+
+                body = json.loads(event.get("body", "{}"))
+
+                # Verify question exists before updating
+                existing = table.get_item(Key={"id": question_id})
+                if "Item" not in existing:
+                    return {
+                        "statusCode": 404,
+                        "headers": {"Access-Control-Allow-Origin": "*"},
+                        "body": json.dumps({"error": "Question not found"}),
+                    }
+
+                updatable_fields = [
+                    "question_text",
+                    "category",
+                    "difficulty",
+                    "reference_answer",
+                ]
+                fields_to_update = {f: body[f] for f in updatable_fields if f in body}
+
+                if not fields_to_update:
+                    return {
+                        "statusCode": 400,
+                        "headers": {"Access-Control-Allow-Origin": "*"},
+                        "body": json.dumps({"error": "No valid fields to update"}),
+                    }
+
+                update_expr = "SET " + ", ".join(
+                    f"#{k} = :{k}" for k in fields_to_update
+                )
+                expr_attr_names = {f"#{k}": k for k in fields_to_update}
+                expr_attr_values = {f":{k}": v for k, v in fields_to_update.items()}
+
+                table.update_item(
+                    Key={"id": question_id},
+                    UpdateExpression=update_expr,
+                    ExpressionAttributeNames=expr_attr_names,
+                    ExpressionAttributeValues=expr_attr_values,
+                )
+
+                updated = table.get_item(Key={"id": question_id})
+                logger.info(
+                    "Question updated", extra={**log_extra, "question_id": question_id}
+                )
+
+                return {
+                    "statusCode": 200,
+                    "headers": {"Access-Control-Allow-Origin": "*"},
+                    "body": json.dumps(convert_dynamodb_item(updated["Item"])),
+                }
+
+            elif method == "DELETE":
+                admin_check = require_admin(event)
+                if admin_check:
+                    return admin_check
+
+                table.delete_item(Key={"id": question_id})
+                logger.info(
+                    "Question deleted", extra={**log_extra, "question_id": question_id}
+                )
+
+                return {
+                    "statusCode": 204,
+                    "headers": {"Access-Control-Allow-Origin": "*"},
+                    "body": "",
                 }
 
         # Default response
