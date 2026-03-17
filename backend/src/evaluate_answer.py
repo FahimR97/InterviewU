@@ -1,7 +1,13 @@
 import json
+import os
 import boto3
+from decimal import Decimal
+from datetime import datetime, timezone
 
 bedrock = boto3.client("bedrock-runtime", region_name="eu-west-2")
+dynamodb = boto3.resource("dynamodb")
+
+USER_ANSWERS_TABLE_NAME = os.environ.get("USER_ANSWERS_TABLE_NAME")
 
 
 def handler(event, context):
@@ -13,6 +19,9 @@ def handler(event, context):
         question_text = body.get("question")
         user_answer = body.get("answer")
         competency_type = body.get("competency_type", "general")
+        question_id = body.get("question_id", "unknown")
+        category = body.get("category", "unknown")
+        difficulty = body.get("difficulty", "unknown")
 
         if not question_text or not user_answer:
             return {
@@ -20,6 +29,14 @@ def handler(event, context):
                 "headers": {"Access-Control-Allow-Origin": "*"},
                 "body": json.dumps({"error": "Missing question or answer"}),
             }
+
+        # Extract userId from Cognito JWT claims (injected by API Gateway authorizer)
+        user_id = None
+        try:
+            claims = event["requestContext"]["authorizer"]["claims"]
+            user_id = claims.get("sub")
+        except (KeyError, TypeError):
+            pass
 
         # Marcus evaluation prompt
         prompt = f"""You are Marcus, an AI interview coach for AWS.
@@ -67,6 +84,22 @@ Be constructive, specific, and encouraging."""
 
         # Parse JSON from Marcus
         feedback = json.loads(feedback_text)
+
+        # Persist answer record for analytics (best-effort — never blocks the response)
+        if user_id and USER_ANSWERS_TABLE_NAME:
+            try:
+                table = dynamodb.Table(USER_ANSWERS_TABLE_NAME)
+                table.put_item(Item={
+                    "userId": user_id,
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
+                    "questionId": question_id,
+                    "category": category,
+                    "difficulty": difficulty,
+                    "score": Decimal(str(feedback.get("score", 0))),
+                    "is_correct": feedback.get("is_correct", False),
+                })
+            except Exception as write_err:
+                print(f"Warning: failed to persist answer record: {write_err}")
 
         return {
             "statusCode": 200,

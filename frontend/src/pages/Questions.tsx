@@ -106,6 +106,9 @@ export default function Questions() {
           question: selectedQuestion.question_text,
           answer: userAnswer,
           competency_type: selectedQuestion.competency,
+          question_id: selectedQuestion.id,
+          category: selectedQuestion.category,
+          difficulty: selectedQuestion.difficulty,
         },
         token
       );

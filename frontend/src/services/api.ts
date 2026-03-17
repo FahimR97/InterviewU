@@ -14,6 +14,9 @@ export interface EvaluationRequest {
   question: string;
   answer: string;
   competency_type?: string;
+  question_id?: string;
+  category?: string;
+  difficulty?: string;
 }
 
 export interface EvaluationResponse {
@@ -25,16 +28,44 @@ export interface EvaluationResponse {
   marcus_comment: string;
 }
 
+export interface AnalyticsCategoryEntry {
+  category: string;
+  avg_score: number;
+  count: number;
+}
+
+export interface AnalyticsDifficultyEntry {
+  difficulty: string;
+  avg_score: number;
+  count: number;
+}
+
+export interface AnalyticsTimeEntry {
+  date: string;
+  avg_score: number;
+  attempts: number;
+}
+
+export interface AnalyticsResponse {
+  total_attempts: number;
+  avg_score: number | null;
+  by_category: AnalyticsCategoryEntry[];
+  by_difficulty: AnalyticsDifficultyEntry[];
+  scores_over_time: AnalyticsTimeEntry[];
+  weak_areas: string[];
+  recommendation: string;
+}
+
 const API_BASE_URL = awsConfig.API.REST.InterviewQuestionsAPI.endpoint;
 
 /**
  * Public signup endpoint (no authentication required)
  */
-export async function signupUser(email: string): Promise<{ message: string; username: string }> {
+export async function signupUser(email: string, name: string): Promise<{ message: string; username: string }> {
   const response = await fetch(`${API_BASE_URL}signup`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, name }),
   });
   if (!response.ok) throw new Error((await response.json()).error || 'Signup failed');
   return response.json();
@@ -123,4 +154,24 @@ export async function evaluateAnswer(
 
   const data = await response.json();
   return data;
+}
+
+/**
+ * Fetch analytics for the authenticated user
+ */
+export async function getAnalytics(authToken: string | null): Promise<AnalyticsResponse> {
+  const headers: HeadersInit = { 'Content-Type': 'application/json' };
+  if (authToken) headers['Authorization'] = authToken;
+
+  const response = await fetch(`${API_BASE_URL}analytics`, {
+    method: 'GET',
+    headers,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`Failed to fetch analytics: ${response.status} ${errorText}`);
+  }
+
+  return response.json();
 }

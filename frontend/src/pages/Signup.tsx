@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import './Login.css';
 
 export default function Signup() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -14,11 +15,10 @@ export default function Signup() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-
     setLoading(true);
 
     try {
-      await signup(email);
+      await signup(email, name);
       setSuccess(true);
       setTimeout(() => {
         navigate('/login', {
@@ -43,16 +43,28 @@ export default function Signup() {
       </div>
       <div className="login-card">
         <h2>Create Account</h2>
-        <p>Enter your email — we'll send you a temporary password to get started</p>
+        <p>Enter your details — we'll send you a temporary password to get started</p>
 
         {error && <div className="error-message">{error}</div>}
         {success && (
           <div className="success-message">
-            ✅ Account created! Check your email for a temporary password. You'll be required to change it on first login. Redirecting to login...
+            Account created! Check your email for a temporary password. You'll be required to change it on first login. Redirecting to login...
           </div>
         )}
 
         <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="name">Full Name</label>
+            <input
+              type="text"
+              id="name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              placeholder="Your name"
+              disabled={loading || success}
+            />
+          </div>
           <div className="form-group">
             <label htmlFor="email">Email</label>
             <input

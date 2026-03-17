@@ -38,6 +38,7 @@ def handler(event, context):
     try:
         body = json.loads(event.get("body", "{}"))
         email = body.get("email", "").strip().lower()
+        name = body.get("name", "").strip()
 
         if not email:
             return {
@@ -62,13 +63,17 @@ def handler(event, context):
         # Create user with AdminCreateUser
         # Bypasses self-registration restriction
         # Cognito will send a temporary password via email
+        user_attributes = [
+            {"Name": "email", "Value": email},
+            {"Name": "email_verified", "Value": "true"},
+        ]
+        if name:
+            user_attributes.append({"Name": "name", "Value": name})
+
         cognito_client.admin_create_user(
             UserPoolId=USER_POOL_ID,
             Username=email,
-            UserAttributes=[
-                {"Name": "email", "Value": email},
-                {"Name": "email_verified", "Value": "true"},
-            ],
+            UserAttributes=user_attributes,
             DesiredDeliveryMediums=["EMAIL"],
             ForceAliasCreation=False,
             # MessageAction NOT set - Cognito sends welcome email

@@ -9,6 +9,7 @@ import Questions from './pages/Questions'
 import Admin from './pages/Admin'
 import Signup from './pages/Signup'
 import ChangePassword from './pages/ChangePassword'
+import Dashboard from './pages/Dashboard'
 import './App.css'
 
 function ThemeToggle() {
@@ -57,6 +58,11 @@ function NavBar() {
           InterviewU
         </Link>
         <div className="navbar-links">
+          {user && (
+            <Link to="/dashboard" className="nav-link">
+              Dashboard
+            </Link>
+          )}
           <Link to="/questions" className="nav-link">
             Questions
           </Link>
@@ -100,6 +106,7 @@ function AppContent() {
             <Route path="/signup" element={<Signup />} />
             <Route path="/change-password" element={<ChangePassword />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/dashboard" element={<Dashboard />} />
           </Routes>
         </main>
 

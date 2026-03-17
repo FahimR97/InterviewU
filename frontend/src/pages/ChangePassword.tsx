@@ -56,7 +56,7 @@ export default function ChangePassword() {
 
     try {
       await completeNewPassword(newPassword);
-      navigate('/questions', {
+      navigate('/dashboard', {
         state: { message: 'Password changed successfully!' }
       });
     } catch (err: unknown) {

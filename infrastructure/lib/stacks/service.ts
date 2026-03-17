@@ -52,6 +52,10 @@ export class ServiceStack extends cdk.Stack {
           required: true,
           mutable: false,
         },
+        fullname: {
+          required: false,
+          mutable: true,
+        },
       },
       passwordPolicy: {
         minLength: 8,
@@ -165,6 +169,21 @@ export class ServiceStack extends cdk.Stack {
       });
     }
 
+    // DynamoDB table for user answer history (analytics)
+    const userAnswersTable = new dynamodb.Table(this, 'UserAnswers', {
+      partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'timestamp', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      encryption: dynamodb.TableEncryption.AWS_MANAGED,
+      pointInTimeRecovery: true,
+    });
+
+    new cdk.CfnOutput(this, 'UserAnswersTableName', {
+      value: userAnswersTable.tableName,
+      description: 'DynamoDB table for user answer history',
+    });
+
     // Dynamo DB Table
     const table = new dynamodb.Table(this, 'InterviewQuestions', {
       partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
@@ -209,6 +228,9 @@ export class ServiceStack extends cdk.Stack {
       handler: 'evaluate_answer.handler',
       code: lambda.Code.fromAsset("../backend/src"),
       timeout: cdk.Duration.seconds(30),
+      environment: {
+        USER_ANSWERS_TABLE_NAME: userAnswersTable.tableName,
+      },
     });
 
     // Grant Bedrock model invocation permission
@@ -216,6 +238,22 @@ export class ServiceStack extends cdk.Stack {
       actions: ['bedrock:InvokeModel'],
       resources: ['arn:aws:bedrock:eu-west-2::foundation-model/anthropic.claude-3-7-sonnet-20250219-v1:0'],
     }));
+
+    // Grant write access to user answers table
+    userAnswersTable.grantWriteData(evaluateAnswerFn);
+
+    // Lambda for user analytics
+    const userAnalyticsHandler = new lambda.Function(this, 'UserAnalyticsHandler', {
+      runtime: lambda.Runtime.PYTHON_3_11,
+      handler: 'analytics_handler.handler',
+      code: lambda.Code.fromAsset("../backend/src"),
+      timeout: cdk.Duration.seconds(30),
+      environment: {
+        USER_ANSWERS_TABLE_NAME: userAnswersTable.tableName,
+      },
+    });
+
+    userAnswersTable.grantReadData(userAnalyticsHandler);
 
     // Lambda for user signup (bypasses selfSignUpEnabled restriction)
     const signupHandler = new lambda.Function(this, 'SignupHandler', {
@@ -234,6 +272,7 @@ export class ServiceStack extends cdk.Stack {
     const lambdaIntegration = new apigw.LambdaIntegration(questionsHandler);
     const evaluateIntegration = new apigw.LambdaIntegration(evaluateAnswerFn);
     const signupIntegration = new apigw.LambdaIntegration(signupHandler);
+    const analyticsIntegration = new apigw.LambdaIntegration(userAnalyticsHandler);
 
     const cognitoAuthorizer = new apigw.CognitoUserPoolsAuthorizer(this, 'CognitoAuthorizer', {
       cognitoUserPools: [userPool],
@@ -311,6 +350,13 @@ export class ServiceStack extends cdk.Stack {
 
     new cdk.CfnOutput(this, 'SignupEndpoint', {
       value: `${api.url}signup`,
+    });
+
+    // Analytics endpoint (authenticated)
+    const analytics = api.root.addResource('analytics');
+    analytics.addMethod('GET', analyticsIntegration, {
+      authorizer: cognitoAuthorizer,
+      authorizationType: apigw.AuthorizationType.COGNITO,
     });
 
     // Output the URL so you can curl it after deploy
