@@ -74,7 +74,7 @@ export default function Home() {
                 <span className="mock-badge hard">Hard</span>
               </div>
               <p className="mock-question">
-                Design a URL shortener service that handles 100M requests per day.
+                Design a distributed message queue that guarantees at-least-once delivery at 1M messages/sec.
               </p>
               <div className="mock-divider" />
               <div className="mock-score-row">
