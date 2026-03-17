@@ -88,7 +88,10 @@ jobs:
         run: npx tsc --noEmit
 
       - name: CDK synth
-        run: npx cdk synth
+        env:
+          CDK_DEFAULT_ACCOUNT: "000000000000"
+          CDK_DEFAULT_REGION: eu-west-2
+        run: npx cdk synth --no-lookups
 
   deploy-alpha:
     needs: [backend-tests, cdk-check]
