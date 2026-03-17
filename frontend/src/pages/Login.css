@@ -131,14 +131,14 @@
   font-size: 1rem;
   box-sizing: border-box;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-  background: var(--bg-tertiary);
+  background: var(--bg-secondary);
   color: var(--text-dark);
 }
 
 .form-group input:focus {
   outline: none;
   border-color: var(--primary);
-  background: var(--bg-tertiary);
+  background: var(--bg-secondary);
   box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
   color: var(--text-dark);
 }
@@ -151,7 +151,7 @@
 .form-group input:-webkit-autofill,
 .form-group input:-webkit-autofill:hover,
 .form-group input:-webkit-autofill:focus {
-  -webkit-box-shadow: 0 0 0 30px var(--bg-tertiary) inset !important;
+  -webkit-box-shadow: 0 0 0 30px var(--bg-secondary) inset !important;
   -webkit-text-fill-color: var(--text-dark) !important;
   caret-color: var(--text-dark);
   transition: background-color 9999s ease-in-out 0s;
