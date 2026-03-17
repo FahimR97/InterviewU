@@ -54,7 +54,7 @@ export default function Signup() {
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="name">Full Name</label>
+            <label htmlFor="name">Your Name</label>
             <input
               type="text"
               id="name"
