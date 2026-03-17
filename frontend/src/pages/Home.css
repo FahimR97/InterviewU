@@ -6,11 +6,11 @@
 
 /* ── Hero ─────────────────────────────────────────────────────── */
 
-/* Light mode: soft indigo-to-violet, not harsh */
+/* Light mode: muted lavender — readable, natural, not harsh */
 .hero {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(140deg, #4f46e5 0%, #7c3aed 45%, #6d28d9 100%);
+  background: linear-gradient(140deg, #6366f1 0%, #8b5cf6 45%, #7c3aed 100%);
   padding: 7rem 2rem 8rem;
 }
 
