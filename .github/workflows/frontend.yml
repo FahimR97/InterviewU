@@ -58,8 +58,8 @@ jobs:
       - name: Configure AWS Credentials (Alpha)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::954164445144:role/github-actions-deploy
-          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::134667369518:role/github-actions-deploy
+          aws-region: eu-west-2
 
       - name: Check frontend infra stack exists (Alpha)
         id: check_stack
@@ -133,8 +133,8 @@ jobs:
       - name: Configure AWS Credentials (Prod)
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::839185960743:role/github-actions-deploy
-          aws-region: eu-west-1
+          role-to-assume: arn:aws:iam::418107732011:role/github-actions-deploy
+          aws-region: eu-west-2
 
       - name: Check frontend infra stack exists (Prod)
         id: check_stack
