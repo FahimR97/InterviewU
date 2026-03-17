@@ -34,7 +34,8 @@ def build_recommendation(by_category: list) -> str:
     lowest = min(by_category, key=lambda c: c["avg_score"])
     return (
         f"You're doing well across the board! "
-        f"To push further, focus on {lowest['category']} where there's still room to grow."
+        f"To push further, focus on {lowest['category']} "
+        f"where there's still room to grow."
     )
 
 
@@ -85,7 +86,9 @@ def handler(event, context):
                     "by_difficulty": [],
                     "scores_over_time": [],
                     "weak_areas": [],
-                    "recommendation": "No data yet. Start practising to see your stats.",
+                    "recommendation": (
+                        "No data yet. Start practising to see your stats."
+                    ),
                 }),
             }
 
@@ -121,7 +124,7 @@ def handler(event, context):
             for diff, scores in sorted(diff_scores.items())
         ]
 
-        # Scores over time — group by date (first 10 chars of ISO timestamp), average per day
+        # Scores over time — group by date (first 10 chars of ISO timestamp)
         day_scores = defaultdict(list)
         for item in items:
             day = item.get("timestamp", "")[:10]  # "2026-03-17"
