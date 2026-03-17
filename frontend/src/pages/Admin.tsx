@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { fetchAuthSession } from 'aws-amplify/auth'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
@@ -37,29 +37,7 @@ function Admin() {
   const navigate = useNavigate()
   const { getAuthToken } = useAuth()
 
-  useEffect(() => {
-    checkAdminAccess()
-  }, [])
-
-  const checkAdminAccess = async () => {
-    try {
-      const session = await fetchAuthSession()
-      const groups = (session.tokens?.accessToken?.payload['cognito:groups'] as string[]) || []
-      if (groups.includes('Admin')) {
-        setIsAdmin(true)
-        await loadQuestions()
-      } else {
-        setIsAdmin(false)
-        setLoading(false)
-      }
-    } catch (error) {
-      console.error('Error checking admin access:', error)
-      setIsAdmin(false)
-      setLoading(false)
-    }
-  }
-
-  const loadQuestions = async () => {
+  const loadQuestions = useCallback(async () => {
     try {
       setLoading(true)
       const token = await getAuthToken()
@@ -70,7 +48,28 @@ function Admin() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [getAuthToken])
+
+  useEffect(() => {
+    const checkAdminAccess = async () => {
+      try {
+        const session = await fetchAuthSession()
+        const groups = (session.tokens?.accessToken?.payload['cognito:groups'] as string[]) || []
+        if (groups.includes('Admin')) {
+          setIsAdmin(true)
+          await loadQuestions()
+        } else {
+          setIsAdmin(false)
+          setLoading(false)
+        }
+      } catch (error) {
+        console.error('Error checking admin access:', error)
+        setIsAdmin(false)
+        setLoading(false)
+      }
+    }
+    checkAdminAccess()
+  }, [loadQuestions])
 
   const categories = useMemo(() => {
     const cats = new Set(questions.map(q => q.category))

@@ -15,10 +15,7 @@ function NavBar() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    if (!user) {
-      setIsAdmin(false);
-      return;
-    }
+    if (!user) return;
     fetchAuthSession()
       .then(session => {
         const groups = (session.tokens?.accessToken?.payload['cognito:groups'] as string[]) || [];
@@ -26,6 +23,8 @@ function NavBar() {
       })
       .catch(() => setIsAdmin(false));
   }, [user]);
+
+  const showAdmin = !!user && isAdmin;
 
   const handleLogout = async () => {
     try {
@@ -45,7 +44,7 @@ function NavBar() {
           <Link to="/questions" className="nav-link">
             Questions
           </Link>
-          {isAdmin && (
+          {showAdmin && (
             <Link to="/admin" className="nav-link">
               Admin
             </Link>
