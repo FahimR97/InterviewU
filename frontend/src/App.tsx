@@ -1,44 +1,60 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
-import { useState, useEffect } from 'react';
-import { fetchAuthSession } from 'aws-amplify/auth';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Questions from './pages/Questions';
-import Admin from './pages/Admin';
-import Signup from './pages/Signup';
-import ChangePassword from './pages/ChangePassword';
-import './App.css';
+import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { fetchAuthSession } from 'aws-amplify/auth'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
+import { ThemeProvider, useTheme } from './contexts/ThemeContext'
+import Home from './pages/Home'
+import Login from './pages/Login'
+import Questions from './pages/Questions'
+import Admin from './pages/Admin'
+import Signup from './pages/Signup'
+import ChangePassword from './pages/ChangePassword'
+import './App.css'
+
+function ThemeToggle() {
+  const { theme, toggleTheme } = useTheme()
+  return (
+    <button
+      className="theme-toggle"
+      onClick={toggleTheme}
+      aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
+    >
+      <span className="toggle-track">
+        <span className="toggle-thumb" />
+      </span>
+    </button>
+  )
+}
 
 function NavBar() {
-  const { user, logout } = useAuth();
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { user, logout } = useAuth()
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) return
     fetchAuthSession()
       .then(session => {
-        const groups = (session.tokens?.accessToken?.payload['cognito:groups'] as string[]) || [];
-        setIsAdmin(groups.includes('Admin'));
+        const groups = (session.tokens?.accessToken?.payload['cognito:groups'] as string[]) || []
+        setIsAdmin(groups.includes('Admin'))
       })
-      .catch(() => setIsAdmin(false));
-  }, [user]);
+      .catch(() => setIsAdmin(false))
+  }, [user])
 
-  const showAdmin = !!user && isAdmin;
+  const showAdmin = !!user && isAdmin
 
   const handleLogout = async () => {
     try {
-      await logout();
+      await logout()
     } catch (error) {
-      console.error('Logout failed:', error);
+      console.error('Logout failed:', error)
     }
-  };
+  }
 
   return (
     <nav className="navbar">
       <div className="navbar-container">
         <Link to="/" className="navbar-brand">
-          Interview Question Bank
+          InterviewU
         </Link>
         <div className="navbar-links">
           <Link to="/questions" className="nav-link">
@@ -49,6 +65,7 @@ function NavBar() {
               Admin
             </Link>
           )}
+          <ThemeToggle />
           {user ? (
             <>
               <span className="user-email">
@@ -66,7 +83,7 @@ function NavBar() {
         </div>
       </div>
     </nav>
-  );
+  )
 }
 
 function AppContent() {
@@ -87,19 +104,21 @@ function AppContent() {
         </main>
 
         <footer className="footer">
-          <p>&copy; 2024 Interview Question Bank. Built with React + TypeScript + Vite</p>
+          <p>&copy; 2025 InterviewU &mdash; Powered by AWS</p>
         </footer>
       </div>
     </BrowserRouter>
-  );
+  )
 }
 
 function App() {
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
-  );
+    <ThemeProvider>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ThemeProvider>
+  )
 }
 
-export default App;
+export default App
