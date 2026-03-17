@@ -4,51 +4,106 @@ import './Home.css'
 const features = [
   {
     tag: 'Questions',
-    title: 'Curated by real interviews',
-    description: 'Filter by category and difficulty. Focus on what actually gets asked.',
+    title: 'Carefully curated interview questions',
+    description: 'Hundreds of questions across categories — system design, DevOps, cloud, algorithms — filtered by difficulty.',
   },
   {
-    tag: 'Feedback',
-    title: 'AI feedback on every answer',
-    description: 'Get a score, detailed strengths, and specific things to fix — instantly.',
+    tag: 'Bespoke Feedback',
+    title: 'Know exactly where you went wrong',
+    description: 'Every answer gets scored out of 100 with specific strengths, gaps, and suggestions — not generic tips.',
   },
   {
-    tag: 'Progress',
-    title: 'Know where you stand',
-    description: 'See patterns in your answers. Improve before the interview, not after.',
+    tag: 'Career Focus',
+    title: 'Built for engineers moving up',
+    description: 'Targeted at SDE, DevOps, and cloud roles. The questions reflect what hiring managers actually test.',
   },
 ]
 
 const steps = [
-  { number: '01', title: 'Sign up', description: 'Create your account in seconds.' },
-  { number: '02', title: 'Pick a question', description: 'Filter by role, category, or difficulty.' },
-  { number: '03', title: 'Get feedback', description: 'Submit your answer and get AI feedback instantly.' },
+  { number: '01', title: 'Create your account', description: 'Sign up in seconds. No credit card.' },
+  { number: '02', title: 'Pick your focus area', description: 'Filter by role, category, or difficulty level.' },
+  { number: '03', title: 'Practice and improve', description: 'Answer questions, get your feedback, and track your progress.' },
 ]
 
 export default function Home() {
   return (
     <div className="home">
+
+      {/* ── Hero ─────────────────────────────────────── */}
       <section className="hero">
-        <div className="hero-content">
-          <p className="hero-eyebrow">AI-Powered Interview Prep</p>
-          <h1 className="hero-title">
-            Ace your next<br />
-            <span className="gradient-text">technical interview</span>
-          </h1>
-          <p className="hero-subtitle">
-            Practice real questions with AI-powered feedback.
-            Know your strengths. Fix your gaps.
-          </p>
-          <div className="hero-actions">
-            <Link to="/signup" className="btn-primary">Get Started</Link>
-            <Link to="/login" className="btn-ghost">Login</Link>
+        <div className="hero-bg-orb orb-1" />
+        <div className="hero-bg-orb orb-2" />
+
+        <div className="hero-inner">
+          <div className="hero-text">
+            <span className="hero-eyebrow">AI-Powered Interview Prep</span>
+            <h1 className="hero-title">
+              Ace your next<br />
+              <span className="gradient-text">Technical Interview.</span>
+            </h1>
+            <p className="hero-subtitle">
+              Practice real interview questions with instant AI feedback.
+              Pinpoint your weaknesses before the interview does it for you.
+            </p>
+            <div className="hero-actions">
+              <Link to="/signup" className="btn-cta">Get Started — it&apos;s free</Link>
+            </div>
+            <div className="hero-stats">
+              <div className="stat">
+                <span className="stat-value">500+</span>
+                <span className="stat-label">Questions</span>
+              </div>
+              <div className="stat-divider" />
+              <div className="stat">
+                <span className="stat-value">AI</span>
+                <span className="stat-label">Feedback</span>
+              </div>
+              <div className="stat-divider" />
+              <div className="stat">
+                <span className="stat-value">Free</span>
+                <span className="stat-label">To use</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Product preview card */}
+          <div className="hero-visual">
+            <div className="mock-card">
+              <div className="mock-card-header">
+                <span className="mock-category">System Design</span>
+                <span className="mock-badge hard">Hard</span>
+              </div>
+              <p className="mock-question">
+                Design a URL shortener service that handles 100M requests per day.
+              </p>
+              <div className="mock-divider" />
+              <div className="mock-score-row">
+                <span className="mock-score-label">Your Score</span>
+                <span className="mock-score-value">87 / 100</span>
+              </div>
+              <div className="mock-progress-track">
+                <div className="mock-progress-fill" style={{ width: '87%' }} />
+              </div>
+              <div className="mock-feedback">
+                <div className="mock-feedback-item correct">
+                  <span className="mock-dot correct-dot" />
+                  Correctly identified horizontal scaling approach
+                </div>
+                <div className="mock-feedback-item improve">
+                  <span className="mock-dot improve-dot" />
+                  Cache eviction strategy needs more detail
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
+      {/* ── Features ─────────────────────────────────── */}
       <section className="features">
         <div className="section-inner">
-          <h2 className="section-heading">Everything you need to prepare</h2>
+          <p className="section-eyebrow">What you get</p>
+          <h2 className="section-heading">Everything you need to prepare properly</h2>
           <div className="features-grid">
             {features.map(f => (
               <div key={f.tag} className="feature-card">
@@ -61,8 +116,10 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── How it works ─────────────────────────────── */}
       <section className="how-it-works">
         <div className="section-inner">
+          <p className="section-eyebrow">Simple process</p>
           <h2 className="section-heading">How it works</h2>
           <div className="steps">
             {steps.map(step => (
@@ -75,6 +132,16 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* ── CTA Banner ───────────────────────────────── */}
+      <section className="cta-banner">
+        <div className="section-inner cta-inner">
+          <h2 className="cta-heading">Ready to start preparing?</h2>
+          <p className="cta-sub">Join engineers using InterviewU to land their next role.</p>
+          <Link to="/signup" className="btn-cta btn-cta-dark">Get Started Free</Link>
+        </div>
+      </section>
+
     </div>
   )
 }
