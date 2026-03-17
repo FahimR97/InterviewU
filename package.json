@@ -1,5 +1,5 @@
 {
-  "name": "EPAMainProject",
+  "name": "InterviewU",
   "private": true,
   "workspaces": [
     "frontend",
@@ -11,6 +11,7 @@
     "test": "echo \"no test yet\""
   },
   "overrides": {
-    "fast-xml-parser": "^5.3.4"
+    "fast-xml-parser": "^5.3.4",
+    "minimatch": "^3.1.4"
   }
 }
