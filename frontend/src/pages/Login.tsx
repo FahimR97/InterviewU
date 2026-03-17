@@ -50,9 +50,13 @@ export default function Login() {
 
   return (
     <div className="login-container">
+      <div className="login-brand">
+        <Link to="/" className="login-brand-link">InterviewU</Link>
+        <p>Ace your next technical interview</p>
+      </div>
       <div className="login-card">
         <h2>Welcome Back</h2>
-        <p>Sign in to access your question bank</p>
+        <p>Sign in to continue practising</p>
 
         {error && <div className="error-message">{error}</div>}
         {successMessage && <div className="success-message">{successMessage}</div>}

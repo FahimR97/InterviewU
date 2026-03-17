@@ -37,9 +37,13 @@ export default function Signup() {
 
   return (
     <div className="login-container">
+      <div className="login-brand">
+        <Link to="/" className="login-brand-link">InterviewU</Link>
+        <p>Ace your next technical interview</p>
+      </div>
       <div className="login-card">
         <h2>Create Account</h2>
-        <p>Sign up to start managing interview questions</p>
+        <p>Enter your email — we'll send you a temporary password to get started</p>
 
         {error && <div className="error-message">{error}</div>}
         {success && (
