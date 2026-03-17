@@ -6,42 +6,78 @@
 
 /* ── Hero ─────────────────────────────────────────────────────── */
 
-/* Light mode: vibrant purple */
+/* Light mode: soft indigo-to-violet, not harsh */
 .hero {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 60%, #5b21b6 100%);
-  padding: 7rem 2rem 6rem;
+  background: linear-gradient(140deg, #4f46e5 0%, #7c3aed 45%, #6d28d9 100%);
+  padding: 7rem 2rem 8rem;
+}
+
+/* Soft bottom fade so hero blends into the features section */
+.hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(to bottom, transparent, rgba(248, 250, 252, 0.15));
+  pointer-events: none;
+  z-index: 1;
+}
+
+[data-theme="dark"] .hero::after {
+  background: linear-gradient(to bottom, transparent, rgba(15, 23, 42, 0.2));
 }
 
 /* Dark mode: deep navy/indigo */
 [data-theme="dark"] .hero {
-  background: linear-gradient(135deg, #1a1040 0%, #2d1b69 40%, #1e3a5f 100%);
+  background: linear-gradient(140deg, #1a1040 0%, #2d1b69 45%, #1e3a5f 100%);
 }
 
 /* Glow orbs for depth */
 .hero-bg-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
+  filter: blur(90px);
   pointer-events: none;
   z-index: 0;
+  animation: orbFloat 8s ease-in-out infinite alternate;
+}
+
+@keyframes orbFloat {
+  from { transform: translateY(0px) scale(1); }
+  to   { transform: translateY(-20px) scale(1.05); }
 }
 
 .orb-1 {
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, transparent 70%);
-  top: -100px;
-  left: -100px;
+  width: 550px;
+  height: 550px;
+  background: radial-gradient(circle, rgba(129, 140, 248, 0.4) 0%, transparent 70%);
+  top: -120px;
+  left: -120px;
+  animation-duration: 9s;
 }
 
 .orb-2 {
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.3) 0%, transparent 70%);
+  width: 420px;
+  height: 420px;
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.35) 0%, transparent 70%);
   bottom: -80px;
-  right: 10%;
+  right: 8%;
+  animation-duration: 11s;
+  animation-delay: -3s;
+}
+
+.orb-3 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.2) 0%, transparent 70%);
+  top: 40%;
+  left: 55%;
+  animation-duration: 13s;
+  animation-delay: -6s;
 }
 
 .hero-inner {
@@ -85,29 +121,57 @@
   margin-bottom: 1.5rem;
 }
 
-/* Animated shimmer gradient — light mode */
+/* Animated shimmer — light mode (white → cyan → violet cycle) */
 .gradient-text {
-  background: linear-gradient(90deg, #ffffff, #e0d7ff, #a5f3fc, #c4b5fd, #ffffff);
-  background-size: 300% 100%;
+  background: linear-gradient(
+    90deg,
+    #fff       0%,
+    #a5f3fc   20%,
+    #c4b5fd   40%,
+    #fff       60%,
+    #a5f3fc   80%,
+    #c4b5fd  100%
+  );
+  background-size: 200% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: shimmer 5s linear infinite;
+  animation: shimmer 3s linear infinite;
 }
 
-/* Different shimmer palette for dark mode */
+/* Dark mode shimmer — cyan → violet → green cycle */
 [data-theme="dark"] .gradient-text {
-  background: linear-gradient(90deg, #a5f3fc, #c4b5fd, #818cf8, #34d399, #a5f3fc);
-  background-size: 300% 100%;
+  background: linear-gradient(
+    90deg,
+    #a5f3fc   0%,
+    #c4b5fd   25%,
+    #34d399   50%,
+    #a5f3fc   75%,
+    #c4b5fd  100%
+  );
+  background-size: 200% 100%;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: shimmer 5s linear infinite;
+  animation: shimmer 3s linear infinite;
 }
 
 @keyframes shimmer {
   0%   { background-position: 0% center; }
-  100% { background-position: 300% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ── Scroll reveal ────────────────────────────────────────────── */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .hero-subtitle {

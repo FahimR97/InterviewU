@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import './Home.css'
 
@@ -26,6 +27,22 @@ const steps = [
 ]
 
 export default function Home() {
+  // Scroll reveal — elements with .reveal fade in when they enter the viewport
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible')
+          }
+        })
+      },
+      { threshold: 0.12 }
+    )
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el))
+    return () => observer.disconnect()
+  }, [])
+
   return (
     <div className="home">
 
@@ -33,6 +50,7 @@ export default function Home() {
       <section className="hero">
         <div className="hero-bg-orb orb-1" />
         <div className="hero-bg-orb orb-2" />
+        <div className="hero-bg-orb orb-3" />
 
         <div className="hero-inner">
           <div className="hero-text">
@@ -102,11 +120,11 @@ export default function Home() {
       {/* ── Features ─────────────────────────────────── */}
       <section className="features">
         <div className="section-inner">
-          <p className="section-eyebrow">What you get</p>
-          <h2 className="section-heading">Everything you need to prepare properly</h2>
+          <p className="section-eyebrow reveal">What you get</p>
+          <h2 className="section-heading reveal">Everything you need to prepare properly</h2>
           <div className="features-grid">
-            {features.map(f => (
-              <div key={f.tag} className="feature-card">
+            {features.map((f, i) => (
+              <div key={f.tag} className="feature-card reveal" style={{ transitionDelay: `${i * 0.1}s` }}>
                 <span className="feature-tag">{f.tag}</span>
                 <h3 className="feature-title">{f.title}</h3>
                 <p className="feature-desc">{f.description}</p>
@@ -119,11 +137,11 @@ export default function Home() {
       {/* ── How it works ─────────────────────────────── */}
       <section className="how-it-works">
         <div className="section-inner">
-          <p className="section-eyebrow">Simple process</p>
-          <h2 className="section-heading">How it works</h2>
+          <p className="section-eyebrow reveal">Simple process</p>
+          <h2 className="section-heading reveal">How it works</h2>
           <div className="steps">
-            {steps.map(step => (
-              <div key={step.number} className="step">
+            {steps.map((step, i) => (
+              <div key={step.number} className="step reveal" style={{ transitionDelay: `${i * 0.12}s` }}>
                 <span className="step-number">{step.number}</span>
                 <h3 className="step-title">{step.title}</h3>
                 <p className="step-desc">{step.description}</p>
@@ -136,9 +154,9 @@ export default function Home() {
       {/* ── CTA Banner ───────────────────────────────── */}
       <section className="cta-banner">
         <div className="section-inner cta-inner">
-          <h2 className="cta-heading">Ready to start preparing?</h2>
-          <p className="cta-sub">Join engineers using InterviewU to land their next role.</p>
-          <Link to="/signup" className="btn-cta btn-cta-dark">Get Started Free</Link>
+          <h2 className="cta-heading reveal">Ready to start preparing?</h2>
+          <p className="cta-sub reveal">Join engineers using InterviewU to land their next role.</p>
+          <Link to="/signup" className="btn-cta btn-cta-dark reveal">Get Started Free</Link>
         </div>
       </section>
 
