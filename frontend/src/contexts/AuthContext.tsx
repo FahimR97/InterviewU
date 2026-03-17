@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { Amplify } from 'aws-amplify';
 import type { AuthUser } from 'aws-amplify/auth';
-import { signIn, signOut, confirmSignIn, getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
+import { signIn, signOut, confirmSignIn, getCurrentUser, fetchAuthSession, fetchUserAttributes } from 'aws-amplify/auth';
 import type { SignInInput } from 'aws-amplify/auth';
 import { awsConfig } from '../aws-config';
 import { signupUser } from '../services/api';
@@ -11,10 +11,11 @@ Amplify.configure(awsConfig);
 
 interface AuthContextType {
   user: AuthUser | null;
+  userName: string | null;
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   completeNewPassword: (newPassword: string) => Promise<void>;
-  signup: (email: string) => Promise<void>;
+  signup: (email: string, name: string) => Promise<void>;
   logout: () => Promise<void>;
   getAuthToken: () => Promise<string | null>;
   requiresPasswordChange: boolean;
@@ -24,6 +25,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [requiresPasswordChange, setRequiresPasswordChange] = useState(false);
 
@@ -35,8 +37,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const currentUser = await getCurrentUser();
       setUser(currentUser);
+      try {
+        const attrs = await fetchUserAttributes();
+        const name = attrs.name || attrs.email?.split('@')[0] || null;
+        setUserName(name ?? null);
+      } catch {
+        setUserName(null);
+      }
     } catch {
       setUser(null);
+      setUserName(null);
     } finally {
       setLoading(false);
     }
@@ -67,12 +77,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await checkUser();
   };
 
-  const signup = async (email: string) => {
-    // Call our backend API which uses AdminCreateUser
-    // Cognito will email a temporary password to the user
-    await signupUser(email);
-    // User will receive temporary password via email
-    // They must use it to login, then they'll be forced to change it
+  const signup = async (email: string, name: string) => {
+    await signupUser(email, name);
   };
 
   const logout = async () => {
@@ -91,7 +97,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, completeNewPassword, signup, logout, getAuthToken, requiresPasswordChange }}>
+    <AuthContext.Provider value={{ user, userName, loading, login, completeNewPassword, signup, logout, getAuthToken, requiresPasswordChange }}>
       {children}
     </AuthContext.Provider>
   );

@@ -4,8 +4,9 @@ import { useAuth } from '../contexts/AuthContext';
 import './Login.css';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(() => localStorage.getItem('rememberedEmail') || '');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(() => !!localStorage.getItem('rememberedEmail'));
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,7 +16,7 @@ export default function Login() {
 
   useEffect(() => {
     if (user) {
-      navigate('/questions');
+      navigate('/dashboard');
     }
   }, [user, navigate]);
 
@@ -31,9 +32,15 @@ export default function Login() {
     setSuccessMessage('');
     setLoading(true);
 
+    if (rememberMe) {
+      localStorage.setItem('rememberedEmail', email);
+    } else {
+      localStorage.removeItem('rememberedEmail');
+    }
+
     try {
       await login(email, password);
-      navigate('/questions');
+      navigate('/dashboard');
     } catch (err: unknown) {
       console.error('Login error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';
@@ -85,6 +92,16 @@ export default function Login() {
               placeholder="••••••••"
               disabled={loading}
             />
+          </div>
+          <div className="remember-row">
+            <input
+              type="checkbox"
+              id="rememberMe"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              disabled={loading}
+            />
+            <label htmlFor="rememberMe">Remember me</label>
           </div>
           <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
             {loading ? 'Signing in...' : 'Sign In'}
