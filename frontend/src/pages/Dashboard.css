@@ -4,130 +4,226 @@
   padding: 2rem 1.5rem 4rem;
 }
 
-/* Hero card */
+/* ── Hero banner ──────────────────────────────────────────────── */
+
 .dashboard-hero {
-  background: linear-gradient(135deg, rgba(13, 148, 136, 0.07) 0%, rgba(6, 182, 212, 0.04) 100%);
-  border: 1px solid rgba(13, 148, 136, 0.18);
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 45%, #065f46 100%);
   border-radius: 20px;
-  padding: 2rem 2.5rem;
+  padding: 2.5rem 3rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
   margin-bottom: 1.5rem;
-  flex-wrap: wrap;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Decorative glow orbs for visual interest */
+.dashboard-hero::before {
+  content: '';
+  position: absolute;
+  top: -80px;
+  right: 240px;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.07) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.dashboard-hero::after {
+  content: '';
+  position: absolute;
+  bottom: -80px;
+  left: 35%;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.04) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
 }
 
 [data-theme="dark"] .dashboard-hero {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(15, 23, 42, 0) 100%);
-  border-color: rgba(99, 102, 241, 0.2);
+  background: linear-gradient(135deg, #1e293b 0%, #1e1b4b 55%, #0f172a 100%);
+  border: 1px solid rgba(99, 102, 241, 0.2);
 }
 
+/* Greeting — plain white on dark banner */
 .dashboard-greeting {
-  font-size: 2.8rem;
+  font-size: 2.6rem;
   font-weight: 900;
-  color: var(--text-dark);
   margin: 0 0 0.5rem;
-  background: linear-gradient(135deg, #0d9488, #0f766e);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.96);
+  color: rgba(255, 255, 255, 0.96);
   letter-spacing: -0.02em;
   line-height: 1.15;
 }
 
 [data-theme="dark"] .dashboard-greeting {
-  background: linear-gradient(135deg, #a5b4fc, #c4b5fd);
-  -webkit-background-clip: text;
-  background-clip: text;
+  -webkit-text-fill-color: var(--text-dark);
+  color: var(--text-dark);
 }
 
 .dashboard-sub {
-  color: var(--text-medium);
+  color: rgba(255, 255, 255, 0.7);
   margin: 0;
-  font-size: 1.35rem;
-  font-weight: 600;
-  line-height: 1.3;
+  font-size: 1.2rem;
+  font-weight: 500;
 }
 
-/* Countdown card — sits inside the hero card, slight contrast */
+[data-theme="dark"] .dashboard-sub {
+  color: var(--text-muted);
+}
+
+/* ── Countdown card (inside hero — frosted glass) ─────────────── */
+
 .countdown-card {
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.13);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   border-radius: 16px;
   padding: 1.25rem 1.5rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  min-width: 200px;
+  gap: 0.6rem;
+  min-width: 185px;
   text-align: center;
   flex-shrink: 0;
-  box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .countdown-card {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .countdown-icon {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
 }
 
 .countdown-set p {
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.78);
   font-size: 0.875rem;
   margin: 0 0 0.5rem;
 }
 
+[data-theme="dark"] .countdown-set p {
+  color: var(--text-muted);
+}
+
 .countdown-past {
-  color: var(--danger, #ef4444) !important;
+  color: #fca5a5 !important;
+}
+
+[data-theme="dark"] .countdown-past {
+  color: var(--danger, #f87171) !important;
 }
 
 .date-input {
-  background: var(--bg-primary);
-  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 8px;
-  color: var(--text-dark);
+  color: white;
   padding: 0.4rem 0.75rem;
   font-size: 0.875rem;
   width: 100%;
   margin-bottom: 0.5rem;
 }
 
+.date-input::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  opacity: 0.75;
+}
+
+[data-theme="dark"] .date-input {
+  background: var(--bg-primary);
+  border-color: var(--border);
+  color: var(--text-dark);
+}
+
+[data-theme="dark"] .date-input::-webkit-calendar-picker-indicator {
+  filter: none;
+}
+
 .countdown-display {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.15rem;
 }
 
 .countdown-number {
-  font-size: 3rem;
+  font-size: 2.8rem;
   font-weight: 800;
   line-height: 1;
-  background: linear-gradient(135deg, #0d9488, #0f766e);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  background: none;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.96);
+  color: rgba(255, 255, 255, 0.96);
 }
 
 [data-theme="dark"] .countdown-number {
-  background: linear-gradient(135deg, #a5b4fc, #c4b5fd);
-  -webkit-background-clip: text;
-  background-clip: text;
+  -webkit-text-fill-color: var(--text-dark);
+  color: var(--text-dark);
 }
 
 .countdown-unit {
-  font-size: 0.875rem;
-  color: var(--text-muted);
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
+}
+
+[data-theme="dark"] .countdown-unit {
+  color: var(--text-muted);
 }
 
 .countdown-date {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-bottom: 0.5rem;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.55);
+  margin-bottom: 0.25rem;
 }
 
-/* Stat cards */
+[data-theme="dark"] .countdown-date {
+  color: var(--text-muted);
+}
+
+/* Buttons inside countdown — white pill with teal text */
+.countdown-card .btn-small {
+  background: rgba(255, 255, 255, 0.9);
+  color: #0f766e;
+  border: none;
+  font-weight: 700;
+  font-size: 0.8rem;
+  padding: 0.4rem 1.1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.15s;
+}
+
+.countdown-card .btn-small:hover:not(:disabled) {
+  background: #ffffff;
+  transform: translateY(-1px);
+}
+
+.countdown-card .btn-small:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+[data-theme="dark"] .countdown-card .btn-small {
+  background: var(--primary);
+  color: white;
+}
+
+[data-theme="dark"] .countdown-card .btn-small:hover:not(:disabled) {
+  background: var(--primary-hover);
+}
+
+/* ── Stat cards ───────────────────────────────────────────────── */
+
 .stat-cards {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -144,11 +240,16 @@
   flex-direction: column;
   gap: 0.5rem;
   transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: var(--shadow-sm);
 }
 
 .stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(13, 148, 136, 0.15);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(13, 148, 136, 0.12);
+}
+
+[data-theme="dark"] .stat-card:hover {
+  box-shadow: 0 8px 28px rgba(99, 102, 241, 0.15);
 }
 
 .stat-card-center {
@@ -156,11 +257,12 @@
 }
 
 .stat-label {
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 0.72rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  /* text-light is #64748b — readable on both bg-secondary values */
+  color: var(--text-light);
 }
 
 .stat-value {
@@ -171,12 +273,14 @@
 }
 
 .stat-value-sm {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
-  line-height: 1.3;
+  line-height: 1.4;
+  color: var(--text-dark);
 }
 
-/* Score ring SVG */
+/* ── Score ring SVG ───────────────────────────────────────────── */
+
 .score-ring {
   overflow: visible;
 }
@@ -204,10 +308,11 @@
 
 .score-ring-label {
   font-size: 0.75rem;
-  fill: var(--text-muted);
+  fill: var(--text-light);
 }
 
-/* Recommendation */
+/* ── Recommendation ───────────────────────────────────────────── */
+
 .recommendation-card {
   background: linear-gradient(135deg, rgba(13, 148, 136, 0.08), rgba(6, 182, 212, 0.08));
   border: 1px solid rgba(13, 148, 136, 0.22);
@@ -239,12 +344,13 @@
 
 .recommendation-card p {
   margin: 0;
-  color: var(--text-muted);
+  color: var(--text-light);
   font-size: 0.9rem;
   line-height: 1.6;
 }
 
-/* Charts */
+/* ── Charts ───────────────────────────────────────────────────── */
+
 .charts-row {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -257,24 +363,26 @@
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .chart-card h3 {
   margin: 0 0 1.25rem;
-  font-size: 0.95rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  color: var(--text-dark);
+  color: var(--text-light);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
 }
 
-/* .chart-card-wide is wider via the 2fr grid column — no extra rules needed */
+/* .chart-card-wide gets 2fr via the grid — no extra rule needed */
 
 .chart-card-full {
   margin-bottom: 1.5rem;
 }
 
-/* Loading / empty states */
+/* ── Loading / empty states ───────────────────────────────────── */
+
 .dashboard-loading {
   display: flex;
   flex-direction: column;
@@ -296,6 +404,7 @@
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: 20px;
+  box-shadow: var(--shadow-sm);
 }
 
 .empty-icon {
@@ -318,7 +427,8 @@
   padding-top: 1rem;
 }
 
-/* Activity heatmap */
+/* ── Activity heatmap ─────────────────────────────────────────── */
+
 .heatmap-top {
   display: flex;
   align-items: baseline;
@@ -400,11 +510,13 @@
   height: 14px;
   border-radius: 3px;
   background: var(--bg-tertiary);
-  transition: opacity 0.15s ease;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+  cursor: default;
 }
 
 .heatmap-cell:hover {
-  opacity: 0.75;
+  opacity: 0.8;
+  transform: scale(1.2);
 }
 
 .heatmap-cell-null {
@@ -426,7 +538,8 @@
 
 .heatmap-legend span { margin: 0 4px; }
 
-/* Responsive */
+/* ── Responsive ───────────────────────────────────────────────── */
+
 @media (max-width: 900px) {
   .stat-cards {
     grid-template-columns: repeat(2, 1fr);
@@ -437,15 +550,24 @@
   }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 700px) {
   .dashboard-hero {
     flex-direction: column;
+    align-items: flex-start;
+    padding: 1.75rem 1.5rem;
+  }
+
+  .countdown-card {
+    width: 100%;
+    min-width: unset;
   }
 
   .dashboard-greeting {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
   }
+}
 
+@media (max-width: 600px) {
   .stat-cards {
     grid-template-columns: 1fr 1fr;
   }
