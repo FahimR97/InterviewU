@@ -129,42 +129,6 @@ function QuestionsTab({
   const [createForm, setCreateForm] = useState<QuestionForm>(emptyForm)
   const [csvUploading, setCsvUploading] = useState(false)
   const [csvResult, setCsvResult] = useState<{ success: number; failed: number } | null>(null)
-  const navigate = useNavigate()
-  const { getAuthToken } = useAuth()
-
-  const loadQuestions = useCallback(async () => {
-    try {
-      setLoading(true)
-      const token = await getAuthToken()
-      const data = await getAllQuestions(token)
-      setQuestions(data)
-    } catch (error) {
-      console.error('Error loading questions:', error)
-    } finally {
-      setLoading(false)
-    }
-  }, [getAuthToken])
-
-  useEffect(() => {
-    const checkAdminAccess = async () => {
-      try {
-        const session = await fetchAuthSession()
-        const groups = (session.tokens?.accessToken?.payload['cognito:groups'] as string[]) || []
-        if (groups.includes('Admin')) {
-          setIsAdmin(true)
-          await loadQuestions()
-        } else {
-          setIsAdmin(false)
-          setLoading(false)
-        }
-      } catch (error) {
-        console.error('Error checking admin access:', error)
-        setIsAdmin(false)
-        setLoading(false)
-      }
-    }
-    checkAdminAccess()
-  }, [loadQuestions])
 
   const categories = useMemo(() => {
     const cats = new Set(questions.map(q => q.category))
@@ -288,7 +252,7 @@ function QuestionsTab({
         } catch { failed++ }
       }
       setCsvResult({ success, failed })
-      await loadQuestions()
+      onRefresh()
     } catch (error) {
       console.error('CSV upload error:', error)
       alert('Failed to parse CSV file')
@@ -317,7 +281,7 @@ function QuestionsTab({
           {csvUploading ? 'Uploading...' : '📄 Upload CSV'}
           <input type="file" accept=".csv" onChange={handleCsvUpload} hidden disabled={csvUploading} />
         </label>
-        <button className="btn-small" onClick={loadQuestions}>Refresh</button>
+        <button className="admin-btn admin-btn-ghost" onClick={onRefresh}>{loading ? 'Refreshing…' : 'Refresh'}</button>
       </div>
 
       {csvResult && (
