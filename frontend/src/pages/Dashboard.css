@@ -6,8 +6,23 @@
 
 /* ── Hero banner ──────────────────────────────────────────────── */
 
+@keyframes heroGradientFlow {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 .dashboard-hero {
-  background: linear-gradient(135deg, #0d9488 0%, #0f766e 45%, #065f46 100%);
+  background: linear-gradient(
+    135deg,
+    #0d9488 0%,
+    #0f766e 28%,
+    #065f46 52%,
+    #0f766e 76%,
+    #0d9488 100%
+  );
+  background-size: 300% 300%;
+  animation: heroGradientFlow 14s ease infinite;
   border-radius: 20px;
   padding: 2.5rem 3rem;
   display: flex;
@@ -27,7 +42,7 @@
   right: 240px;
   width: 320px;
   height: 320px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.07) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, transparent 70%);
   border-radius: 50%;
   pointer-events: none;
 }
@@ -39,13 +54,21 @@
   left: 35%;
   width: 220px;
   height: 220px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.04) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
   border-radius: 50%;
   pointer-events: none;
 }
 
 [data-theme="dark"] .dashboard-hero {
-  background: linear-gradient(135deg, #1e293b 0%, #1e1b4b 55%, #0f172a 100%);
+  background: linear-gradient(
+    135deg,
+    #1e293b 0%,
+    #1e1b4b 28%,
+    #0f172a 52%,
+    #1e1b4b 76%,
+    #1e293b 100%
+  );
+  background-size: 300% 300%;
   border: 1px solid rgba(99, 102, 241, 0.2);
 }
 
@@ -232,7 +255,8 @@
 }
 
 .stat-card {
-  background: var(--bg-secondary);
+  /* White in light mode — visibly distinct from the #fafaf8 page background */
+  background: #ffffff;
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 1.5rem;
@@ -240,16 +264,21 @@
   flex-direction: column;
   gap: 0.5rem;
   transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: var(--shadow);
+}
+
+[data-theme="dark"] .stat-card {
+  background: var(--bg-secondary);
   box-shadow: var(--shadow-sm);
 }
 
 .stat-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 8px 28px rgba(13, 148, 136, 0.12);
+  box-shadow: 0 10px 32px rgba(13, 148, 136, 0.14);
 }
 
 [data-theme="dark"] .stat-card:hover {
-  box-shadow: 0 8px 28px rgba(99, 102, 241, 0.15);
+  box-shadow: 0 10px 32px rgba(99, 102, 241, 0.18);
 }
 
 .stat-card-center {
@@ -314,7 +343,7 @@
 /* ── Recommendation ───────────────────────────────────────────── */
 
 .recommendation-card {
-  background: linear-gradient(135deg, rgba(13, 148, 136, 0.08), rgba(6, 182, 212, 0.08));
+  background: linear-gradient(135deg, rgba(13, 148, 136, 0.07) 0%, rgba(6, 182, 212, 0.05) 100%), #ffffff;
   border: 1px solid rgba(13, 148, 136, 0.22);
   border-radius: 16px;
   padding: 1.25rem 1.5rem;
@@ -359,10 +388,15 @@
 }
 
 .chart-card {
-  background: var(--bg-secondary);
+  background: #ffffff;
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+[data-theme="dark"] .chart-card {
+  background: var(--bg-secondary);
   box-shadow: var(--shadow-sm);
 }
 
