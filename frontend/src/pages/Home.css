@@ -7,7 +7,8 @@
 .hero {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(145deg, #052e16 0%, #064e3b 35%, #0f766e 68%, #134e4a 100%);
+  /* Slightly brighter teal/emerald so text and elements are more vivid */
+  background: linear-gradient(145deg, #064e3b 0%, #0a6652 30%, #0f8a7a 62%, #0e7490 100%);
   padding: 5.5rem 2rem 7rem;
 }
 
@@ -166,7 +167,8 @@
 
 /* Light: mint → cyan shimmer */
 .gradient-text {
-  display: block;
+  /* inline-block so <br /> above it controls the line break — no double gap */
+  display: inline;
   background: linear-gradient(90deg,
     #6ee7b7 0%, #a7f3d0 22%, #67e8f9 44%,
     #6ee7b7 66%, #a7f3d0 88%, #67e8f9 100%
@@ -180,6 +182,7 @@
 
 /* Dark: cyan → violet → emerald shimmer */
 [data-theme="dark"] .gradient-text {
+  display: inline;
   background: linear-gradient(90deg,
     #a5f3fc 0%, #c4b5fd 25%, #34d399 50%,
     #a5f3fc 75%, #c4b5fd 100%
@@ -299,14 +302,16 @@
 .stat-value {
   font-size: 1.5rem;
   font-weight: 800;
-  color: #fff;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
   letter-spacing: -0.5px;
   font-variant-numeric: tabular-nums;
 }
 
 .stat-label {
   font-size: 0.7rem;
-  color: rgba(255,255,255,0.42);
+  color: rgba(255,255,255,0.6) !important;
+  -webkit-text-fill-color: rgba(255,255,255,0.6) !important;
   text-transform: uppercase;
   letter-spacing: 0.1em;
 }
@@ -324,6 +329,13 @@
   display: flex;
   justify-content: center;
   animation: fadeUp 0.75s ease-out 0.22s both;
+}
+
+/* Wrapper that badges position against — sized to the card */
+.mock-card-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
 }
 
 /* Ambient glow behind the card */
@@ -376,14 +388,14 @@
 }
 
 .float-badge-1 {
-  top: 8%;
-  right: -4%;
+  top: -18px;
+  right: -16px;
   animation: badgeFloat1 5s ease-in-out infinite alternate;
 }
 
 .float-badge-2 {
-  bottom: 12%;
-  left: -6%;
+  bottom: -18px;
+  left: -16px;
   animation: badgeFloat2 6s ease-in-out infinite alternate;
 }
 
@@ -404,7 +416,6 @@
   padding: 2px;
   background: linear-gradient(135deg, rgba(16,185,129,0.5), rgba(6,182,212,0.3), rgba(16,185,129,0.15));
   width: 100%;
-  max-width: 400px;
   box-shadow: 0 28px 70px rgba(0,0,0,0.4);
   transition: transform 0.15s ease;
   will-change: transform;
@@ -733,6 +744,187 @@
   line-height: 1.65;
 }
 
+/* ── Meet Marcus ───────────────────────────────────────────────── */
+
+.marcus-section {
+  padding: 6rem 2rem;
+  background: var(--bg-primary);
+}
+
+.marcus-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: center;
+}
+
+.marcus-heading {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  color: var(--text-dark);
+  margin-bottom: 1rem;
+  line-height: 1.05;
+}
+
+.marcus-desc {
+  font-size: 0.975rem;
+  color: var(--text-medium);
+  line-height: 1.78;
+  margin-bottom: 2rem;
+  max-width: 460px;
+}
+
+.marcus-traits {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.marcus-trait {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.trait-icon {
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.marcus-trait strong {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 0.2rem;
+}
+
+.marcus-trait p {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--text-medium);
+  line-height: 1.6;
+}
+
+/* Marcus visual */
+.marcus-visual {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.marcus-avatar-ring {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  animation: ringPulse 3s ease-in-out infinite alternate;
+}
+
+@keyframes ringPulse {
+  from { box-shadow: 0 0 0 0 rgba(99,102,241,0.3); }
+  to   { box-shadow: 0 0 0 12px rgba(99,102,241,0); }
+}
+
+.marcus-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+}
+
+.marcus-chat {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.chat-bubble {
+  padding: 0.9rem 1.1rem;
+  border-radius: 14px;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  position: relative;
+}
+
+.chat-label {
+  display: block;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.35rem;
+  color: var(--text-light);
+}
+
+.marcus-label {
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.chat-question {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+  color: var(--text-medium);
+  align-self: flex-start;
+  max-width: 90%;
+}
+
+.chat-marcus {
+  background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(139,92,246,0.08));
+  border: 1px solid rgba(99,102,241,0.2);
+  border-bottom-right-radius: 4px;
+  color: var(--text-medium);
+  align-self: flex-end;
+  max-width: 95%;
+}
+
+.chat-marcus strong {
+  color: var(--primary);
+}
+
+.chat-score-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0 0.25rem;
+}
+
+.chat-score-bar {
+  flex: 1;
+  height: 5px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.chat-score-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  border-radius: 3px;
+  animation: fillBar 1.2s ease-out 0.3s both;
+}
+
+.chat-score-num {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--primary);
+  min-width: 24px;
+  text-align: right;
+}
+
 /* ── CTA Banner ────────────────────────────────────────────────── */
 
 .cta-banner {
@@ -789,7 +981,9 @@
   .hero-title    { letter-spacing: -0.03em; }
   .hero-subtitle { max-width: 100%; }
   .steps::before { display: none; }
-  .features, .how-it-works, .cta-banner { padding: 4rem 1.25rem; }
+  .features, .how-it-works, .cta-banner, .marcus-section { padding: 4rem 1.25rem; }
+  .marcus-inner { grid-template-columns: 1fr; gap: 3rem; }
+  .marcus-visual { order: -1; }
 }
 
 @media (max-width: 480px) {

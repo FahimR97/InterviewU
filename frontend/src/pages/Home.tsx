@@ -112,8 +112,7 @@ export default function Home() {
             </div>
 
             <h1 className="hero-title">
-              <span className="hero-title-line">Ace your next</span>
-              <br />
+              Ace your next<br />
               <span className="gradient-text">Technical Interview.</span>
             </h1>
 
@@ -152,14 +151,15 @@ export default function Home() {
           <div className="hero-visual">
             <div className="card-glow" />
 
-            {/* Floating micro-badges */}
-            <div className="float-badge float-badge-1">
-              <span className="float-badge-dot" />
-              Marcus is evaluating…
-            </div>
-            <div className="float-badge float-badge-2">
-              ✅ Score: 87/100
-            </div>
+            <div className="mock-card-wrapper">
+              {/* Floating micro-badges — positioned relative to the card wrapper */}
+              <div className="float-badge float-badge-1">
+                <span className="float-badge-dot" />
+                Marcus is evaluating…
+              </div>
+              <div className="float-badge float-badge-2">
+                ✅ Score: 87/100
+              </div>
 
             <div
               className="mock-card"
@@ -195,7 +195,8 @@ export default function Home() {
                 </div>
               </div>
             </div>
-          </div>
+            </div>{/* end mock-card-wrapper */}
+          </div>{/* end hero-visual */}
         </div>
       </section>
 
@@ -213,6 +214,67 @@ export default function Home() {
                 <p className="feature-desc">{f.description}</p>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Meet Marcus ──────────────────────────────── */}
+      <section className="marcus-section">
+        <div className="section-inner marcus-inner">
+          <div className="marcus-text">
+            <p className="section-eyebrow reveal">AI Interview Coach</p>
+            <h2 className="marcus-heading reveal">Meet Marcus.</h2>
+            <p className="marcus-desc reveal">
+              Marcus is your personal AI interviewer — powered by Claude. He evaluates every answer,
+              scores it out of 100, and gives you honest, specific feedback that helps you actually
+              improve. No generic tips. No vague encouragement.
+            </p>
+            <div className="marcus-traits">
+              <div className="marcus-trait reveal">
+                <span className="trait-icon">🎯</span>
+                <div>
+                  <strong>Scores every answer out of 100</strong>
+                  <p>Precise scoring with clear reasoning — know exactly where you stand.</p>
+                </div>
+              </div>
+              <div className="marcus-trait reveal" style={{ transitionDelay: '0.1s' }}>
+                <span className="trait-icon">💡</span>
+                <div>
+                  <strong>Identifies your specific gaps</strong>
+                  <p>Strengths, improvements, and targeted suggestions for every response.</p>
+                </div>
+              </div>
+              <div className="marcus-trait reveal" style={{ transitionDelay: '0.2s' }}>
+                <span className="trait-icon">📈</span>
+                <div>
+                  <strong>Tracks your progress over time</strong>
+                  <p>Analytics dashboard shows your score trajectory and weak areas.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="marcus-visual reveal">
+            <div className="marcus-avatar-ring">
+              <div className="marcus-avatar">🤖</div>
+            </div>
+            <div className="marcus-chat">
+              <div className="chat-bubble chat-question">
+                <span className="chat-label">You</span>
+                I would use a message broker like Kafka with partitioning to handle the throughput…
+              </div>
+              <div className="chat-bubble chat-marcus">
+                <span className="chat-label marcus-label">Marcus</span>
+                Good instinct on Kafka. Your partitioning strategy is sound, but you haven't addressed
+                consumer group lag or at-least-once delivery guarantees under failure. Score: <strong>71/100</strong>.
+              </div>
+              <div className="chat-score-row">
+                <div className="chat-score-bar">
+                  <div className="chat-score-fill" style={{ width: '71%' }} />
+                </div>
+                <span className="chat-score-num">71</span>
+              </div>
+            </div>
           </div>
         </div>
       </section>
