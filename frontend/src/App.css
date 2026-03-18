@@ -9,19 +9,21 @@
 /* ── Navbar ───────────────────────────────────────────────────── */
 
 .navbar {
-  background: rgba(255, 255, 255, 0.95);
+  /* Light mode: deep emerald — matches hero top, seamless transition */
+  background: rgba(5, 46, 22, 0.97);
   backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   padding: 1rem 0;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: var(--shadow-sm);
-  transition: background 0.3s ease, border-color 0.3s ease;
+  transition: background 0.3s ease;
 }
 
 [data-theme="dark"] .navbar {
-  background: rgba(15, 23, 42, 0.95);
+  /* Dark mode: deep navy/indigo — matches dark hero top exactly */
+  background: rgba(26, 16, 64, 0.97);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .navbar-container {
@@ -36,13 +38,20 @@
 .navbar-brand {
   font-size: 1.35rem;
   font-weight: 800;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  /* Always white/mint on the dark navbar */
+  background: linear-gradient(135deg, #6ee7b7 0%, #67e8f9 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   text-decoration: none;
   transition: opacity 0.2s ease;
   letter-spacing: -0.5px;
+}
+
+[data-theme="dark"] .navbar-brand {
+  background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
 }
 
 .navbar-brand:hover {
@@ -56,10 +65,11 @@
 }
 
 .nav-link {
-  color: var(--text-medium);
+  /* Navbar is always dark — links are always light */
+  color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   transition: color 0.2s ease;
   position: relative;
   padding: 0.5rem 0;
@@ -72,12 +82,16 @@
   left: 0;
   width: 0;
   height: 2px;
-  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  background: linear-gradient(90deg, #6ee7b7, #67e8f9);
   transition: width 0.3s ease;
 }
 
+[data-theme="dark"] .nav-link::after {
+  background: linear-gradient(90deg, #a5b4fc, #c4b5fd);
+}
+
 .nav-link:hover {
-  color: var(--primary);
+  color: #fff;
 }
 
 .nav-link:hover::after {
@@ -98,26 +112,25 @@
 }
 
 .user-email {
-  color: var(--text-dark);
-  font-weight: 600;
-  font-size: 0.875rem;
-  background: var(--bg-secondary);
-  padding: 0.4rem 0.85rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-weight: 500;
+  font-size: 0.8rem;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.35rem 0.8rem;
   border-radius: 8px;
-  border: 1px solid var(--border);
-  transition: background 0.3s ease, border-color 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .logout-btn {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  font-weight: 700;
+  color: rgba(255, 255, 255, 0.65) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.65) !important;
+  font-weight: 600;
 }
 
 .logout-btn:hover {
-  opacity: 0.75;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  opacity: 1;
 }
 
 /* ── Theme toggle (slider) ───────────────────────────────────── */
