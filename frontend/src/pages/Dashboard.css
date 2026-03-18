@@ -72,25 +72,23 @@
   border: 1px solid rgba(99, 102, 241, 0.2);
 }
 
-/* Greeting — plain white on dark banner */
+/* Greeting — plain white on dark banner. NO -webkit-text-fill-color here:
+   that property inherits and bleeds into sibling composite layers in Chrome. */
 .dashboard-greeting {
   font-size: 2.6rem;
   font-weight: 900;
   margin: 0 0 0.5rem;
-  background: none;
-  -webkit-text-fill-color: rgba(255, 255, 255, 0.96);
   color: rgba(255, 255, 255, 0.96);
   letter-spacing: -0.02em;
   line-height: 1.15;
 }
 
 [data-theme="dark"] .dashboard-greeting {
-  -webkit-text-fill-color: var(--text-dark);
   color: var(--text-dark);
 }
 
 .dashboard-sub {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.72);
   margin: 0;
   font-size: 1.2rem;
   font-weight: 500;
@@ -290,14 +288,16 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  /* text-light is #64748b — readable on both bg-secondary values */
   color: var(--text-light);
+  /* Explicit override — prevents any inherited -webkit-text-fill-color bleeding */
+  -webkit-text-fill-color: var(--text-light);
 }
 
 .stat-value {
   font-size: 2.5rem;
   font-weight: 800;
   color: var(--text-dark);
+  -webkit-text-fill-color: var(--text-dark);
   line-height: 1;
 }
 
@@ -306,6 +306,7 @@
   font-weight: 600;
   line-height: 1.4;
   color: var(--text-dark);
+  -webkit-text-fill-color: var(--text-dark);
 }
 
 /* ── Score ring SVG ───────────────────────────────────────────── */
@@ -369,11 +370,13 @@
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--text-dark);
+  -webkit-text-fill-color: var(--text-dark);
 }
 
 .recommendation-card p {
   margin: 0;
   color: var(--text-light);
+  -webkit-text-fill-color: var(--text-light);
   font-size: 0.9rem;
   line-height: 1.6;
 }
