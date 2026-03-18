@@ -16,15 +16,22 @@ import './App.css'
 function ThemeToggle() {
   const { theme, toggleTheme } = useTheme()
   return (
-    <button
-      className="theme-toggle"
-      onClick={toggleTheme}
-      aria-label={theme === 'light' ? 'Switch to dark mode' : 'Switch to light mode'}
-    >
-      <span className="toggle-track">
-        <span className="toggle-thumb" />
-      </span>
-    </button>
+    <div className="theme-segment" role="group" aria-label="Color theme">
+      <button
+        className={`theme-seg-btn${theme === 'light' ? ' active' : ''}`}
+        onClick={() => theme !== 'light' && toggleTheme()}
+        aria-pressed={theme === 'light'}
+      >
+        Light
+      </button>
+      <button
+        className={`theme-seg-btn${theme === 'dark' ? ' active' : ''}`}
+        onClick={() => theme !== 'dark' && toggleTheme()}
+        aria-pressed={theme === 'dark'}
+      >
+        Dark
+      </button>
+    </div>
   )
 }
 
@@ -53,13 +60,17 @@ function NavBar() {
   }
 
   return (
-    <nav className="navbar">
+    <nav className={`navbar${user ? ' navbar-sticky' : ''}`}>
       <div className="navbar-container">
         <Link to="/" className="navbar-brand">
           InterviewU
         </Link>
+
+        {/* Toggle sits between brand and links on desktop;
+            CSS order puts it in row 1 (with brand) on mobile */}
+        <ThemeToggle />
+
         <div className="navbar-links">
-          {/* Admin sees a completely different nav */}
           {showAdmin ? (
             <>
               <Link to="/admin" className="nav-link">Overview</Link>
@@ -74,7 +85,6 @@ function NavBar() {
               {user && <Link to="/test" className="nav-link">Test</Link>}
             </>
           )}
-          <ThemeToggle />
           {user ? (
             <>
               <span className="user-email">
