@@ -139,3 +139,35 @@
     flex: 1;
   }
 }
+
+.btn-csv {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  cursor: pointer;
+}
+
+.btn-csv:hover {
+  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+}
+
+.csv-result {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.csv-dismiss {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  padding: 0.25rem;
+}
