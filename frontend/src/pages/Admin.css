@@ -277,7 +277,7 @@
 .admin-form-group select:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
 }
 
 [data-theme="dark"] .admin-form-group input:focus,
@@ -676,12 +676,17 @@
 }
 
 .btn-csv {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+  color: #fff;
   cursor: pointer;
 }
 
+[data-theme="dark"] .btn-csv {
+  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+}
+
 .btn-csv:hover {
-  background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+  filter: brightness(1.1);
 }
 
 .csv-result {

@@ -15,13 +15,21 @@
 }
 
 .dashboard-greeting {
-  font-size: 2.75rem;
-  font-weight: 800;
+  font-size: 3.5rem;
+  font-weight: 900;
   color: var(--text-dark);
   margin: 0 0 0.4rem;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #0d9488, #0f766e);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+[data-theme="dark"] .dashboard-greeting {
+  background: linear-gradient(135deg, #6ee7b7, #67e8f9);
+  -webkit-background-clip: text;
   background-clip: text;
 }
 
@@ -81,9 +89,15 @@
   font-size: 3rem;
   font-weight: 800;
   line-height: 1;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #0d9488, #0f766e);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+[data-theme="dark"] .countdown-number {
+  background: linear-gradient(135deg, #6ee7b7, #67e8f9);
+  -webkit-background-clip: text;
   background-clip: text;
 }
 
@@ -121,7 +135,7 @@
 
 .stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.12);
+  box-shadow: 0 8px 24px rgba(13, 148, 136, 0.15);
 }
 
 .stat-card-center {
@@ -182,14 +196,19 @@
 
 /* Recommendation */
 .recommendation-card {
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
-  border: 1px solid rgba(99, 102, 241, 0.25);
+  background: linear-gradient(135deg, rgba(13, 148, 136, 0.08), rgba(6, 182, 212, 0.08));
+  border: 1px solid rgba(13, 148, 136, 0.22);
   border-radius: 16px;
   padding: 1.25rem 1.5rem;
   display: flex;
   align-items: flex-start;
   gap: 1rem;
   margin-bottom: 1.5rem;
+}
+
+[data-theme="dark"] .recommendation-card {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+  border-color: rgba(99, 102, 241, 0.25);
 }
 
 .rec-icon {
@@ -236,9 +255,7 @@
   letter-spacing: 0.04em;
 }
 
-.chart-card-wide {
-  /* already wider via grid */
-}
+/* .chart-card-wide is wider via the 2fr grid column — no extra rules needed */
 
 .chart-card-full {
   margin-bottom: 1.5rem;
@@ -287,6 +304,106 @@
   text-align: center;
   padding-top: 1rem;
 }
+
+/* Activity heatmap */
+.heatmap-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.heatmap-top h3 { margin: 0; }
+
+.heatmap-summary {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.heatmap-scroll {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.heatmap-month-row {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 4px;
+}
+
+.heatmap-spacer {
+  width: 28px;
+  flex-shrink: 0;
+}
+
+.heatmap-months-inner {
+  position: relative;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.heatmap-month-label {
+  position: absolute;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  top: 0;
+  white-space: nowrap;
+}
+
+.heatmap-body {
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.heatmap-day-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 28px;
+  flex-shrink: 0;
+}
+
+.heatmap-day-label {
+  font-size: 0.62rem;
+  color: var(--text-muted);
+  text-align: right;
+  padding-right: 4px;
+  display: block;
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-auto-flow: column;
+  gap: 3px;
+}
+
+.heatmap-cell {
+  width: 13px;
+  height: 13px;
+  border-radius: 2px;
+  background: var(--bg-tertiary);
+}
+
+.heatmap-cell-null {
+  background: transparent !important;
+}
+
+.heatmap-cell-zero {
+  background: var(--bg-tertiary);
+}
+
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 10px;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.heatmap-legend span { margin: 0 4px; }
 
 /* Responsive */
 @media (max-width: 900px) {
