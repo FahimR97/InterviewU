@@ -4,6 +4,14 @@
   padding: 2rem 1.5rem 4rem;
 }
 
+/* Global reset: tie every element's text fill to its own color value.
+   Chrome promotes animated siblings to composite layers and -webkit-text-fill-color
+   can bleed across layer boundaries. currentColor means each element uses
+   whatever `color` is set on it (or inherited), which is always correct. */
+.dashboard * {
+  -webkit-text-fill-color: currentColor;
+}
+
 /* ── Hero banner ──────────────────────────────────────────────── */
 
 @keyframes heroGradientFlow {
@@ -16,13 +24,15 @@
   background: linear-gradient(
     135deg,
     #0d9488 0%,
-    #0f766e 28%,
-    #065f46 52%,
-    #0f766e 76%,
+    #0a7c72 18%,
+    #134e4a 38%,
+    #0e7490 58%,
+    #0891b2 72%,
+    #0f766e 88%,
     #0d9488 100%
   );
   background-size: 300% 300%;
-  animation: heroGradientFlow 14s ease infinite;
+  animation: heroGradientFlow 10s ease infinite;
   border-radius: 20px;
   padding: 2.5rem 3rem;
   display: flex;
