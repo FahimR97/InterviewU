@@ -1,8 +1,24 @@
 import { useState, useMemo, useEffect } from 'react';
+import Editor from '@monaco-editor/react';
 import { useAuth } from '../contexts/AuthContext';
+import { useTheme } from '../contexts/ThemeContext';
 import { getAllQuestions, evaluateAnswer } from '../services/api';
 import type { Question, EvaluationResponse } from '../services/api';
 import './Questions.css';
+
+interface LangOption { label: string; monacoId: string; starter: string }
+const LANGUAGES: LangOption[] = [
+  { label: 'Python',     monacoId: 'python',     starter: '# Write your solution here\n' },
+  { label: 'JavaScript', monacoId: 'javascript',  starter: '// Write your solution here\n' },
+  { label: 'TypeScript', monacoId: 'typescript',  starter: '// Write your solution here\n' },
+  { label: 'Java',       monacoId: 'java',        starter: '// Write your solution here\n' },
+  { label: 'Go',         monacoId: 'go',          starter: '// Write your solution here\n' },
+  { label: 'Bash',       monacoId: 'shell',       starter: '#!/bin/bash\n# Write your solution here\n' },
+]
+
+function isCodingQuestion(q: Question): boolean {
+  return `${q.category} ${q.competency}`.toLowerCase().match(/cod|programming|algorithm/) !== null
+}
 
 export default function Questions() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -12,10 +28,12 @@ export default function Questions() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user, getAuthToken } = useAuth();
+  const { theme } = useTheme();
 
   // Answer modal state
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [userAnswer, setUserAnswer] = useState('');
+  const [selectedLang, setSelectedLang] = useState<LangOption>(LANGUAGES[0]);
   const [evaluating, setEvaluating] = useState(false);
   const [evaluation, setEvaluation] = useState<EvaluationResponse | null>(null);
 
@@ -84,13 +102,20 @@ export default function Questions() {
   const handlePracticeAnswer = (question: Question) => {
     setSelectedQuestion(question);
     setUserAnswer('');
+    setSelectedLang(LANGUAGES[0]);
     setEvaluation(null);
   };
 
   const handleCloseModal = () => {
     setSelectedQuestion(null);
     setUserAnswer('');
+    setSelectedLang(LANGUAGES[0]);
     setEvaluation(null);
+  };
+
+  const handleLangChange = (lang: LangOption) => {
+    setSelectedLang(lang);
+    setUserAnswer(lang.starter);
   };
 
   const handleSubmitAnswer = async () => {
@@ -270,17 +295,49 @@ export default function Questions() {
                 )}
               </div>
 
-              <div className="answer-section">
-                <label htmlFor="user-answer">Your Answer:</label>
-                <textarea
-                  id="user-answer"
-                  value={userAnswer}
-                  onChange={(e) => setUserAnswer(e.target.value)}
-                  placeholder="Type your answer here..."
-                  rows={8}
-                  disabled={evaluating}
-                />
-              </div>
+              {isCodingQuestion(selectedQuestion) ? (
+                <div className="practice-monaco-wrapper">
+                  <div className="practice-monaco-toolbar">
+                    {LANGUAGES.map(lang => (
+                      <button
+                        key={lang.monacoId}
+                        className={`lang-btn ${selectedLang.monacoId === lang.monacoId ? 'lang-btn-active' : ''}`}
+                        onClick={() => handleLangChange(lang)}
+                        disabled={evaluating}
+                      >
+                        {lang.label}
+                      </button>
+                    ))}
+                  </div>
+                  <Editor
+                    height="300px"
+                    language={selectedLang.monacoId}
+                    value={userAnswer}
+                    onChange={val => setUserAnswer(val || '')}
+                    theme={theme === 'dark' ? 'vs-dark' : 'light'}
+                    options={{
+                      fontSize: 14,
+                      minimap: { enabled: false },
+                      scrollBeyondLastLine: false,
+                      wordWrap: 'on',
+                      lineNumbers: 'on',
+                      padding: { top: 12, bottom: 12 },
+                    }}
+                  />
+                </div>
+              ) : (
+                <div className="answer-section">
+                  <label htmlFor="user-answer">Your Answer:</label>
+                  <textarea
+                    id="user-answer"
+                    value={userAnswer}
+                    onChange={(e) => setUserAnswer(e.target.value)}
+                    placeholder="Type your answer here..."
+                    rows={8}
+                    disabled={evaluating}
+                  />
+                </div>
+              )}
 
               {!evaluation && (
                 <button

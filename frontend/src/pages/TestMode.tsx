@@ -9,6 +9,21 @@ import './TestMode.css'
 type TestMode = 'behavioural' | 'coding' | 'system_design' | 'networking' | 'linux' | 'full'
 type Screen = 'mode-picker' | 'count-picker' | 'intro' | 'question' | 'complete'
 
+interface LangOption {
+  label: string
+  monacoId: string
+  starter: string
+}
+
+const LANGUAGES: LangOption[] = [
+  { label: 'Python',     monacoId: 'python',     starter: '# Write your solution here\n' },
+  { label: 'JavaScript', monacoId: 'javascript',  starter: '// Write your solution here\n' },
+  { label: 'TypeScript', monacoId: 'typescript',  starter: '// Write your solution here\n' },
+  { label: 'Java',       monacoId: 'java',        starter: '// Write your solution here\n' },
+  { label: 'Go',         monacoId: 'go',          starter: '// Write your solution here\n' },
+  { label: 'Bash',       monacoId: 'shell',       starter: '#!/bin/bash\n# Write your solution here\n' },
+]
+
 interface ModeConfig {
   label: string
   description: string
@@ -113,7 +128,8 @@ export default function TestMode() {
   const [qIndex, setQIndex] = useState(0)
 
   const [textAnswer, setTextAnswer] = useState('')
-  const [codeAnswer, setCodeAnswer] = useState('// Write your solution here\n')
+  const [selectedLang, setSelectedLang] = useState<LangOption>(LANGUAGES[0])
+  const [codeAnswer, setCodeAnswer] = useState(LANGUAGES[0].starter)
   const [submitting, setSubmitting] = useState(false)
   const [evaluation, setEvaluation] = useState<EvaluationResponse | null>(null)
   const [sessionScores, setSessionScores] = useState<number[]>([])
@@ -162,9 +178,15 @@ export default function TestMode() {
 
   const handleBegin = () => {
     setTextAnswer('')
-    setCodeAnswer('// Write your solution here\n')
+    setSelectedLang(LANGUAGES[0])
+    setCodeAnswer(LANGUAGES[0].starter)
     setEvaluation(null)
     setScreen('question')
+  }
+
+  const handleLangChange = (lang: LangOption) => {
+    setSelectedLang(lang)
+    setCodeAnswer(lang.starter)
   }
 
   const handleSubmit = async () => {
@@ -205,7 +227,8 @@ export default function TestMode() {
       setQIndex(nextIndex)
       setEvaluation(null)
       setTextAnswer('')
-      setCodeAnswer('// Write your solution here\n')
+      setSelectedLang(LANGUAGES[0])
+      setCodeAnswer(LANGUAGES[0].starter)
     }
   }
 
@@ -358,11 +381,21 @@ export default function TestMode() {
               {isCodingQuestion(currentQ) ? (
                 <div className="monaco-wrapper">
                   <div className="monaco-toolbar">
-                    <span className="monaco-lang">javascript</span>
+                    <div className="lang-picker">
+                      {LANGUAGES.map(lang => (
+                        <button
+                          key={lang.monacoId}
+                          className={`lang-btn ${selectedLang.monacoId === lang.monacoId ? 'lang-btn-active' : ''}`}
+                          onClick={() => handleLangChange(lang)}
+                        >
+                          {lang.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                   <Editor
                     height="360px"
-                    defaultLanguage="javascript"
+                    language={selectedLang.monacoId}
                     value={codeAnswer}
                     onChange={val => setCodeAnswer(val || '')}
                     theme={theme === 'dark' ? 'vs-dark' : 'light'}
