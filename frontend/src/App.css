@@ -9,8 +9,8 @@
 /* ── Navbar ───────────────────────────────────────────────────── */
 
 .navbar {
-  /* Light mode: deep emerald — matches hero top, seamless transition */
-  background: rgba(5, 46, 22, 0.97);
+  /* Light mode: deep teal — matches hero top, seamless transition */
+  background: rgba(7, 89, 79, 0.97);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   padding: 1rem 0;
