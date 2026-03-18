@@ -64,9 +64,11 @@ function NavBar() {
               Dashboard
             </Link>
           )}
-          <Link to="/questions" className="nav-link">
-            Practice
-          </Link>
+          {user && (
+            <Link to="/questions" className="nav-link">
+              Practice
+            </Link>
+          )}
           {user && (
             <Link to="/test" className="nav-link">
               Test
