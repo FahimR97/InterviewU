@@ -130,7 +130,7 @@
   border-radius: 10px;
   font-size: 1rem;
   box-sizing: border-box;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
   background: var(--bg-secondary);
   color: var(--text-dark);
 }
@@ -147,11 +147,33 @@
   color: var(--text-light);
 }
 
-/* Force text to always be dark/readable regardless of browser autofill colour */
-.form-group input:-webkit-autofill,
-.form-group input:-webkit-autofill:hover,
-.form-group input:-webkit-autofill:focus,
-.form-group input:-webkit-autofill:active {
+/* ── Dark mode: override browser autofill completely ────────────────── */
+/* The browser ignores CSS vars inside :-webkit-autofill, so hardcode.  */
+[data-theme="dark"] .form-group input,
+[data-theme="dark"] .form-group input:focus,
+[data-theme="dark"] .form-group input:active {
+  background: #1e293b !important;
+  color: #f1f5f9 !important;
+  -webkit-text-fill-color: #f1f5f9 !important;
+  caret-color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] .form-group input:-webkit-autofill,
+[data-theme="dark"] .form-group input:-webkit-autofill:hover,
+[data-theme="dark"] .form-group input:-webkit-autofill:focus,
+[data-theme="dark"] .form-group input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #1e293b inset !important;
+  -webkit-text-fill-color: #f1f5f9 !important;
+  caret-color: #f1f5f9 !important;
+  transition: background-color 9999s ease-in-out 0s;
+}
+
+/* ── Light mode: same treatment so autofill doesn't look broken ─────── */
+[data-theme="light"] .form-group input:-webkit-autofill,
+[data-theme="light"] .form-group input:-webkit-autofill:hover,
+[data-theme="light"] .form-group input:-webkit-autofill:focus,
+[data-theme="light"] .form-group input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #f4f3f0 inset !important;
   -webkit-text-fill-color: #1e293b !important;
   caret-color: #1e293b !important;
   transition: background-color 9999s ease-in-out 0s;
