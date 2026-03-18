@@ -4,8 +4,12 @@
   padding: 2rem 1.5rem 4rem;
 }
 
-/* Hero row */
+/* Hero card */
 .dashboard-hero {
+  background: linear-gradient(135deg, rgba(13, 148, 136, 0.07) 0%, rgba(6, 182, 212, 0.04) 100%);
+  border: 1px solid rgba(13, 148, 136, 0.18);
+  border-radius: 20px;
+  padding: 2rem 2.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -14,36 +18,25 @@
   flex-wrap: wrap;
 }
 
-.dashboard-greeting-block {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
+[data-theme="dark"] .dashboard-hero {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(15, 23, 42, 0) 100%);
+  border-color: rgba(99, 102, 241, 0.2);
 }
 
-/* "WELCOME BACK" — small label above the name */
-.dashboard-welcome {
-  font-size: 0.8rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: var(--text-muted);
-  margin: 0;
-}
-
-/* The name itself — the hero element */
-.dashboard-name-heading {
-  font-size: 3.5rem;
+.dashboard-greeting {
+  font-size: 2.8rem;
   font-weight: 900;
-  line-height: 1;
-  margin: 0;
+  color: var(--text-dark);
+  margin: 0 0 0.5rem;
   background: linear-gradient(135deg, #0d9488, #0f766e);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
 }
 
-[data-theme="dark"] .dashboard-name-heading {
+[data-theme="dark"] .dashboard-greeting {
   background: linear-gradient(135deg, #a5b4fc, #c4b5fd);
   -webkit-background-clip: text;
   background-clip: text;
@@ -52,13 +45,14 @@
 .dashboard-sub {
   color: var(--text-medium);
   margin: 0;
-  font-size: 1.1rem;
-  font-weight: 500;
+  font-size: 1.35rem;
+  font-weight: 600;
+  line-height: 1.3;
 }
 
-/* Countdown card */
+/* Countdown card — sits inside the hero card, slight contrast */
 .countdown-card {
-  background: var(--bg-secondary);
+  background: var(--bg-primary);
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 1.25rem 1.5rem;
@@ -68,6 +62,8 @@
   gap: 0.75rem;
   min-width: 200px;
   text-align: center;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
 }
 
 .countdown-icon {
@@ -341,6 +337,7 @@
 .heatmap-scroll {
   overflow-x: auto;
   padding-bottom: 4px;
+  width: 100%;
 }
 
 .heatmap-month-row {
@@ -372,12 +369,13 @@
   display: flex;
   gap: 4px;
   align-items: flex-start;
+  width: 100%;
 }
 
 .heatmap-day-col {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 4px;
   width: 28px;
   flex-shrink: 0;
 }
@@ -393,14 +391,20 @@
 .heatmap-grid {
   display: grid;
   grid-auto-flow: column;
-  gap: 3px;
+  gap: 4px;
+  flex: 1;
 }
 
 .heatmap-cell {
-  width: 13px;
-  height: 13px;
-  border-radius: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
   background: var(--bg-tertiary);
+  transition: opacity 0.15s ease;
+}
+
+.heatmap-cell:hover {
+  opacity: 0.75;
 }
 
 .heatmap-cell-null {
