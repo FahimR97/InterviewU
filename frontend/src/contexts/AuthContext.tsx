@@ -39,10 +39,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(currentUser);
       try {
         const attrs = await fetchUserAttributes();
-        const name = attrs.name || null;
-        setUserName(name ?? null);
+        // Fall back to email prefix if name attr is not set (e.g. admin-invited users)
+        const name = attrs.name || attrs.email?.split('@')[0] || null;
+        setUserName(name);
       } catch {
-        setUserName(null);
+        // fetchUserAttributes can fail — try to get email from signInDetails
+        setUserName(currentUser.signInDetails?.loginId?.split('@')[0] ?? null);
       }
     } catch {
       setUser(null);

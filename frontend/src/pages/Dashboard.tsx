@@ -112,8 +112,8 @@ function InterviewCountdown() {
 }
 
 function ActivityHeatmap({ data }: { data: AnalyticsTimeEntry[] }) {
-  const CELL = 13
-  const GAP = 3
+  const CELL = 14
+  const GAP = 4
   const STRIDE = CELL + GAP
 
   const lookup = useMemo(() => {
@@ -126,7 +126,7 @@ function ActivityHeatmap({ data }: { data: AnalyticsTimeEntry[] }) {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
     const start = new Date(today)
-    start.setDate(start.getDate() - 25 * 7)
+    start.setDate(start.getDate() - 52 * 7)
     start.setDate(start.getDate() - start.getDay()) // align to Sunday
 
     const result: Array<Array<Date | null>> = []
@@ -177,7 +177,7 @@ function ActivityHeatmap({ data }: { data: AnalyticsTimeEntry[] }) {
     <div className="chart-card chart-card-full">
       <div className="heatmap-top">
         <h3>Activity</h3>
-        <span className="heatmap-summary">{totalAnswered} question{totalAnswered !== 1 ? 's' : ''} answered in the last 6 months</span>
+        <span className="heatmap-summary">{totalAnswered} question{totalAnswered !== 1 ? 's' : ''} answered in the last 12 months</span>
       </div>
       <div className="heatmap-scroll">
         {/* Month row */}
@@ -240,8 +240,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Cognito `name` attribute may not be set for admin-invited users — fall back to email prefix
-  const displayName = userName?.split(' ')[0] ?? user?.username?.split('@')[0] ?? null
+  // AuthContext now falls back name → attrs.email prefix → signInDetails email prefix
+  const displayName = userName?.split(' ')[0] ?? null
 
   useEffect(() => {
     if (!user) return
@@ -263,9 +263,10 @@ export default function Dashboard() {
   return (
     <div className="dashboard">
       <div className="dashboard-hero">
-        <div className="dashboard-greeting-block">
-          <p className="dashboard-welcome">Welcome back</p>
-          <h1 className="dashboard-name-heading">{displayName ?? 'there'}</h1>
+        <div>
+          <h1 className="dashboard-greeting">
+            {displayName ? `Welcome back, ${displayName}` : 'Welcome back'}
+          </h1>
           <p className="dashboard-sub">Let's get to work.</p>
         </div>
         <InterviewCountdown />
