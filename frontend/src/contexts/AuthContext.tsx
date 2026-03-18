@@ -39,7 +39,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(currentUser);
       try {
         const attrs = await fetchUserAttributes();
-        const name = attrs.name || attrs.email?.split('@')[0] || null;
+        const name = attrs.name || null;
         setUserName(name ?? null);
       } catch {
         setUserName(null);

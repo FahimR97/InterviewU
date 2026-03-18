@@ -15,8 +15,8 @@
 }
 
 .dashboard-greeting {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 2.75rem;
+  font-weight: 800;
   color: var(--text-dark);
   margin: 0 0 0.4rem;
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
