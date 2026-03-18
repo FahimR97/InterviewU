@@ -20,6 +20,11 @@
   100% { background-position: 0% 50%; }
 }
 
+@keyframes heroEnter {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .dashboard-hero {
   background: linear-gradient(
     135deg,
@@ -32,7 +37,7 @@
     #0d9488 100%
   );
   background-size: 300% 300%;
-  animation: heroGradientFlow 10s ease infinite;
+  animation: heroGradientFlow 10s ease infinite, heroEnter 0.6s ease-out both;
   border-radius: 20px;
   padding: 2.5rem 3rem;
   display: flex;
@@ -298,25 +303,40 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--text-light);
-  /* Explicit override — prevents any inherited -webkit-text-fill-color bleeding */
-  -webkit-text-fill-color: var(--text-light);
+  /* Hardcoded — #64748b (var(--text-light)) is too faint at this size on white */
+  color: #4b5563;
+  -webkit-text-fill-color: #4b5563;
+}
+
+[data-theme="dark"] .stat-label {
+  color: #94a3b8;
+  -webkit-text-fill-color: #94a3b8;
 }
 
 .stat-value {
   font-size: 2.5rem;
   font-weight: 800;
-  color: var(--text-dark);
-  -webkit-text-fill-color: var(--text-dark);
+  color: #111827;
+  -webkit-text-fill-color: #111827;
   line-height: 1;
+}
+
+[data-theme="dark"] .stat-value {
+  color: #f1f5f9;
+  -webkit-text-fill-color: #f1f5f9;
 }
 
 .stat-value-sm {
   font-size: 1rem;
   font-weight: 600;
   line-height: 1.4;
-  color: var(--text-dark);
-  -webkit-text-fill-color: var(--text-dark);
+  color: #111827;
+  -webkit-text-fill-color: #111827;
+}
+
+[data-theme="dark"] .stat-value-sm {
+  color: #f1f5f9;
+  -webkit-text-fill-color: #f1f5f9;
 }
 
 /* ── Score ring SVG ───────────────────────────────────────────── */

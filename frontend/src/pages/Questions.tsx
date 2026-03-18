@@ -1,12 +1,13 @@
-import { useState, useMemo, useEffect } from 'react';
-import Editor from '@monaco-editor/react';
-import { useAuth } from '../contexts/AuthContext';
-import { useTheme } from '../contexts/ThemeContext';
-import { getAllQuestions, evaluateAnswer } from '../services/api';
-import type { Question, EvaluationResponse } from '../services/api';
-import './Questions.css';
+import { useState, useMemo, useEffect } from 'react'
+import Editor from '@monaco-editor/react'
+import { useAuth } from '../contexts/AuthContext'
+import { useTheme } from '../contexts/ThemeContext'
+import { getAllQuestions, evaluateAnswer } from '../services/api'
+import type { Question, EvaluationResponse } from '../services/api'
+import './Questions.css'
 
 interface LangOption { label: string; monacoId: string; starter: string }
+
 const LANGUAGES: LangOption[] = [
   { label: 'Python',     monacoId: 'python',     starter: '# Write your solution here\n' },
   { label: 'JavaScript', monacoId: 'javascript',  starter: '// Write your solution here\n' },
@@ -20,284 +21,121 @@ function isCodingQuestion(q: Question): boolean {
   return `${q.category} ${q.competency}`.toLowerCase().match(/cod|programming|algorithm/) !== null
 }
 
-export default function Questions() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedDifficulty, setSelectedDifficulty] = useState('All');
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const { user, getAuthToken } = useAuth();
-  const { theme } = useTheme();
+function capitalize(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()
+}
 
-  // Answer modal state
-  const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
-  const [userAnswer, setUserAnswer] = useState('');
-  const [selectedLang, setSelectedLang] = useState<LangOption>(LANGUAGES[0]);
-  const [evaluating, setEvaluating] = useState(false);
-  const [evaluation, setEvaluation] = useState<EvaluationResponse | null>(null);
+function ScoreMeter({ score }: { score: number }) {
+  const radius = 40
+  const circumference = 2 * Math.PI * radius
+  const offset = circumference - (score / 100) * circumference
+  const colour = score >= 70 ? '#10b981' : score >= 50 ? '#f59e0b' : '#ef4444'
+  return (
+    <svg width="100" height="100" className="score-meter">
+      <circle cx="50" cy="50" r={radius} className="score-meter-track" />
+      <circle
+        cx="50" cy="50" r={radius}
+        className="score-meter-fill"
+        stroke={colour}
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+      />
+      <text x="50" y="47" textAnchor="middle" className="score-meter-value">{score}</text>
+      <text x="50" y="62" textAnchor="middle" className="score-meter-sub">/100</text>
+    </svg>
+  )
+}
 
-  const loadQuestions = async () => {
-    if (!user) {
-      setLoading(false);
-      setQuestions([]);
-      return;
-    }
+function PracticeView({
+  question,
+  onBack,
+  getAuthToken,
+  theme,
+}: {
+  question: Question
+  onBack: () => void
+  getAuthToken: () => Promise<string | null>
+  theme: string
+}) {
+  const [userAnswer, setUserAnswer] = useState('')
+  const [selectedLang, setSelectedLang] = useState<LangOption>(LANGUAGES[0])
+  const [evaluating, setEvaluating] = useState(false)
+  const [evaluation, setEvaluation] = useState<EvaluationResponse | null>(null)
 
-    try {
-      setLoading(true);
-      setError(null);
-      const token = await getAuthToken();
-      const data = await getAllQuestions(token);
-      setQuestions(data);
-    } catch (err) {
-      console.error('Error loading questions:', err);
-      setError(err instanceof Error ? err.message : 'Failed to load questions');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadQuestions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
-
-  const categories = useMemo(() => {
-    const cats = new Set(questions.map(q => q.category));
-    return ['All', ...Array.from(cats)];
-  }, [questions]);
-
-  const difficulties = useMemo(() => {
-    const diffs = new Set(questions.map(q => q.difficulty.toLowerCase()));
-    return ['All', ...Array.from(diffs)];
-  }, [questions]);
-
-  const filteredQuestions = useMemo(() => {
-    return questions.filter(question => {
-      const matchesSearch = question.question_text.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           question.difficulty.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           question.category.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesCategory = selectedCategory === 'All' || question.category === selectedCategory;
-      const matchesDifficulty = selectedDifficulty === 'All' ||
-                                question.difficulty.toLowerCase() === selectedDifficulty.toLowerCase();
-
-      return matchesSearch && matchesCategory && matchesDifficulty;
-    });
-  }, [questions, searchTerm, selectedCategory, selectedDifficulty]);
-
-  const getDifficultyClass = (difficulty: string) => {
-    return `difficulty difficulty-${difficulty.toLowerCase()}`;
-  };
-
-  const capitalizeCategory = (category: string) => {
-    return category.charAt(0).toUpperCase() + category.slice(1).toLowerCase();
-  };
-
-  const capitalizeDifficulty = (difficulty: string) => {
-    return difficulty.charAt(0).toUpperCase() + difficulty.slice(1).toLowerCase();
-  };
-
-  const handlePracticeAnswer = (question: Question) => {
-    setSelectedQuestion(question);
-    setUserAnswer('');
-    setSelectedLang(LANGUAGES[0]);
-    setEvaluation(null);
-  };
-
-  const handleCloseModal = () => {
-    setSelectedQuestion(null);
-    setUserAnswer('');
-    setSelectedLang(LANGUAGES[0]);
-    setEvaluation(null);
-  };
+  const isCoding = isCodingQuestion(question)
 
   const handleLangChange = (lang: LangOption) => {
-    setSelectedLang(lang);
-    setUserAnswer(lang.starter);
-  };
+    setSelectedLang(lang)
+    setUserAnswer(lang.starter)
+  }
 
-  const handleSubmitAnswer = async () => {
-    if (!selectedQuestion || !userAnswer.trim()) {
-      return;
-    }
-
+  const handleSubmit = async () => {
+    if (!userAnswer.trim()) return
     try {
-      setEvaluating(true);
-      const token = await getAuthToken();
+      setEvaluating(true)
+      const token = await getAuthToken()
       const result = await evaluateAnswer(
         {
-          question: selectedQuestion.question_text,
+          question: question.question_text,
           answer: userAnswer,
-          competency_type: selectedQuestion.competency,
-          question_id: selectedQuestion.id,
-          category: selectedQuestion.category,
-          difficulty: selectedQuestion.difficulty,
+          competency_type: question.competency,
+          question_id: question.id,
+          category: question.category,
+          difficulty: question.difficulty,
           mode: 'practice',
         },
         token
-      );
-      setEvaluation(result);
+      )
+      setEvaluation(result)
     } catch (err) {
-      console.error('Error evaluating answer:', err);
-      alert(err instanceof Error ? err.message : 'Failed to evaluate answer');
+      console.error('Error evaluating answer:', err)
+      alert(err instanceof Error ? err.message : 'Failed to evaluate answer')
     } finally {
-      setEvaluating(false);
+      setEvaluating(false)
     }
-  };
+  }
 
   return (
-    <div className="questions-container">
-      <header className="questions-header">
-        <h1>Question Bank</h1>
-        <p>
-          {user
-            ? 'Browse and practice technical interview questions with AI feedback'
-            : '⚠️ Please login to access the question bank'}
-        </p>
-        {user && <span className="auth-badge">✓ Authenticated</span>}
-      </header>
-
-      {!user && (
-        <div className="warning-box">
-          <p>You need to be logged in to view questions. Please sign in or create an account.</p>
+    <div className="practice-view">
+      {/* Practice header bar */}
+      <div className="practice-header">
+        <button className="practice-back-btn" onClick={onBack}>
+          ← Back to Questions
+        </button>
+        <div className="practice-header-meta">
+          <span className={`difficulty difficulty-${question.difficulty.toLowerCase()}`}>
+            {capitalize(question.difficulty)}
+          </span>
+          <span className="practice-category-pill">{question.category}</span>
         </div>
-      )}
+      </div>
 
-      {user && (
-        <>
-          <div className="filters">
-            <div className="search-box">
-              <input
-                type="text"
-                placeholder="Search questions..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                disabled={loading}
-              />
-            </div>
+      {/* Two-column layout */}
+      <div className="practice-body">
 
-            <div className="filter-group">
-              <label>Category:</label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                disabled={loading}
-              >
-                {categories.map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="filter-group">
-              <label>Difficulty:</label>
-              <select
-                value={selectedDifficulty}
-                onChange={(e) => setSelectedDifficulty(e.target.value)}
-                disabled={loading}
-              >
-                {difficulties.map(diff => (
-                  <option key={diff} value={diff}>{capitalizeDifficulty(diff)}</option>
-                ))}
-              </select>
-            </div>
-
-            <button
-              className="btn btn-small"
-              onClick={loadQuestions}
-              disabled={loading}
-            >
-              {loading ? 'Loading...' : '🔄 Refresh'}
-            </button>
+        {/* Left: question context */}
+        <div className="practice-left">
+          <div className="practice-question-panel">
+            <p className="practice-panel-eyebrow">Question</p>
+            <h2 className="practice-question-text">{question.question_text}</h2>
+            {question.reference_answer && (
+              <details className="practice-reference">
+                <summary>Show reference answer</summary>
+                <p>{question.reference_answer}</p>
+              </details>
+            )}
           </div>
+        </div>
 
-          {loading && (
-            <div className="loading-container">
-              <div className="loading-spinner"></div>
-              <p>Loading questions...</p>
-            </div>
-          )}
+        {/* Right: answer + feedback */}
+        <div className="practice-right">
+          {!evaluation ? (
+            <div className="practice-answer-panel">
+              <p className="practice-panel-eyebrow">Your Answer</p>
 
-          {error && (
-            <div className="error-box">
-              <p>❌ Error: {error}</p>
-              <button className="btn" onClick={loadQuestions}>Retry</button>
-            </div>
-          )}
-
-          {!loading && !error && (
-            <>
-              <div className="questions-list">
-                {filteredQuestions.length === 0 ? (
-                  <p className="no-results">
-                    {questions.length === 0
-                      ? 'No questions available yet. Add some questions to get started!'
-                      : 'No questions found matching your filters.'}
-                  </p>
-                ) : (
-                  filteredQuestions.map(question => (
-                    <div key={question.id} className="question-card">
-                      <div className="question-header">
-                        <h3>{question.question_text}</h3>
-                        <span className={getDifficultyClass(question.difficulty)}>
-                          {capitalizeDifficulty(question.difficulty)}
-                        </span>
-                      </div>
-                      <div className="question-footer">
-                        <div className="question-tags">
-                          <span className="tag">{capitalizeCategory(question.category)}</span>
-                        </div>
-                        <button
-                          className="btn btn-small"
-                          onClick={() => handlePracticeAnswer(question)}
-                        >
-                          🎯 Practice Answer
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              <div className="results-count">
-                Showing {filteredQuestions.length} of {questions.length} questions
-              </div>
-            </>
-          )}
-        </>
-      )}
-
-      {/* Answer Modal */}
-      {selectedQuestion && (
-        <div className="modal-overlay" onClick={handleCloseModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Practice Answer</h2>
-              <button className="modal-close" onClick={handleCloseModal}>✕</button>
-            </div>
-
-            <div className="modal-body">
-              <div className="question-display">
-                <h3>{selectedQuestion.question_text}</h3>
-                <div className="question-meta">
-                  <span className={getDifficultyClass(selectedQuestion.difficulty)}>
-                    {capitalizeDifficulty(selectedQuestion.difficulty)}
-                  </span>
-                  <span className="category-badge">{capitalizeCategory(selectedQuestion.category)}</span>
-                </div>
-                {selectedQuestion.reference_answer && (
-                  <details className="reference-answer">
-                    <summary>📚 Reference Answer (click to reveal)</summary>
-                    <p>{selectedQuestion.reference_answer}</p>
-                  </details>
-                )}
-              </div>
-
-              {isCodingQuestion(selectedQuestion) ? (
-                <div className="practice-monaco-wrapper">
-                  <div className="practice-monaco-toolbar">
+              {isCoding ? (
+                <div className="practice-monaco-wrap">
+                  <div className="practice-lang-bar">
                     {LANGUAGES.map(lang => (
                       <button
                         key={lang.monacoId}
@@ -310,7 +148,7 @@ export default function Questions() {
                     ))}
                   </div>
                   <Editor
-                    height="300px"
+                    height="340px"
                     language={selectedLang.monacoId}
                     value={userAnswer}
                     onChange={val => setUserAnswer(val || '')}
@@ -326,89 +164,301 @@ export default function Questions() {
                   />
                 </div>
               ) : (
-                <div className="answer-section">
-                  <label htmlFor="user-answer">Your Answer:</label>
-                  <textarea
-                    id="user-answer"
-                    value={userAnswer}
-                    onChange={(e) => setUserAnswer(e.target.value)}
-                    placeholder="Type your answer here..."
-                    rows={8}
-                    disabled={evaluating}
-                  />
+                <textarea
+                  className="practice-textarea"
+                  value={userAnswer}
+                  onChange={e => setUserAnswer(e.target.value)}
+                  placeholder="Write your answer here — treat this like a real interview response..."
+                  rows={14}
+                  disabled={evaluating}
+                />
+              )}
+
+              <button
+                className="btn-evaluate"
+                onClick={handleSubmit}
+                disabled={evaluating || !userAnswer.trim()}
+              >
+                {evaluating ? (
+                  <>
+                    <span className="btn-spinner" />
+                    Marcus is evaluating…
+                  </>
+                ) : (
+                  'Get AI Feedback →'
+                )}
+              </button>
+            </div>
+          ) : (
+            <div className="practice-feedback">
+              {/* Score header */}
+              <div className="feedback-score-row">
+                <ScoreMeter score={evaluation.score} />
+                <div className="feedback-score-meta">
+                  <h3 className="feedback-heading">Marcus's Feedback</h3>
+                  <div className={`feedback-verdict ${evaluation.is_correct ? 'verdict-correct' : 'verdict-improve'}`}>
+                    {evaluation.is_correct ? '✓ Correct approach' : '⚠ Needs improvement'}
+                  </div>
                 </div>
-              )}
+              </div>
 
-              {!evaluation && (
-                <button
-                  className="btn btn-primary"
-                  onClick={handleSubmitAnswer}
-                  disabled={evaluating || !userAnswer.trim()}
-                >
-                  {evaluating ? '🤖 Marcus is evaluating...' : '✨ Get AI Feedback'}
-                </button>
-              )}
+              <div className="feedback-section feedback-strengths">
+                <h4>💪 Strengths</h4>
+                <ul>{evaluation.strengths.map((s, i) => <li key={i}>{s}</li>)}</ul>
+              </div>
 
-              {evaluation && (
-                <div className="evaluation-results">
-                  <div className="evaluation-header">
-                    <h3>Marcus's Feedback</h3>
-                    <div className="score-badge">
-                      Score: {evaluation.score}/100
-                    </div>
-                  </div>
+              <div className="feedback-section feedback-improvements">
+                <h4>🎯 Areas to Improve</h4>
+                <ul>{evaluation.improvements.map((s, i) => <li key={i}>{s}</li>)}</ul>
+              </div>
 
-                  <div className={`correctness ${evaluation.is_correct ? 'correct' : 'incorrect'}`}>
-                    {evaluation.is_correct ? '✅ Correct approach!' : '⚠️ Needs improvement'}
-                  </div>
+              <div className="feedback-section feedback-suggestions">
+                <h4>💡 Suggestions</h4>
+                <ul>{evaluation.suggestions.map((s, i) => <li key={i}>{s}</li>)}</ul>
+              </div>
 
-                  <div className="feedback-section">
-                    <h4>💪 Strengths</h4>
-                    <ul>
-                      {evaluation.strengths.map((strength, idx) => (
-                        <li key={idx}>{strength}</li>
-                      ))}
-                    </ul>
-                  </div>
+              <div className="marcus-comment">
+                <span className="marcus-label">🤖 Marcus</span>
+                <p>{evaluation.marcus_comment}</p>
+              </div>
 
-                  <div className="feedback-section">
-                    <h4>🎯 Areas for Improvement</h4>
-                    <ul>
-                      {evaluation.improvements.map((improvement, idx) => (
-                        <li key={idx}>{improvement}</li>
-                      ))}
-                    </ul>
-                  </div>
+              <button
+                className="btn-try-again"
+                onClick={() => {
+                  setUserAnswer('')
+                  setEvaluation(null)
+                }}
+              >
+                Try Again
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
 
-                  <div className="feedback-section">
-                    <h4>💡 Suggestions</h4>
-                    <ul>
-                      {evaluation.suggestions.map((suggestion, idx) => (
-                        <li key={idx}>{suggestion}</li>
-                      ))}
-                    </ul>
-                  </div>
+export default function Questions() {
+  const [searchTerm, setSearchTerm] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState('All')
+  const [selectedDifficulty, setSelectedDifficulty] = useState('All')
+  const [questions, setQuestions] = useState<Question[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [practiceView, setPracticeView] = useState<Question | null>(null)
+  const { user, getAuthToken } = useAuth()
+  const { theme } = useTheme()
 
-                  <div className="marcus-comment">
-                    <h4>🤖 Marcus says:</h4>
-                    <p>{evaluation.marcus_comment}</p>
-                  </div>
+  const loadQuestions = async () => {
+    if (!user) {
+      setLoading(false)
+      setQuestions([])
+      return
+    }
+    try {
+      setLoading(true)
+      setError(null)
+      const token = await getAuthToken()
+      const data = await getAllQuestions(token)
+      setQuestions(data)
+    } catch (err) {
+      console.error('Error loading questions:', err)
+      setError(err instanceof Error ? err.message : 'Failed to load questions')
+    } finally {
+      setLoading(false)
+    }
+  }
 
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => {
-                      setUserAnswer('');
-                      setEvaluation(null);
-                    }}
-                  >
-                    Try Again
-                  </button>
-                </div>
-              )}
+  useEffect(() => {
+    loadQuestions()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user])
+
+  const categories = useMemo(() => {
+    const cats = new Set(questions.map(q => q.category))
+    return ['All', ...Array.from(cats)]
+  }, [questions])
+
+  const difficulties = useMemo(() => {
+    const diffs = new Set(questions.map(q => q.difficulty.toLowerCase()))
+    return ['All', ...Array.from(diffs)]
+  }, [questions])
+
+  const filteredQuestions = useMemo(() => {
+    return questions.filter(q => {
+      const matchesSearch =
+        q.question_text.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        q.difficulty.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        q.category.toLowerCase().includes(searchTerm.toLowerCase())
+      const matchesCategory = selectedCategory === 'All' || q.category === selectedCategory
+      const matchesDifficulty =
+        selectedDifficulty === 'All' ||
+        q.difficulty.toLowerCase() === selectedDifficulty.toLowerCase()
+      return matchesSearch && matchesCategory && matchesDifficulty
+    })
+  }, [questions, searchTerm, selectedCategory, selectedDifficulty])
+
+  // Practice view replaces the full list
+  if (practiceView) {
+    return (
+      <div className="questions-container">
+        <PracticeView
+          question={practiceView}
+          onBack={() => setPracticeView(null)}
+          getAuthToken={getAuthToken}
+          theme={theme}
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div className="questions-container">
+
+      {/* ── Hero ── */}
+      <div className="qbank-hero">
+        <div className="qbank-hero-orb orb-a" />
+        <div className="qbank-hero-orb orb-b" />
+        <div className="qbank-hero-pill">
+          <span className="qbank-hero-dot" />
+          AI-Powered Practice
+        </div>
+        <h1 className="qbank-hero-title">Question Bank</h1>
+        <p className="qbank-hero-subtitle">
+          Curated interview questions across system design, DevOps, cloud, algorithms and more.
+          Answer anything and get instant AI-scored feedback from Marcus.
+        </p>
+        {user && !loading && questions.length > 0 && (
+          <div className="qbank-hero-stats">
+            <div className="qbank-stat">
+              <span className="qbank-stat-num">{questions.length}</span>
+              <span className="qbank-stat-label">Questions</span>
+            </div>
+            <div className="qbank-stat-div" />
+            <div className="qbank-stat">
+              <span className="qbank-stat-num">{categories.length - 1}</span>
+              <span className="qbank-stat-label">Categories</span>
+            </div>
+            <div className="qbank-stat-div" />
+            <div className="qbank-stat">
+              <span className="qbank-stat-num">AI</span>
+              <span className="qbank-stat-label">Scored</span>
             </div>
           </div>
+        )}
+      </div>
+
+      {!user && (
+        <div className="warning-box">
+          <p>Sign in to access the question bank and start practising.</p>
         </div>
       )}
+
+      {user && (
+        <>
+          {/* ── Filters ── */}
+          <div className="filters">
+            <div className="search-box">
+              <svg className="search-icon" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                <circle cx="8.5" cy="8.5" r="5" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M14 14l3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              </svg>
+              <input
+                type="text"
+                placeholder="Search questions…"
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                disabled={loading}
+              />
+            </div>
+
+            <div className="filter-group">
+              <label>Category</label>
+              <select
+                value={selectedCategory}
+                onChange={e => setSelectedCategory(e.target.value)}
+                disabled={loading}
+              >
+                {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+              </select>
+            </div>
+
+            <div className="filter-group">
+              <label>Difficulty</label>
+              <select
+                value={selectedDifficulty}
+                onChange={e => setSelectedDifficulty(e.target.value)}
+                disabled={loading}
+              >
+                {difficulties.map(d => <option key={d} value={d}>{capitalize(d)}</option>)}
+              </select>
+            </div>
+
+            <button className="btn-refresh" onClick={loadQuestions} disabled={loading} title="Refresh">
+              {loading ? '…' : '↺'}
+            </button>
+          </div>
+
+          {loading && (
+            <div className="loading-container">
+              <div className="loading-spinner" />
+              <p>Loading questions…</p>
+            </div>
+          )}
+
+          {error && (
+            <div className="error-box">
+              <p>Failed to load questions: {error}</p>
+              <button className="btn-refresh-inline" onClick={loadQuestions}>Retry</button>
+            </div>
+          )}
+
+          {!loading && !error && (
+            <>
+              <p className="results-count">
+                {filteredQuestions.length} of {questions.length} questions
+              </p>
+
+              <div className="questions-list">
+                {filteredQuestions.length === 0 ? (
+                  <div className="no-results">
+                    <p>
+                      {questions.length === 0
+                        ? 'No questions available yet.'
+                        : 'No questions match your filters.'}
+                    </p>
+                  </div>
+                ) : (
+                  filteredQuestions.map((question, idx) => (
+                    <div
+                      key={question.id}
+                      className="question-card"
+                      style={{ animationDelay: `${Math.min(idx * 0.04, 0.4)}s` }}
+                    >
+                      <div className="question-header">
+                        <h3>{question.question_text}</h3>
+                        <span className={`difficulty difficulty-${question.difficulty.toLowerCase()}`}>
+                          {capitalize(question.difficulty)}
+                        </span>
+                      </div>
+                      <div className="question-footer">
+                        <span className="tag">{capitalize(question.category)}</span>
+                        <button
+                          className="btn-practice"
+                          onClick={() => setPracticeView(question)}
+                        >
+                          Practice →
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </>
+          )}
+        </>
+      )}
     </div>
-  );
+  )
 }
