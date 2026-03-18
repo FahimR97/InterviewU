@@ -127,6 +127,44 @@ function QuestionsTab({
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null)
   const [createForm, setCreateForm] = useState<QuestionForm>(emptyForm)
+  const [csvUploading, setCsvUploading] = useState(false)
+  const [csvResult, setCsvResult] = useState<{ success: number; failed: number } | null>(null)
+  const navigate = useNavigate()
+  const { getAuthToken } = useAuth()
+
+  const loadQuestions = useCallback(async () => {
+    try {
+      setLoading(true)
+      const token = await getAuthToken()
+      const data = await getAllQuestions(token)
+      setQuestions(data)
+    } catch (error) {
+      console.error('Error loading questions:', error)
+    } finally {
+      setLoading(false)
+    }
+  }, [getAuthToken])
+
+  useEffect(() => {
+    const checkAdminAccess = async () => {
+      try {
+        const session = await fetchAuthSession()
+        const groups = (session.tokens?.accessToken?.payload['cognito:groups'] as string[]) || []
+        if (groups.includes('Admin')) {
+          setIsAdmin(true)
+          await loadQuestions()
+        } else {
+          setIsAdmin(false)
+          setLoading(false)
+        }
+      } catch (error) {
+        console.error('Error checking admin access:', error)
+        setIsAdmin(false)
+        setLoading(false)
+      }
+    }
+    checkAdminAccess()
+  }, [loadQuestions])
 
   const categories = useMemo(() => {
     const cats = new Set(questions.map(q => q.category))
@@ -221,6 +259,45 @@ function QuestionsTab({
     }
   }
 
+  const handleCsvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setCsvUploading(true)
+    setCsvResult(null)
+    try {
+      const text = await file.text()
+      const lines = text.split('\n').filter(l => l.trim())
+      const startIdx = lines[0]?.toLowerCase().includes('question_text') ? 1 : 0
+      const token = await getAuthToken()
+      let success = 0, failed = 0
+      for (const line of lines.slice(startIdx)) {
+        const cols = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g)?.map(c => c.replace(/^"|"$/g, '').trim())
+        if (!cols || cols.length < 3) { failed++; continue }
+        try {
+          const res = await fetch(`${API_BASE_URL}questions`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              question_text: cols[0],
+              category: cols[1],
+              difficulty: cols[2],
+              reference_answer: cols[3] || '',
+            }),
+          })
+          if (res.ok) success++; else failed++
+        } catch { failed++ }
+      }
+      setCsvResult({ success, failed })
+      await loadQuestions()
+    } catch (error) {
+      console.error('CSV upload error:', error)
+      alert('Failed to parse CSV file')
+    } finally {
+      setCsvUploading(false)
+      e.target.value = ''
+    }
+  }
+
   const difficultyClass = (d: string) => `difficulty difficulty-${d.toLowerCase()}`
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()
 
@@ -236,10 +313,19 @@ function QuestionsTab({
         >
           {showCreateForm ? 'Cancel' : '+ New Question'}
         </button>
-        <button className="admin-btn admin-btn-ghost" onClick={onRefresh}>
-          {loading ? 'Refreshing…' : 'Refresh'}
-        </button>
+        <label className="btn-small btn-csv">
+          {csvUploading ? 'Uploading...' : '📄 Upload CSV'}
+          <input type="file" accept=".csv" onChange={handleCsvUpload} hidden disabled={csvUploading} />
+        </label>
+        <button className="btn-small" onClick={loadQuestions}>Refresh</button>
       </div>
+
+      {csvResult && (
+        <div className="csv-result">
+          ✅ {csvResult.success} added{csvResult.failed > 0 && `, ❌ ${csvResult.failed} failed`}
+          <button className="csv-dismiss" onClick={() => setCsvResult(null)}>✕</button>
+        </div>
+      )}
 
       {showCreateForm && (
         <div className="admin-form-panel">
