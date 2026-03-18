@@ -24,11 +24,11 @@
   background: linear-gradient(
     135deg,
     #0d9488 0%,
-    #0a7c72 18%,
-    #134e4a 38%,
-    #0e7490 58%,
-    #0891b2 72%,
-    #0f766e 88%,
+    #134e4a 20%,
+    #0f766e 40%,
+    #5eead4 60%,
+    #0f766e 78%,
+    #134e4a 90%,
     #0d9488 100%
   );
   background-size: 300% 300%;
@@ -111,10 +111,10 @@
 /* ── Countdown card (inside hero — frosted glass) ─────────────── */
 
 .countdown-card {
-  background: rgba(255, 255, 255, 0.13);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.24);
+  /* No backdrop-filter: blur — inside overflow:hidden + animated parent it
+     creates a Chrome compositing bug that makes sibling HTML text invisible */
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 16px;
   padding: 1.25rem 1.5rem;
   display: flex;
