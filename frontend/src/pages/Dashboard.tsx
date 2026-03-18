@@ -240,6 +240,8 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
+  // Cognito `name` attribute may not be set for admin-invited users — fall back to email prefix
+  const displayName = userName?.split(' ')[0] ?? user?.username?.split('@')[0] ?? null
 
   useEffect(() => {
     if (!user) return
@@ -261,10 +263,9 @@ export default function Dashboard() {
   return (
     <div className="dashboard">
       <div className="dashboard-hero">
-        <div>
-          <h1 className="dashboard-greeting">
-            {userName ? `Welcome back, ${userName.split(' ')[0]}` : 'Welcome back'}
-          </h1>
+        <div className="dashboard-greeting-block">
+          <p className="dashboard-welcome">Welcome back</p>
+          <h1 className="dashboard-name-heading">{displayName ?? 'there'}</h1>
           <p className="dashboard-sub">Let's get to work.</p>
         </div>
         <InterviewCountdown />
