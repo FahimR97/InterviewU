@@ -59,25 +59,20 @@ function NavBar() {
           InterviewU
         </Link>
         <div className="navbar-links">
-          {user && (
-            <Link to="/dashboard" className="nav-link">
-              Dashboard
-            </Link>
-          )}
-          {user && (
-            <Link to="/questions" className="nav-link">
-              Practice
-            </Link>
-          )}
-          {user && (
-            <Link to="/test" className="nav-link">
-              Test
-            </Link>
-          )}
-          {showAdmin && (
-            <Link to="/admin" className="nav-link">
-              Admin
-            </Link>
+          {/* Admin sees a completely different nav */}
+          {showAdmin ? (
+            <>
+              <Link to="/admin" className="nav-link">Overview</Link>
+              <Link to="/admin?tab=questions" className="nav-link">Questions</Link>
+              <Link to="/admin?tab=users" className="nav-link">Users</Link>
+              <span className="admin-nav-badge">Admin</span>
+            </>
+          ) : (
+            <>
+              {user && <Link to="/dashboard" className="nav-link">Dashboard</Link>}
+              {user && <Link to="/questions" className="nav-link">Practice</Link>}
+              {user && <Link to="/test" className="nav-link">Test</Link>}
+            </>
           )}
           <ThemeToggle />
           {user ? (

@@ -3,11 +3,11 @@
   line-height: 1.6;
   font-weight: 400;
 
-  /* Light mode palette */
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
-  --primary-light: #eef2ff;
-  --secondary: #8b5cf6;
+  /* Light mode palette — emerald/teal to match hero */
+  --primary: #0d9488;
+  --primary-hover: #0f766e;
+  --primary-light: #ccfbf1;
+  --secondary: #059669;
   --accent: #06b6d4;
   --success: #10b981;
   --warning: #f59e0b;

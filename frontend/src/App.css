@@ -9,8 +9,8 @@
 /* ── Navbar ───────────────────────────────────────────────────── */
 
 .navbar {
-  /* Light mode: deep emerald — matches hero top, seamless transition */
-  background: rgba(5, 46, 22, 0.97);
+  /* Light mode: deep teal — matches hero top, seamless transition */
+  background: rgba(7, 89, 79, 0.97);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   padding: 1rem 0;
@@ -119,6 +119,18 @@
   padding: 0.35rem 0.8rem;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.admin-nav-badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #a5b4fc;
+  background: rgba(165, 180, 252, 0.15);
+  border: 1px solid rgba(165, 180, 252, 0.3);
+  padding: 0.2rem 0.6rem;
+  border-radius: 20px;
 }
 
 .logout-btn {
