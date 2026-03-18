@@ -22,6 +22,7 @@ def handler(event, context):
         question_id = body.get("question_id", "unknown")
         category = body.get("category", "unknown")
         difficulty = body.get("difficulty", "unknown")
+        mode = body.get("mode", "practice")  # "test" writes analytics, "practice" skips
 
         if not question_text or not user_answer:
             return {
@@ -85,8 +86,8 @@ Be constructive, specific, and encouraging."""
         # Parse JSON from Marcus
         feedback = json.loads(feedback_text)
 
-        # Persist answer record for analytics (best-effort — never blocks the response)
-        if user_id and USER_ANSWERS_TABLE_NAME:
+        # Persist answer record for analytics — only in test mode
+        if mode == "test" and user_id and USER_ANSWERS_TABLE_NAME:
             try:
                 table = dynamodb.Table(USER_ANSWERS_TABLE_NAME)
                 table.put_item(Item={

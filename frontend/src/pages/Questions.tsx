@@ -109,6 +109,7 @@ export default function Questions() {
           question_id: selectedQuestion.id,
           category: selectedQuestion.category,
           difficulty: selectedQuestion.difficulty,
+          mode: 'practice',
         },
         token
       );

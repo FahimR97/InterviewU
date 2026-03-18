@@ -17,6 +17,7 @@ export interface EvaluationRequest {
   question_id?: string;
   category?: string;
   difficulty?: string;
+  mode?: 'practice' | 'test';
 }
 
 export interface EvaluationResponse {

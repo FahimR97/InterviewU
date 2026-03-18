@@ -10,6 +10,7 @@ import Admin from './pages/Admin'
 import Signup from './pages/Signup'
 import ChangePassword from './pages/ChangePassword'
 import Dashboard from './pages/Dashboard'
+import TestMode from './pages/TestMode'
 import './App.css'
 
 function ThemeToggle() {
@@ -64,8 +65,13 @@ function NavBar() {
             </Link>
           )}
           <Link to="/questions" className="nav-link">
-            Questions
+            Practice
           </Link>
+          {user && (
+            <Link to="/test" className="nav-link">
+              Test
+            </Link>
+          )}
           {showAdmin && (
             <Link to="/admin" className="nav-link">
               Admin
@@ -107,6 +113,7 @@ function AppContent() {
             <Route path="/change-password" element={<ChangePassword />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/test" element={<TestMode />} />
           </Routes>
         </main>
 
