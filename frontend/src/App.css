@@ -43,20 +43,14 @@
 .navbar-brand {
   font-size: 1.35rem;
   font-weight: 800;
-  /* Always white/mint on the dark navbar */
-  background: linear-gradient(135deg, #6ee7b7 0%, #67e8f9 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #6ee7b7;
   text-decoration: none;
   transition: opacity 0.2s ease;
   letter-spacing: -0.5px;
 }
 
 [data-theme="dark"] .navbar-brand {
-  background: linear-gradient(135deg, #a5b4fc 0%, #c4b5fd 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
+  color: #a5b4fc;
 }
 
 .navbar-brand:hover {
