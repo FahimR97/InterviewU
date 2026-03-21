@@ -254,7 +254,10 @@ function ActivityHeatmap({ data }: { data: AnalyticsTimeEntry[] }) {
       </div>
 
       {tooltip && (
-        <div className="heatmap-tooltip" style={{ top: tooltip.y - 12, left: tooltip.x + 14 }}>
+        <div className="heatmap-tooltip" style={{
+          top: tooltip.y - 12,
+          left: tooltip.x + 14 + 220 > window.innerWidth ? tooltip.x - 234 : tooltip.x + 14,
+        }}>
           <div className="heatmap-tooltip-date">
             {new Date(tooltip.entry.date + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
           </div>

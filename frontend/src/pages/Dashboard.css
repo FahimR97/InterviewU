@@ -610,6 +610,28 @@
   }
 }
 
+/* On small phones the 2-column metric grid leaves ~160px per card.
+   Reduce font size and padding so long values (Behavioural, Automation)
+   fit on a single line without mid-word breaks. */
+@media (max-width: 500px) {
+  .metric-card {
+    padding: 0.9rem 0.75rem;
+    gap: 0.6rem;
+  }
+
+  .metric-icon {
+    font-size: 1.4rem;
+  }
+
+  .metric-value {
+    font-size: 1.1rem;
+  }
+
+  .metric-label {
+    font-size: 0.65rem;
+  }
+}
+
 @media (max-width: 700px) {
   .dashboard-hero {
     flex-direction: column;
