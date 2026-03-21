@@ -9,6 +9,7 @@ import Questions from './pages/Questions'
 import Admin from './pages/Admin'
 import Signup from './pages/Signup'
 import ChangePassword from './pages/ChangePassword'
+import ForgotPassword from './pages/ForgotPassword'
 import Dashboard from './pages/Dashboard'
 import TestMode from './pages/TestMode'
 import './App.css'
@@ -118,6 +119,7 @@ function AppContent() {
             <Route path="/questions" element={<Questions />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/change-password" element={<ChangePassword />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/admin" element={<Admin />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/test" element={<TestMode />} />

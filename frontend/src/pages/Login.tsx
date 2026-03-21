@@ -93,6 +93,9 @@ export default function Login() {
               disabled={loading}
             />
           </div>
+          <div style={{ textAlign: 'right', marginBottom: '0.5rem' }}>
+            <Link to="/forgot-password" className="link" style={{ fontSize: '0.85rem' }}>Forgot password?</Link>
+          </div>
           <div className="remember-row">
             <input
               type="checkbox"
