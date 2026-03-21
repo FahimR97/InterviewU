@@ -29,6 +29,9 @@ jobs:
       - name: Install dependencies (root + workspaces)
         run: npm install
 
+      - name: Install linux rollup native binary (npm optional dep bug workaround)
+        run: npm install @rollup/rollup-linux-x64-gnu --no-save --ignore-scripts
+
       - name: Run linting
         working-directory: frontend
         run: npm run lint
@@ -132,6 +135,9 @@ jobs:
 
       - name: Install dependencies (root + workspaces)
         run: npm install
+
+      - name: Install linux rollup native binary (npm optional dep bug workaround)
+        run: npm install @rollup/rollup-linux-x64-gnu --no-save --ignore-scripts
 
       - name: Run linting
         working-directory: frontend
