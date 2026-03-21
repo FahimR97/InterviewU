@@ -7,7 +7,10 @@ import type { Question, EvaluationResponse } from '../services/api'
 import './Questions.css'
 
 const ExcalidrawCanvas = lazy(() =>
-  import('@excalidraw/excalidraw').then(m => ({ default: m.Excalidraw }))
+  Promise.all([
+    import('@excalidraw/excalidraw'),
+    import('@excalidraw/excalidraw/index.css'),
+  ]).then(([m]) => ({ default: m.Excalidraw }))
 )
 
 interface LangOption { label: string; monacoId: string; starter: string }

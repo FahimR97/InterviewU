@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react'
 
 const ExcalidrawCanvas = lazy(() =>
-  import('@excalidraw/excalidraw').then(m => ({ default: m.Excalidraw }))
+  Promise.all([
+    import('@excalidraw/excalidraw'),
+    import('@excalidraw/excalidraw/index.css'),
+  ]).then(([m]) => ({ default: m.Excalidraw }))
 )
 import Editor from '@monaco-editor/react'
 import { useAuth } from '../contexts/AuthContext'
