@@ -42,13 +42,13 @@ const CATEGORY_COLOURS = [
   '#0d9488', '#6366f1', '#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#ef4444',
 ]
 
-function MetricCard({ icon, label, value, accent, dark }: { icon: string; label: string; value: string | number; accent: string; dark: boolean }) {
+function MetricCard({ icon, label, value, accent }: { icon: string; label: string; value: string | number; accent: string }) {
   return (
     <div className="metric-card" style={{ borderLeft: `4px solid ${accent}` }}>
       <span className="metric-icon" style={{ color: accent }}>{icon}</span>
       <div style={{ minWidth: 0 }}>
-        <p style={{ color: dark ? '#94a3b8' : '#64748b', margin: 0, fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</p>
-        <p style={{ color: dark ? '#f1f5f9' : '#111827', margin: '0.2rem 0 0', fontSize: '1.5rem', fontWeight: 800, lineHeight: 1.15, wordBreak: 'break-word' }}>{value}</p>
+        <p className="metric-label">{label}</p>
+        <p className="metric-value">{value}</p>
       </div>
     </div>
   )
@@ -348,13 +348,12 @@ export default function Dashboard() {
         <>
           {/* Metric cards */}
           <div className="metric-row">
-            <MetricCard icon="📝" label="Questions Answered" value={analytics.total_attempts} accent="#0d9488" dark={theme === 'dark'} />
+            <MetricCard icon="📝" label="Questions Answered" value={analytics.total_attempts} accent="#0d9488" />
             <MetricCard
               icon="🎯"
               label="Average Score"
               value={analytics.avg_score !== null ? `${Math.round(analytics.avg_score)}/100` : '—'}
               accent="#6366f1"
-              dark={theme === 'dark'}
             />
             <MetricCard
               icon="🏆"
@@ -363,14 +362,12 @@ export default function Dashboard() {
                 ? fmtCategory(analytics.by_category.reduce((a, b) => a.avg_score > b.avg_score ? a : b).category)
                 : '—'}
               accent="#10b981"
-              dark={theme === 'dark'}
             />
             <MetricCard
               icon="⚡"
               label="Focus Area"
               value={analytics.weak_areas.length > 0 ? fmtCategory(analytics.weak_areas[0]) : 'All good'}
               accent="#f59e0b"
-              dark={theme === 'dark'}
             />
           </div>
 

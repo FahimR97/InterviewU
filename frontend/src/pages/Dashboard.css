@@ -274,12 +274,30 @@
   flex-shrink: 0;
 }
 
-[data-theme="dark"] .metric-value {
-  color: #f1f5f9 !important;
+.metric-label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #64748b;
+}
+
+.metric-value {
+  margin: 0.2rem 0 0;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1.15;
+  word-break: break-word;
+  color: #111827;
 }
 
 [data-theme="dark"] .metric-label {
-  color: #94a3b8 !important;
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .metric-value {
+  color: #f1f5f9;
 }
 
 /* ── Recommendation ───────────────────────────────────────────── */
@@ -346,6 +364,12 @@
 
 .chart-card-full {
   margin-bottom: 1.5rem;
+}
+
+/* Recharts SVG renders a background rect that ignores CSS vars — force transparent */
+[data-theme="dark"] .chart-card .recharts-surface,
+[data-theme="dark"] .chart-card .recharts-wrapper svg {
+  background: transparent;
 }
 
 /* ── Loading / empty states ───────────────────────────────────── */
