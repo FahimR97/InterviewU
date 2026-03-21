@@ -297,8 +297,7 @@ export default function TestMode() {
 
   const handleSaveAndNext = () => {
     const newAnswers = [...answers]
-    const isSd = selectedMode === 'system_design'
-    const sdText = isSd ? buildSdAnswer(sdSections) : textAnswer
+    const sdText = isSdMode ? buildSdAnswer(sdSections) : textAnswer
     newAnswers[qIndex] = { text: sdText, code: codeAnswer, lang: selectedLang }
     setAnswers(newAnswers)
 
@@ -349,9 +348,11 @@ export default function TestMode() {
   const sessionAvg = sessionScores.length > 0
     ? Math.round(sessionScores.reduce((a, b) => a + b, 0) / sessionScores.length)
     : null
+  const isSdMode = selectedMode === 'system_design'
   const currentAnswer = currentQ ? (isCodingQuestion(currentQ) ? codeAnswer : textAnswer) : ''
-  const hasAnswer = currentAnswer.trim().length > 0 &&
-    currentAnswer !== (selectedLang.starter).trim()
+  const hasAnswer = isSdMode
+    ? buildSdAnswer(sdSections).trim().length > 0
+    : currentAnswer.trim().length > 0 && currentAnswer !== selectedLang.starter.trim()
 
   return (
     <div className="test-container">
