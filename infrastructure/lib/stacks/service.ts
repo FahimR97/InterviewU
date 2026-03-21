@@ -30,12 +30,16 @@ export class ServiceStack extends cdk.Stack {
     const enableMonitoring = props?.enableMonitoring ?? true;
     const environment = props?.environment ?? 'prod';
     const isProduction = environment === 'prod';
-    // TODO: Enable custom domain after Supernova setup
-    // const rootDomain = 'fahimray.people.aws.dev';
-    const websiteDomain: string | undefined = undefined;
+    const rootDomain = 'fahimray.people.aws.dev';
+    const websiteDomain = isProduction ? `interviewu.${rootDomain}` : undefined;
     const apiDomain: string | undefined = undefined;
-    const hostedZone: route53.IHostedZone | undefined = undefined;
-    const certificate: acm.ICertificate | undefined = undefined;
+    const hostedZone = isProduction ? route53.HostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
+      hostedZoneId: 'Z06640972CZPSKCSBKIIZ',
+      zoneName: rootDomain,
+    }) : undefined;
+    const certificate = isProduction ? acm.Certificate.fromCertificateArn(this, 'SiteCert',
+      'arn:aws:acm:us-east-1:418107732011:certificate/11b8cbdf-8a1e-4ff5-a7af-48a2aeeb9d81'
+    ) : undefined;
     const apiCertificate: acm.ICertificate | undefined = undefined;
 
     const userPool = new cognito.UserPool(this, 'InterviewUUserPool', {
