@@ -7,6 +7,36 @@ import type { Question, EvaluationResponse } from '../services/api'
 import './TestMode.css'
 
 type TestMode = 'behavioural' | 'coding' | 'system_design' | 'networking' | 'linux' | 'full'
+
+type SdTab = 'clarifying' | 'requirements' | 'design' | 'deepdive' | 'tradeoffs'
+
+interface SdSections {
+  clarifying: string
+  requirements: string
+  design: string
+  deepdive: string
+  tradeoffs: string
+}
+
+const EMPTY_SD: SdSections = { clarifying: '', requirements: '', design: '', deepdive: '', tradeoffs: '' }
+
+const SD_TABS: { id: SdTab; label: string; hint: string }[] = [
+  { id: 'clarifying',   label: 'Clarify',       hint: 'What questions would you ask the interviewer before you start designing? (Users, scale, SLAs, read/write ratio, consistency requirements…)' },
+  { id: 'requirements', label: 'Requirements',   hint: 'List functional requirements (what the system does) and non-functional requirements (scale, latency, availability, durability).' },
+  { id: 'design',       label: 'Architecture',   hint: 'High-level components and data flow. Identify the core services, how they communicate, and where the main data stores sit.' },
+  { id: 'deepdive',     label: 'Deep Dive',      hint: 'Pick the hardest/most critical component and go deeper. Data model, API design, database choice, caching, queuing strategy.' },
+  { id: 'tradeoffs',    label: 'Tradeoffs',      hint: 'Why these choices? What are the failure modes and how do you handle them? What would you do differently at 10x scale?' },
+]
+
+function buildSdAnswer(sections: SdSections): string {
+  const parts: string[] = []
+  if (sections.clarifying.trim())   parts.push(`=== CLARIFYING QUESTIONS ===\n${sections.clarifying.trim()}`)
+  if (sections.requirements.trim()) parts.push(`=== REQUIREMENTS ===\n${sections.requirements.trim()}`)
+  if (sections.design.trim())       parts.push(`=== HIGH-LEVEL ARCHITECTURE ===\n${sections.design.trim()}`)
+  if (sections.deepdive.trim())     parts.push(`=== DEEP DIVE ===\n${sections.deepdive.trim()}`)
+  if (sections.tradeoffs.trim())    parts.push(`=== TRADEOFFS & FAILURE MODES ===\n${sections.tradeoffs.trim()}`)
+  return parts.join('\n\n')
+}
 type Screen = 'mode-picker' | 'count-picker' | 'intro' | 'question' | 'evaluating' | 'complete'
 
 interface LangOption {
@@ -158,6 +188,10 @@ export default function TestMode() {
   // Which result card is expanded in the complete screen
   const [expandedResult, setExpandedResult] = useState<number | null>(null)
 
+  // System design sections
+  const [sdSections, setSdSections] = useState<SdSections>(EMPTY_SD)
+  const [sdTab, setSdTab] = useState<SdTab>('clarifying')
+
   // Stopwatch
   const [elapsed, setElapsed] = useState(0)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -214,6 +248,8 @@ export default function TestMode() {
     setTextAnswer('')
     setSelectedLang(LANGUAGES[0])
     setCodeAnswer(LANGUAGES[0].starter)
+    setSdSections(EMPTY_SD)
+    setSdTab('clarifying')
     setScreen('question')
   }
 
@@ -261,13 +297,16 @@ export default function TestMode() {
 
   const handleSaveAndNext = () => {
     const newAnswers = [...answers]
-    newAnswers[qIndex] = { text: textAnswer, code: codeAnswer, lang: selectedLang }
+    const isSd = selectedMode === 'system_design'
+    const sdText = isSd ? buildSdAnswer(sdSections) : textAnswer
+    newAnswers[qIndex] = { text: sdText, code: codeAnswer, lang: selectedLang }
     setAnswers(newAnswers)
 
     if (qIndex + 1 < queue.length) {
       const nextIdx = qIndex + 1
       setQIndex(nextIdx)
-      // Restore previously saved answer if revisiting
+      setSdSections(EMPTY_SD)
+      setSdTab('clarifying')
       if (newAnswers[nextIdx]) {
         setTextAnswer(newAnswers[nextIdx].text)
         setCodeAnswer(newAnswers[nextIdx].code)
@@ -292,6 +331,8 @@ export default function TestMode() {
     setSessionScores([])
     setElapsed(0)
     setEvalProgress(0)
+    setSdSections(EMPTY_SD)
+    setSdTab('clarifying')
   }
 
   if (!user) {
@@ -390,10 +431,18 @@ export default function TestMode() {
             I'll be your interviewer today. You've chosen <strong>{MODE_CONFIG[selectedMode].label}</strong> mode
             with <strong>{queue.length} question{queue.length !== 1 ? 's' : ''}</strong>.
           </p>
-          <p className="intro-text">
-            Answer each question as you would in a real interview — no hints, no reference answers.
-            I'll evaluate all your answers together at the end and give you detailed feedback on each one.
-          </p>
+          {selectedMode === 'system_design' ? (
+            <p className="intro-text">
+              Each question is open-ended — work through it in five stages: clarifying questions, requirements,
+              high-level architecture, deep dive, and tradeoffs. Use each tab to build up your answer.
+              Think out loud as you would with a real interviewer.
+            </p>
+          ) : (
+            <p className="intro-text">
+              Answer each question as you would in a real interview — no hints, no reference answers.
+              I'll evaluate all your answers together at the end and give you detailed feedback on each one.
+            </p>
+          )}
           <p className="intro-text intro-ready">When you're ready, let's begin.</p>
           <button className="btn btn-primary intro-btn" onClick={handleBegin}>
             Start Interview
@@ -443,7 +492,41 @@ export default function TestMode() {
             <h2>{currentQ.question_text}</h2>
           </div>
 
-          {isCodingQuestion(currentQ) ? (
+          {isSdMode ? (
+            <div className="sd-answer">
+              <div className="sd-context">
+                <span className="sd-hint-label">Think about:</span>
+                <div className="sd-hints">
+                  {['Scale & capacity', 'Core components', 'Data model & APIs', 'Caching & queuing', 'Failure modes'].map(h => (
+                    <span key={h} className="sd-hint-tag">{h}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="sd-tabs">
+                {SD_TABS.map(tab => (
+                  <button
+                    key={tab.id}
+                    className={`sd-tab-btn${sdTab === tab.id ? ' active' : ''}${sdSections[tab.id].trim() ? ' filled' : ''}`}
+                    onClick={() => setSdTab(tab.id)}
+                  >
+                    {tab.label}
+                    {sdSections[tab.id].trim() && <span className="sd-tab-dot" />}
+                  </button>
+                ))}
+              </div>
+              {SD_TABS.map(tab => (
+                <div key={tab.id} className={`sd-section${sdTab === tab.id ? ' active' : ''}`}>
+                  <p className="sd-section-hint">{tab.hint}</p>
+                  <textarea
+                    value={sdSections[tab.id]}
+                    onChange={e => setSdSections(prev => ({ ...prev, [tab.id]: e.target.value }))}
+                    placeholder={`Write your ${tab.label.toLowerCase()} here…`}
+                    rows={12}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : isCodingQuestion(currentQ) ? (
             <div className="monaco-wrapper">
               <div className="monaco-toolbar">
                 <div className="lang-picker">

@@ -18,6 +18,26 @@ import { getAnalytics } from '../services/api'
 import type { AnalyticsResponse, AnalyticsTimeEntry } from '../services/api'
 import './Dashboard.css'
 
+const CATEGORY_LABELS: Record<string, string> = {
+  leadership_principle: 'Leadership Principles',
+  leadership: 'Leadership Principles',
+  behavioural: 'Behavioural',
+  behavioral: 'Behavioural',
+  automation: 'Automation',
+  system_design: 'System Design',
+  networking: 'Networking',
+  linux: 'Linux & Bash',
+  coding: 'Coding',
+  programming: 'Programming',
+  soft_skills: 'Soft Skills',
+  competency: 'Competency',
+  architecture: 'Architecture',
+}
+
+function fmtCategory(raw: string): string {
+  return CATEGORY_LABELS[raw.toLowerCase()] ?? raw.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+}
+
 const CATEGORY_COLOURS = [
   '#0d9488', '#06b6d4', '#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#ef4444',
 ]
@@ -111,14 +131,21 @@ function InterviewCountdown() {
   )
 }
 
+interface HeatTooltip {
+  x: number
+  y: number
+  entry: AnalyticsTimeEntry
+}
+
 function ActivityHeatmap({ data }: { data: AnalyticsTimeEntry[] }) {
   const CELL = 14
   const GAP = 4
   const STRIDE = CELL + GAP
+  const [tooltip, setTooltip] = useState<HeatTooltip | null>(null)
 
   const lookup = useMemo(() => {
-    const map: Record<string, number> = {}
-    data.forEach(d => { map[d.date] = d.attempts })
+    const map: Record<string, AnalyticsTimeEntry> = {}
+    data.forEach(d => { map[d.date] = d })
     return map
   }, [data])
 
@@ -161,7 +188,7 @@ function ActivityHeatmap({ data }: { data: AnalyticsTimeEntry[] }) {
   const toISO = (d: Date) => d.toISOString().split('T')[0]
 
   const cellBg = (iso: string) => {
-    const n = lookup[iso] || 0
+    const n = lookup[iso]?.attempts || 0
     if (!n) return undefined
     const r = n / maxAttempts
     if (r < 0.25) return '#99f6e4'
@@ -208,13 +235,15 @@ function ActivityHeatmap({ data }: { data: AnalyticsTimeEntry[] }) {
               week.map((day: Date | null, dIdx: number) => {
                 if (!day) return <div key={`null-${wIdx}-${dIdx}`} className="heatmap-cell heatmap-cell-null" />
                 const iso = toISO(day)
+                const entry = lookup[iso]
                 const bg = cellBg(iso)
                 return (
                   <div
                     key={iso}
-                    className={`heatmap-cell${!lookup[iso] ? ' heatmap-cell-zero' : ''}`}
+                    className={`heatmap-cell${!entry ? ' heatmap-cell-zero' : ''}`}
                     style={bg ? { background: bg } : undefined}
-                    title={`${iso}: ${lookup[iso] || 0} question${(lookup[iso] || 0) !== 1 ? 's' : ''}`}
+                    onMouseEnter={e => entry && setTooltip({ x: e.clientX, y: e.clientY, entry })}
+                    onMouseLeave={() => setTooltip(null)}
                   />
                 )
               })
@@ -230,6 +259,32 @@ function ActivityHeatmap({ data }: { data: AnalyticsTimeEntry[] }) {
           <span>More</span>
         </div>
       </div>
+
+      {/* Floating tooltip */}
+      {tooltip && (
+        <div
+          className="heatmap-tooltip"
+          style={{ top: tooltip.y - 12, left: tooltip.x + 14 }}
+        >
+          <div className="heatmap-tooltip-date">
+            {new Date(tooltip.entry.date + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+          </div>
+          <div className="heatmap-tooltip-count">
+            {tooltip.entry.attempts} question{tooltip.entry.attempts !== 1 ? 's' : ''} &middot; avg {tooltip.entry.avg_score}/100
+          </div>
+          {tooltip.entry.categories && Object.keys(tooltip.entry.categories).length > 0 && (
+            <div className="heatmap-tooltip-cats">
+              {Object.entries(tooltip.entry.categories)
+                .sort((a, b) => b[1] - a[1])
+                .map(([cat, count]) => (
+                  <span key={cat} className="heatmap-tooltip-cat">
+                    {fmtCategory(cat)} <strong>{count}</strong>
+                  </span>
+                ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -310,14 +365,14 @@ export default function Dashboard() {
               <span className="stat-label">Best Category</span>
               <span className="stat-value stat-value-sm">
                 {analytics.by_category.length > 0
-                  ? analytics.by_category.reduce((a, b) => a.avg_score > b.avg_score ? a : b).category
+                  ? fmtCategory(analytics.by_category.reduce((a, b) => a.avg_score > b.avg_score ? a : b).category)
                   : '—'}
               </span>
             </div>
             <div className="stat-card">
               <span className="stat-label">Weak Areas</span>
               <span className="stat-value stat-value-sm">
-                {analytics.weak_areas.length > 0 ? analytics.weak_areas.join(', ') : 'None — great work!'}
+                {analytics.weak_areas.length > 0 ? analytics.weak_areas.map(fmtCategory).join(', ') : 'None — great work!'}
               </span>
             </div>
           </div>
@@ -369,7 +424,7 @@ export default function Dashboard() {
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
                   <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
-                  <YAxis type="category" dataKey="category" width={88} tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
+                  <YAxis type="category" dataKey="category" width={110} tick={{ fontSize: 11, fill: 'var(--text-muted)' }} tickFormatter={fmtCategory} />
                   <Tooltip
                     contentStyle={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 8 }}
                     formatter={(value: unknown) => [`${value}/100`, 'Avg Score']}

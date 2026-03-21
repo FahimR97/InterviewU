@@ -125,19 +125,22 @@ def handler(event, context):
         ]
 
         # Scores over time — group by date (first 10 chars of ISO timestamp)
-        day_scores = defaultdict(list)
+        day_data: dict = defaultdict(lambda: {"scores": [], "categories": defaultdict(int)})
         for item in items:
             day = item.get("timestamp", "")[:10]  # "2026-03-17"
             if day:
-                day_scores[day].append(float(item["score"]))
+                day_data[day]["scores"].append(float(item["score"]))
+                cat = item.get("category", "unknown")
+                day_data[day]["categories"][cat] += 1
 
         scores_over_time = [
             {
                 "date": day,
-                "avg_score": round(sum(scores) / len(scores), 1),
-                "attempts": len(scores),
+                "avg_score": round(sum(d["scores"]) / len(d["scores"]), 1),
+                "attempts": len(d["scores"]),
+                "categories": dict(d["categories"]),
             }
-            for day, scores in sorted(day_scores.items())
+            for day, d in sorted(day_data.items())
         ]
 
         # Weak areas: categories with avg_score < 60
