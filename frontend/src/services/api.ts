@@ -45,6 +45,7 @@ export interface AnalyticsTimeEntry {
   date: string;
   avg_score: number;
   attempts: number;
+  categories?: Record<string, number>;
 }
 
 export interface AnalyticsResponse {

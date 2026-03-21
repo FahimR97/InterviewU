@@ -579,6 +579,54 @@
 
 .heatmap-legend span { margin: 0 4px; }
 
+/* ── Heatmap tooltip ──────────────────────────────────────────── */
+
+.heatmap-tooltip {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.6rem 0.85rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  min-width: 160px;
+  max-width: 220px;
+}
+
+.heatmap-tooltip-date {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 0.2rem;
+}
+
+.heatmap-tooltip-count {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.heatmap-tooltip-cats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.4rem;
+}
+
+.heatmap-tooltip-cat {
+  font-size: 0.7rem;
+  color: var(--text-light);
+  display: flex;
+  justify-content: space-between;
+}
+
+.heatmap-tooltip-cat strong {
+  color: #0d9488;
+  font-weight: 700;
+}
+
 /* ── Responsive ───────────────────────────────────────────────── */
 
 @media (max-width: 900px) {
