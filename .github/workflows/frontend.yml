@@ -27,7 +27,7 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies (root + workspaces)
-        run: npm ci
+        run: npm install
 
       - name: Run linting
         working-directory: frontend
@@ -131,7 +131,7 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies (root + workspaces)
-        run: npm ci
+        run: npm install
 
       - name: Run linting
         working-directory: frontend
