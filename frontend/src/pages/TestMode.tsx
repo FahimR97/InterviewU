@@ -421,7 +421,7 @@ export default function TestMode() {
                   disabled={available === 0 || actual === 0}
                 >
                   <span className="count-number">{c === 0 ? 'All' : c}</span>
-                  {c !== 0 && <span className="count-sub">{actual} available</span>}
+                  {c === 0 && <span className="count-sub">{actual} available</span>}
                 </button>
               )
             })}

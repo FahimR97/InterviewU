@@ -19,8 +19,7 @@ import type { AnalyticsResponse, AnalyticsTimeEntry } from '../services/api'
 import './Dashboard.css'
 
 const CATEGORY_LABELS: Record<string, string> = {
-  leadership_principle: 'Leadership Principles',
-  leadership: 'Leadership Principles',
+  // Current categories
   behavioural: 'Behavioural',
   behavioral: 'Behavioural',
   automation: 'Automation',
@@ -28,10 +27,15 @@ const CATEGORY_LABELS: Record<string, string> = {
   networking: 'Networking',
   linux: 'Linux & Bash',
   coding: 'Coding',
-  programming: 'Programming',
-  soft_skills: 'Soft Skills',
-  competency: 'Competency',
-  architecture: 'Architecture',
+  operational_excellence: 'Operational Excellence',
+  // Legacy category names — fold into their current equivalents
+  leadership_principle: 'Behavioural',
+  leadership: 'Behavioural',
+  soft_skills: 'Behavioural',
+  competency: 'Behavioural',
+  programming: 'Coding',
+  algorithms: 'Coding',
+  architecture: 'System Design',
 }
 
 function fmtCategory(raw: string): string {
