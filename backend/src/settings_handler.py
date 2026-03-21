@@ -6,7 +6,6 @@ PUT  /settings  → saves/updates settings (partial updates supported)
 import json
 import os
 import boto3
-from boto3.dynamodb.conditions import Key
 
 dynamodb = boto3.resource("dynamodb")
 USER_SETTINGS_TABLE_NAME = os.environ.get("USER_SETTINGS_TABLE_NAME")
