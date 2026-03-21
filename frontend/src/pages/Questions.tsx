@@ -338,6 +338,7 @@ export default function Questions() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [selectedDifficulty, setSelectedDifficulty] = useState('All')
+  const [selectedCompetency, setSelectedCompetency] = useState('All')
   const [questions, setQuestions] = useState<Question[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -380,6 +381,12 @@ export default function Questions() {
     return ['All', ...Array.from(diffs)]
   }, [questions])
 
+  const competencies = useMemo(() => {
+    if (selectedCategory === 'All') return []
+    const comps = new Set(questions.filter(q => q.category === selectedCategory).map(q => q.competency).filter(Boolean))
+    return comps.size > 1 ? ['All', ...Array.from(comps).sort()] : []
+  }, [questions, selectedCategory])
+
   const filteredQuestions = useMemo(() => {
     return questions.filter(q => {
       const matchesSearch =
@@ -390,9 +397,10 @@ export default function Questions() {
       const matchesDifficulty =
         selectedDifficulty === 'All' ||
         q.difficulty.toLowerCase() === selectedDifficulty.toLowerCase()
-      return matchesSearch && matchesCategory && matchesDifficulty
+      const matchesCompetency = selectedCompetency === 'All' || q.competency === selectedCompetency
+      return matchesSearch && matchesCategory && matchesDifficulty && matchesCompetency
     })
-  }, [questions, searchTerm, selectedCategory, selectedDifficulty])
+  }, [questions, searchTerm, selectedCategory, selectedDifficulty, selectedCompetency])
 
   // Practice view replaces the full list
   if (practiceView) {
@@ -472,12 +480,25 @@ export default function Questions() {
               <label>Category</label>
               <select
                 value={selectedCategory}
-                onChange={e => setSelectedCategory(e.target.value)}
+                onChange={e => { setSelectedCategory(e.target.value); setSelectedCompetency('All') }}
                 disabled={loading}
               >
                 {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
               </select>
             </div>
+
+            {competencies.length > 0 && (
+              <div className="filter-group">
+                <label>Subcategory</label>
+                <select
+                  value={selectedCompetency}
+                  onChange={e => setSelectedCompetency(e.target.value)}
+                  disabled={loading}
+                >
+                  {competencies.map(c => <option key={c} value={c}>{c}</option>)}
+                </select>
+              </div>
+            )}
 
             <div className="filter-group">
               <label>Difficulty</label>
