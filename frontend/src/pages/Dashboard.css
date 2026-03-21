@@ -287,21 +287,25 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #4b5563;
+  -webkit-text-fill-color: #4b5563;
 }
 
 [data-theme="dark"] .stat-label {
   color: #94a3b8;
+  -webkit-text-fill-color: #94a3b8;
 }
 
 .stat-value {
   font-size: 2.5rem;
   font-weight: 800;
   color: #111827;
+  -webkit-text-fill-color: #111827;
   line-height: 1;
 }
 
 [data-theme="dark"] .stat-value {
   color: #f1f5f9;
+  -webkit-text-fill-color: #f1f5f9;
 }
 
 .stat-value-sm {
@@ -309,10 +313,12 @@
   font-weight: 600;
   line-height: 1.4;
   color: #111827;
+  -webkit-text-fill-color: #111827;
 }
 
 [data-theme="dark"] .stat-value-sm {
   color: #f1f5f9;
+  -webkit-text-fill-color: #f1f5f9;
 }
 
 /* ── Score ring SVG ───────────────────────────────────────────── */
