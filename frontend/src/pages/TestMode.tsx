@@ -175,7 +175,7 @@ export default function TestMode() {
 
   const [screen, setScreen] = useState<Screen>('mode-picker')
   const [selectedMode, setSelectedMode] = useState<TestMode | null>(null)
-  const [selectedCount, setSelectedCount] = useState<number>(10)
+  const [selectedCount, setSelectedCount] = useState<number>(-1)
   const [queue, setQueue] = useState<Question[]>([])
   const [qIndex, setQIndex] = useState(0)
 
