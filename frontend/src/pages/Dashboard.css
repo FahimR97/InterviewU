@@ -238,110 +238,48 @@
   background: var(--primary-hover);
 }
 
-/* ── Stat cards ───────────────────────────────────────────────── */
+/* ── Metric cards ─────────────────────────────────────────────── */
 
-.stat-cards {
+.metric-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 1rem;
   margin-bottom: 1.5rem;
+  animation: heroEnter 0.5s 0.1s ease-out both;
 }
 
-.stat-card {
-  /* White in light mode — visibly distinct from the #fafaf8 page background */
+.metric-card {
   background: #ffffff;
   border: 1px solid var(--border);
-  border-radius: 16px;
-  padding: 1.5rem;
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
   display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: var(--shadow);
-}
-
-[data-theme="dark"] .stat-card {
-  background: var(--bg-secondary);
-  box-shadow: var(--shadow-sm);
-}
-
-.stat-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 32px rgba(13, 148, 136, 0.14);
-}
-
-[data-theme="dark"] .stat-card:hover {
-  box-shadow: 0 10px 32px rgba(99, 102, 241, 0.18);
-}
-
-.stat-card-center {
   align-items: center;
+  gap: 1rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.stat-label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #4b5563;
+[data-theme="dark"] .metric-card {
+  background: var(--bg-secondary);
 }
 
-[data-theme="dark"] .stat-label {
-  color: #94a3b8;
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
-.stat-value {
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: #111827;
-  line-height: 1;
+.metric-icon {
+  font-size: 1.75rem;
+  flex-shrink: 0;
 }
 
-[data-theme="dark"] .stat-value {
-  color: #f1f5f9;
+[data-theme="dark"] .metric-value {
+  color: #f1f5f9 !important;
 }
 
-.stat-value-sm {
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.4;
-  color: #111827;
-}
-
-[data-theme="dark"] .stat-value-sm {
-  color: #f1f5f9;
-}
-
-/* ── Score ring SVG ───────────────────────────────────────────── */
-
-.score-ring {
-  overflow: visible;
-}
-
-.score-ring-track {
-  fill: none;
-  stroke: var(--border);
-  stroke-width: 8;
-}
-
-.score-ring-fill {
-  fill: none;
-  stroke-width: 8;
-  stroke-linecap: round;
-  transform: rotate(-90deg);
-  transform-origin: 65px 65px;
-  transition: stroke-dashoffset 0.8s ease;
-}
-
-.score-ring-value {
-  font-size: 1.6rem;
-  font-weight: 800;
-  fill: var(--text-dark);
-}
-
-.score-ring-label {
-  font-size: 0.75rem;
-  fill: var(--text-light);
+[data-theme="dark"] .metric-label {
+  color: #94a3b8 !important;
 }
 
 /* ── Recommendation ───────────────────────────────────────────── */
@@ -384,13 +322,6 @@
 
 /* ── Charts ───────────────────────────────────────────────────── */
 
-.charts-row {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
 .chart-card {
   background: #ffffff;
   border: 1px solid var(--border);
@@ -412,8 +343,6 @@
   text-transform: uppercase;
   letter-spacing: 0.08em;
 }
-
-/* .chart-card-wide gets 2fr via the grid — no extra rule needed */
 
 .chart-card-full {
   margin-bottom: 1.5rem;
@@ -463,6 +392,25 @@
 .dashboard-cta {
   text-align: center;
   padding-top: 1rem;
+}
+
+/* ── Charts grid ──────────────────────────────────────────────── */
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.charts-grid-single {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 760px) {
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ── Activity heatmap ─────────────────────────────────────────── */
@@ -627,12 +575,14 @@
 /* ── Responsive ───────────────────────────────────────────────── */
 
 @media (max-width: 900px) {
-  .stat-cards {
+  .metric-row {
     grid-template-columns: repeat(2, 1fr);
   }
+}
 
-  .charts-row {
-    grid-template-columns: 1fr;
+@media (max-width: 768px) {
+  .metric-row {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
@@ -650,11 +600,5 @@
 
   .dashboard-greeting {
     font-size: 1.8rem;
-  }
-}
-
-@media (max-width: 600px) {
-  .stat-cards {
-    grid-template-columns: 1fr 1fr;
   }
 }

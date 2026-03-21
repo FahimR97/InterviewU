@@ -94,6 +94,7 @@ function PracticeView({
   const [evaluation, setEvaluation] = useState<EvaluationResponse | null>(null)
   const [sdSections, setSdSections] = useState<SdSections>(EMPTY_SD)
   const [sdTab, setSdTab] = useState<SdTab>('clarifying')
+  const [canvasFs, setCanvasFs] = useState(false)
 
   const isCoding = isCodingQuestion(question)
   const isSd = isSystemDesignQuestion(question)
@@ -194,7 +195,10 @@ function PracticeView({
                   tab.id === 'design' ? (
                     <div key={tab.id} className={`sd-section${sdTab === tab.id ? ' active' : ''}`}>
                       <p className="sd-section-hint">{tab.hint}</p>
-                      <div className="sd-canvas-wrap">
+                      <div className={`sd-canvas-wrap${canvasFs ? ' sd-fullscreen' : ''}`}>
+                        <button className="sd-fs-btn" onClick={() => setCanvasFs(f => !f)} title={canvasFs ? 'Exit fullscreen' : 'Expand canvas'}>
+                          {canvasFs ? '✕' : '⛶'}
+                        </button>
                         <Suspense fallback={<div className="sd-canvas-loading">Loading whiteboard…</div>}>
                           <ExcalidrawCanvas theme={theme === 'dark' ? 'dark' : 'light'} />
                         </Suspense>

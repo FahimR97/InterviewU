@@ -196,6 +196,7 @@ export default function TestMode() {
   // System design sections
   const [sdSections, setSdSections] = useState<SdSections>(EMPTY_SD)
   const [sdTab, setSdTab] = useState<SdTab>('clarifying')
+  const [canvasFs, setCanvasFs] = useState(false)
 
   // Stopwatch
   const [elapsed, setElapsed] = useState(0)
@@ -516,7 +517,10 @@ export default function TestMode() {
                 tab.id === 'design' ? (
                   <div key={tab.id} className={`sd-section${sdTab === tab.id ? ' active' : ''}`}>
                     <p className="sd-section-hint">{tab.hint}</p>
-                    <div className="sd-canvas-wrap">
+                    <div className={`sd-canvas-wrap${canvasFs ? ' sd-fullscreen' : ''}`}>
+                      <button className="sd-fs-btn" onClick={() => setCanvasFs(f => !f)} title={canvasFs ? 'Exit fullscreen' : 'Expand canvas'}>
+                        {canvasFs ? '✕' : '⛶'}
+                      </button>
                       <Suspense fallback={<div className="sd-canvas-loading">Loading whiteboard…</div>}>
                         <ExcalidrawCanvas theme={theme === 'dark' ? 'dark' : 'light'} />
                       </Suspense>

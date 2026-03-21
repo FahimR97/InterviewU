@@ -4,16 +4,16 @@ import {
   ResponsiveContainer,
   Cell,
   Tooltip,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
   BarChart,
   Bar,
-  Legend,
+  XAxis,
+  YAxis,
+  AreaChart,
+  Area,
+  CartesianGrid,
 } from 'recharts'
 import { useAuth } from '../contexts/AuthContext'
+import { useTheme } from '../contexts/ThemeContext'
 import { getAnalytics } from '../services/api'
 import type { AnalyticsResponse, AnalyticsTimeEntry } from '../services/api'
 import './Dashboard.css'
@@ -39,40 +39,20 @@ function fmtCategory(raw: string): string {
 }
 
 const CATEGORY_COLOURS = [
-  '#0d9488', '#06b6d4', '#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#ef4444',
+  '#0d9488', '#6366f1', '#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#ef4444',
 ]
 
-const DIFFICULTY_COLOURS: Record<string, string> = {
-  easy: '#10b981',
-  medium: '#f59e0b',
-  hard: '#ef4444',
-}
-
-function ScoreRing({ score }: { score: number }) {
-  const radius = 52
-  const circumference = 2 * Math.PI * radius
-  const offset = circumference - (score / 100) * circumference
-  const colour = score >= 70 ? '#10b981' : score >= 50 ? '#f59e0b' : '#ef4444'
-
+function MetricCard({ icon, label, value, accent }: { icon: string; label: string; value: string | number; accent: string }) {
+  const { theme } = useTheme()
+  const dark = theme === 'dark'
   return (
-    <svg width="130" height="130" className="score-ring">
-      <circle cx="65" cy="65" r={radius} className="score-ring-track" />
-      <circle
-        cx="65"
-        cy="65"
-        r={radius}
-        className="score-ring-fill"
-        stroke={colour}
-        strokeDasharray={circumference}
-        strokeDashoffset={offset}
-      />
-      <text x="65" y="62" textAnchor="middle" className="score-ring-value">
-        {score}
-      </text>
-      <text x="65" y="78" textAnchor="middle" className="score-ring-label">
-        / 100
-      </text>
-    </svg>
+    <div className="metric-card" style={{ borderLeft: `4px solid ${accent}` }}>
+      <span className="metric-icon" style={{ color: accent }}>{icon}</span>
+      <div style={{ minWidth: 0 }}>
+        <p style={{ color: dark ? '#94a3b8' : '#64748b', margin: 0, fontSize: '0.72rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</p>
+        <p style={{ color: dark ? '#f1f5f9' : '#111827', margin: '0.2rem 0 0', fontSize: '1.5rem', fontWeight: 800, lineHeight: 1.15, wordBreak: 'break-word' }}>{value}</p>
+      </div>
+    </div>
   )
 }
 
@@ -154,7 +134,7 @@ function ActivityHeatmap({ data }: { data: AnalyticsTimeEntry[] }) {
     today.setHours(0, 0, 0, 0)
     const start = new Date(today)
     start.setDate(start.getDate() - 52 * 7)
-    start.setDate(start.getDate() - start.getDay()) // align to Sunday
+    start.setDate(start.getDate() - start.getDay())
 
     const result: Array<Array<Date | null>> = []
     const cur = new Date(start)
@@ -171,20 +151,16 @@ function ActivityHeatmap({ data }: { data: AnalyticsTimeEntry[] }) {
 
   const months = useMemo(() => {
     const seen = new Set<string>()
-    return weeks.reduce<Array<{ label: string; wIdx: number }>>((acc: Array<{ label: string; wIdx: number }>, week: Array<Date | null>, wIdx: number) => {
-      const first = week.find((d: Date | null) => d !== null)
+    return weeks.reduce<Array<{ label: string; wIdx: number }>>((acc, week, wIdx) => {
+      const first = week.find(d => d !== null)
       if (!first) return acc
       const label = first.toLocaleDateString('en-US', { month: 'short' })
-      if (!seen.has(label)) {
-        seen.add(label)
-        acc.push({ label, wIdx })
-      }
+      if (!seen.has(label)) { seen.add(label); acc.push({ label, wIdx }) }
       return acc
     }, [])
   }, [weeks])
 
   const maxAttempts = useMemo(() => Math.max(1, ...data.map(d => d.attempts)), [data])
-
   const toISO = (d: Date) => d.toISOString().split('T')[0]
 
   const cellBg = (iso: string) => {
@@ -192,7 +168,7 @@ function ActivityHeatmap({ data }: { data: AnalyticsTimeEntry[] }) {
     if (!n) return undefined
     const r = n / maxAttempts
     if (r < 0.25) return '#99f6e4'
-    if (r < 0.5) return '#2dd4bf'
+    if (r < 0.5)  return '#2dd4bf'
     if (r < 0.75) return '#14b8a6'
     return '#0d9488'
   }
@@ -207,32 +183,23 @@ function ActivityHeatmap({ data }: { data: AnalyticsTimeEntry[] }) {
         <span className="heatmap-summary">{totalAnswered} question{totalAnswered !== 1 ? 's' : ''} answered in the last 12 months</span>
       </div>
       <div className="heatmap-scroll">
-        {/* Month row */}
         <div className="heatmap-month-row">
           <div className="heatmap-spacer" />
           <div className="heatmap-months-inner" style={{ width: weeks.length * STRIDE }}>
-            {months.map((m: { label: string; wIdx: number }) => (
-              <span key={m.label} className="heatmap-month-label" style={{ left: m.wIdx * STRIDE }}>
-                {m.label}
-              </span>
+            {months.map(m => (
+              <span key={m.label} className="heatmap-month-label" style={{ left: m.wIdx * STRIDE }}>{m.label}</span>
             ))}
           </div>
         </div>
-        {/* Body */}
         <div className="heatmap-body">
           <div className="heatmap-day-col">
             {DAY_LABELS.map((label, i) => (
-              <span key={i} className="heatmap-day-label" style={{ height: CELL, lineHeight: `${CELL}px` }}>
-                {label}
-              </span>
+              <span key={i} className="heatmap-day-label" style={{ height: CELL, lineHeight: `${CELL}px` }}>{label}</span>
             ))}
           </div>
-          <div
-            className="heatmap-grid"
-            style={{ gridTemplateRows: `repeat(7, ${CELL}px)`, gridAutoColumns: CELL }}
-          >
-            {weeks.flatMap((week: Array<Date | null>, wIdx: number) =>
-              week.map((day: Date | null, dIdx: number) => {
+          <div className="heatmap-grid" style={{ gridTemplateRows: `repeat(7, ${CELL}px)`, gridAutoColumns: CELL }}>
+            {weeks.flatMap((week, wIdx) =>
+              week.map((day, dIdx) => {
                 if (!day) return <div key={`null-${wIdx}-${dIdx}`} className="heatmap-cell heatmap-cell-null" />
                 const iso = toISO(day)
                 const entry = lookup[iso]
@@ -250,7 +217,6 @@ function ActivityHeatmap({ data }: { data: AnalyticsTimeEntry[] }) {
             )}
           </div>
         </div>
-        {/* Legend */}
         <div className="heatmap-legend">
           <span>Less</span>
           {['var(--bg-tertiary)', '#99f6e4', '#2dd4bf', '#14b8a6', '#0d9488'].map((c, i) => (
@@ -260,12 +226,8 @@ function ActivityHeatmap({ data }: { data: AnalyticsTimeEntry[] }) {
         </div>
       </div>
 
-      {/* Floating tooltip */}
       {tooltip && (
-        <div
-          className="heatmap-tooltip"
-          style={{ top: tooltip.y - 12, left: tooltip.x + 14 }}
-        >
+        <div className="heatmap-tooltip" style={{ top: tooltip.y - 12, left: tooltip.x + 14 }}>
           <div className="heatmap-tooltip-date">
             {new Date(tooltip.entry.date + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
           </div>
@@ -291,11 +253,11 @@ function ActivityHeatmap({ data }: { data: AnalyticsTimeEntry[] }) {
 
 export default function Dashboard() {
   const { user, userName, getAuthToken } = useAuth()
+  const { theme } = useTheme()
   const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // AuthContext now falls back name → attrs.email prefix → signInDetails email prefix
   const displayName = userName?.split(' ')[0] ?? null
 
   useEffect(() => {
@@ -315,6 +277,16 @@ export default function Dashboard() {
     )
   }
 
+  const tooltipStyle = {
+    background: theme === 'dark' ? '#1e293b' : '#ffffff',
+    border: `1px solid ${theme === 'dark' ? '#334155' : '#e2e8f0'}`,
+    borderRadius: 8,
+    color: theme === 'dark' ? '#f1f5f9' : '#111827',
+  }
+  const labelStyle = { color: theme === 'dark' ? '#94a3b8' : '#64748b' }
+
+  const hasTimeSeries = analytics && analytics.scores_over_time.length >= 2
+
   return (
     <div className="dashboard">
       <div className="dashboard-hero">
@@ -330,7 +302,7 @@ export default function Dashboard() {
       {loading && (
         <div className="dashboard-loading">
           <div className="loading-spinner" />
-          <p>Loading your analytics...</p>
+          <p>Loading your analytics…</p>
         </div>
       )}
 
@@ -351,30 +323,29 @@ export default function Dashboard() {
 
       {!loading && !error && analytics && analytics.total_attempts > 0 && (
         <>
-          {/* Stat cards */}
-          <div className="stat-cards">
-            <div className="stat-card">
-              <span className="stat-label">Total Attempts</span>
-              <span className="stat-value">{analytics.total_attempts}</span>
-            </div>
-            <div className="stat-card stat-card-center">
-              <span className="stat-label">Average Score</span>
-              {analytics.avg_score !== null && <ScoreRing score={Math.round(analytics.avg_score)} />}
-            </div>
-            <div className="stat-card">
-              <span className="stat-label">Best Category</span>
-              <span className="stat-value stat-value-sm">
-                {analytics.by_category.length > 0
-                  ? fmtCategory(analytics.by_category.reduce((a, b) => a.avg_score > b.avg_score ? a : b).category)
-                  : '—'}
-              </span>
-            </div>
-            <div className="stat-card">
-              <span className="stat-label">Weak Areas</span>
-              <span className="stat-value stat-value-sm">
-                {analytics.weak_areas.length > 0 ? analytics.weak_areas.map(fmtCategory).join(', ') : 'None — great work!'}
-              </span>
-            </div>
+          {/* Metric cards */}
+          <div className="metric-row">
+            <MetricCard icon="📝" label="Questions Answered" value={analytics.total_attempts} accent="#0d9488" />
+            <MetricCard
+              icon="🎯"
+              label="Average Score"
+              value={analytics.avg_score !== null ? `${Math.round(analytics.avg_score)}/100` : '—'}
+              accent="#6366f1"
+            />
+            <MetricCard
+              icon="🏆"
+              label="Best Category"
+              value={analytics.by_category.length > 0
+                ? fmtCategory(analytics.by_category.reduce((a, b) => a.avg_score > b.avg_score ? a : b).category)
+                : '—'}
+              accent="#10b981"
+            />
+            <MetricCard
+              icon="⚡"
+              label="Focus Area"
+              value={analytics.weak_areas.length > 0 ? fmtCategory(analytics.weak_areas[0]) : 'All good'}
+              accent="#f59e0b"
+            />
           </div>
 
           {/* Recommendation */}
@@ -386,48 +357,64 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Charts row */}
-          <div className="charts-row">
-            {/* Score over time */}
-            <div className="chart-card chart-card-wide">
-              <h3>Score Over Time</h3>
-              <ResponsiveContainer width="100%" height={240}>
-                <LineChart data={analytics.scores_over_time} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
-                  <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
-                  <Tooltip
-                    contentStyle={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 8 }}
-                    labelStyle={{ color: 'var(--text-dark)' }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="avg_score"
-                    stroke="#0d9488"
-                    strokeWidth={2.5}
-                    dot={{ fill: '#0d9488', r: 4 }}
-                    activeDot={{ r: 6 }}
-                    name="Avg Score"
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+          {/* Charts grid: score over time + score by category */}
+          <div className={`charts-grid${hasTimeSeries ? '' : ' charts-grid-single'}`}>
+            {hasTimeSeries && (
+              <div className="chart-card">
+                <h3>Score Over Time</h3>
+                <ResponsiveContainer width="100%" height={240}>
+                  <AreaChart data={analytics.scores_over_time} margin={{ top: 8, right: 16, left: -10, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="scoreGrad" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%"  stopColor="#0d9488" stopOpacity={0.25} />
+                        <stop offset="95%" stopColor="#0d9488" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#334155' : '#e2e8f0'} />
+                    <XAxis
+                      dataKey="date"
+                      tick={{ fontSize: 11, fill: theme === 'dark' ? '#64748b' : '#94a3b8' }}
+                      tickFormatter={d => d.slice(5)}
+                    />
+                    <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: theme === 'dark' ? '#64748b' : '#94a3b8' }} />
+                    <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} formatter={(v: unknown) => [`${v}/100`, 'Avg Score']} />
+                    <Area
+                      type="monotone"
+                      dataKey="avg_score"
+                      stroke="#0d9488"
+                      strokeWidth={2.5}
+                      fill="url(#scoreGrad)"
+                      dot={{ fill: '#0d9488', r: 4, strokeWidth: 0 }}
+                      activeDot={{ r: 6, strokeWidth: 0 }}
+                      name="Avg Score"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            )}
 
-            {/* Score by Category — horizontal bar */}
             <div className="chart-card">
               <h3>Score by Category</h3>
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart
                   data={analytics.by_category}
                   layout="vertical"
-                  margin={{ top: 0, right: 16, left: 0, bottom: 0 }}
+                  margin={{ top: 0, right: 24, left: 0, bottom: 0 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
-                  <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
-                  <YAxis type="category" dataKey="category" width={110} tick={{ fontSize: 11, fill: 'var(--text-muted)' }} tickFormatter={fmtCategory} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#334155' : '#e2e8f0'} horizontal={false} />
+                  <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: theme === 'dark' ? '#64748b' : '#94a3b8' }} />
+                  <YAxis
+                    type="category"
+                    dataKey="category"
+                    width={120}
+                    tick={{ fontSize: 11, fill: theme === 'dark' ? '#94a3b8' : '#64748b' }}
+                    tickFormatter={fmtCategory}
+                  />
                   <Tooltip
-                    contentStyle={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 8 }}
-                    formatter={(value: unknown) => [`${value}/100`, 'Avg Score']}
+                    contentStyle={tooltipStyle}
+                    labelStyle={labelStyle}
+                    formatter={(v: unknown) => [`${v}/100`, 'Avg Score']}
+                    labelFormatter={(label: unknown) => fmtCategory(String(label))}
                   />
                   <Bar dataKey="avg_score" name="Avg Score" radius={[0, 6, 6, 0]}>
                     {analytics.by_category.map((_, idx) => (
@@ -437,28 +424,6 @@ export default function Dashboard() {
                 </BarChart>
               </ResponsiveContainer>
             </div>
-          </div>
-
-          {/* Difficulty bar chart */}
-          <div className="chart-card chart-card-full">
-            <h3>Score by Difficulty</h3>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={analytics.by_difficulty} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="difficulty" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} />
-                <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: 'var(--text-muted)' }} />
-                <Tooltip
-                  contentStyle={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)', borderRadius: 8 }}
-                  formatter={(value: unknown) => [`${value}/100`, 'Avg Score']}
-                />
-                <Legend wrapperStyle={{ color: 'var(--text-muted)', fontSize: 12 }} />
-                <Bar dataKey="avg_score" name="Avg Score" radius={[6, 6, 0, 0]}>
-                  {analytics.by_difficulty.map((entry, idx) => (
-                    <Cell key={idx} fill={DIFFICULTY_COLOURS[entry.difficulty.toLowerCase()] || '#0d9488'} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
           </div>
 
           {/* Activity heatmap */}
