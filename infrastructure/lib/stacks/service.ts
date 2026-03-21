@@ -16,6 +16,7 @@ import * as cloudtrail from 'aws-cdk-lib/aws-cloudtrail';
 import * as route53 from 'aws-cdk-lib/aws-route53';
 import * as route53Targets from 'aws-cdk-lib/aws-route53-targets';
 import * as acm from 'aws-cdk-lib/aws-certificatemanager';
+import * as budgets from 'aws-cdk-lib/aws-budgets';
 
 export interface ServiceStackProps extends cdk.StackProps {
   enableMonitoring?: boolean;
@@ -219,6 +220,7 @@ export class ServiceStack extends cdk.Stack {
       code: lambda.Code.fromAsset("../backend/src"),
       timeout: cdk.Duration.seconds(30),
       memorySize: 256,
+      tracing: lambda.Tracing.ACTIVE,
       logRetention: logs.RetentionDays.ONE_MONTH,
       environment: {
         TABLE_NAME: table.tableName,
@@ -242,6 +244,7 @@ export class ServiceStack extends cdk.Stack {
       handler: 'evaluate_answer.handler',
       code: lambda.Code.fromAsset("../backend/src"),
       timeout: cdk.Duration.seconds(30),
+      tracing: lambda.Tracing.ACTIVE,
       environment: {
         USER_ANSWERS_TABLE_NAME: userAnswersTable.tableName,
       },
@@ -262,6 +265,7 @@ export class ServiceStack extends cdk.Stack {
       handler: 'analytics_handler.handler',
       code: lambda.Code.fromAsset("../backend/src"),
       timeout: cdk.Duration.seconds(30),
+      tracing: lambda.Tracing.ACTIVE,
       environment: {
         USER_ANSWERS_TABLE_NAME: userAnswersTable.tableName,
       },
@@ -275,6 +279,7 @@ export class ServiceStack extends cdk.Stack {
       handler: 'settings_handler.handler',
       code: lambda.Code.fromAsset("../backend/src"),
       timeout: cdk.Duration.seconds(15),
+      tracing: lambda.Tracing.ACTIVE,
       environment: {
         USER_SETTINGS_TABLE_NAME: userSettingsTable.tableName,
       },
@@ -288,6 +293,7 @@ export class ServiceStack extends cdk.Stack {
       handler: 'admin_create_user.handler',
       code: lambda.Code.fromAsset("../backend/src"),
       timeout: cdk.Duration.seconds(30),
+      tracing: lambda.Tracing.ACTIVE,
       environment: {
         USER_POOL_ID: userPool.userPoolId,
       },
@@ -313,6 +319,9 @@ export class ServiceStack extends cdk.Stack {
       handler: questionsHandler,
       proxy: false,
       description: 'InterviewU API',
+      deployOptions: {
+        tracingEnabled: true,
+      },
       defaultCorsPreflightOptions: {
         allowOrigins: apigw.Cors.ALL_ORIGINS,
         allowMethods: apigw.Cors.ALL_METHODS,
@@ -526,63 +535,92 @@ export class ServiceStack extends cdk.Stack {
         api5xxAlarm.addAlarmAction(snsAction);
       }
 
-      // CloudWatch Dashboard
+      // CloudWatch Dashboard — all Lambdas, API Gateway, DynamoDB
+      const allLambdas = [
+        { fn: questionsHandler, name: 'Questions' },
+        { fn: evaluateAnswerFn, name: 'Evaluate' },
+        { fn: userAnalyticsHandler, name: 'Analytics' },
+        { fn: settingsHandler, name: 'Settings' },
+        { fn: signupHandler, name: 'Signup' },
+      ];
+
       const dashboard = new cloudwatch.Dashboard(this, 'ApiDashboard', {
         dashboardName: `${this.stackName}-monitoring`,
       });
 
+      // Row 1: Lambda invocations & errors (all functions)
       dashboard.addWidgets(
         new cloudwatch.GraphWidget({
-          title: 'Lambda Invocations',
-          left: [questionsHandler.metricInvocations()],
+          title: 'Lambda Invocations (All)',
+          left: allLambdas.map(l => l.fn.metricInvocations({ label: l.name })),
           width: 12,
         }),
         new cloudwatch.GraphWidget({
-          title: 'Lambda Errors',
-          left: [questionsHandler.metricErrors()],
+          title: 'Lambda Errors (All)',
+          left: allLambdas.map(l => l.fn.metricErrors({ label: l.name })),
           width: 12,
         })
       );
 
+      // Row 2: Lambda duration & throttles
       dashboard.addWidgets(
         new cloudwatch.GraphWidget({
-          title: 'Lambda Duration',
-          left: [
-            questionsHandler.metricDuration({ statistic: 'Average' }),
-            questionsHandler.metricDuration({ statistic: 'p99' }),
-          ],
+          title: 'Lambda Duration Avg (All)',
+          left: allLambdas.map(l => l.fn.metricDuration({ statistic: 'Average', label: l.name })),
           width: 12,
         }),
         new cloudwatch.GraphWidget({
-          title: 'Lambda Throttles',
-          left: [questionsHandler.metricThrottles()],
+          title: 'Lambda Throttles (All)',
+          left: allLambdas.map(l => l.fn.metricThrottles({ label: l.name })),
           width: 12,
         })
       );
 
+      // Row 3: API Gateway
       dashboard.addWidgets(
         new cloudwatch.GraphWidget({
-          title: 'API Gateway Requests',
+          title: 'API Requests & Errors',
           left: [
-            new cloudwatch.Metric({
-              namespace: 'AWS/ApiGateway',
-              metricName: 'Count',
-              dimensionsMap: { ApiName: api.restApiName },
-              statistic: 'Sum',
-            }),
+            new cloudwatch.Metric({ namespace: 'AWS/ApiGateway', metricName: 'Count', dimensionsMap: { ApiName: api.restApiName }, statistic: 'Sum', label: 'Requests' }),
+          ],
+          right: [
+            new cloudwatch.Metric({ namespace: 'AWS/ApiGateway', metricName: '4XXError', dimensionsMap: { ApiName: api.restApiName }, statistic: 'Sum', label: '4XX' }),
+            new cloudwatch.Metric({ namespace: 'AWS/ApiGateway', metricName: '5XXError', dimensionsMap: { ApiName: api.restApiName }, statistic: 'Sum', label: '5XX' }),
           ],
           width: 12,
         }),
         new cloudwatch.GraphWidget({
-          title: 'API Gateway Latency',
+          title: 'API Latency',
           left: [
-            new cloudwatch.Metric({
-              namespace: 'AWS/ApiGateway',
-              metricName: 'Latency',
-              dimensionsMap: { ApiName: api.restApiName },
-              statistic: 'Average',
-            }),
+            new cloudwatch.Metric({ namespace: 'AWS/ApiGateway', metricName: 'Latency', dimensionsMap: { ApiName: api.restApiName }, statistic: 'Average', label: 'Avg' }),
+            new cloudwatch.Metric({ namespace: 'AWS/ApiGateway', metricName: 'Latency', dimensionsMap: { ApiName: api.restApiName }, statistic: 'p99', label: 'p99' }),
           ],
+          width: 12,
+        })
+      );
+
+      // Row 4: DynamoDB read/write capacity
+      const allTables = [
+        { t: table, name: 'Questions' },
+        { t: userAnswersTable, name: 'UserAnswers' },
+        { t: userSettingsTable, name: 'UserSettings' },
+      ];
+
+      dashboard.addWidgets(
+        new cloudwatch.GraphWidget({
+          title: 'DynamoDB Read Capacity',
+          left: allTables.map(t => new cloudwatch.Metric({
+            namespace: 'AWS/DynamoDB', metricName: 'ConsumedReadCapacityUnits',
+            dimensionsMap: { TableName: t.t.tableName }, statistic: 'Sum', label: t.name,
+          })),
+          width: 12,
+        }),
+        new cloudwatch.GraphWidget({
+          title: 'DynamoDB Write Capacity',
+          left: allTables.map(t => new cloudwatch.Metric({
+            namespace: 'AWS/DynamoDB', metricName: 'ConsumedWriteCapacityUnits',
+            dimensionsMap: { TableName: t.t.tableName }, statistic: 'Sum', label: t.name,
+          })),
           width: 12,
         })
       );
@@ -650,6 +688,25 @@ export class ServiceStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'CloudTrailLogGroupName', {
       value: trailLogGroup.logGroupName,
       description: 'CloudWatch Log Group for CloudTrail events',
+    });
+
+    // Budget alarm — alert when monthly spend exceeds $100
+    new budgets.CfnBudget(this, 'MonthlyBudget', {
+      budget: {
+        budgetName: 'InterviewU-Monthly',
+        budgetType: 'COST',
+        timeUnit: 'MONTHLY',
+        budgetLimit: { amount: 100, unit: 'USD' },
+      },
+      notificationsWithSubscribers: [{
+        notification: {
+          notificationType: 'ACTUAL',
+          comparisonOperator: 'GREATER_THAN',
+          threshold: 80,
+          thresholdType: 'PERCENTAGE',
+        },
+        subscribers: [{ subscriptionType: 'EMAIL', address: 'fahimray@amazon.com' }],
+      }],
     });
   }
 }
