@@ -1,4 +1,8 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react'
+
+const ExcalidrawCanvas = lazy(() =>
+  import('@excalidraw/excalidraw').then(m => ({ default: m.Excalidraw }))
+)
 import Editor from '@monaco-editor/react'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
@@ -495,14 +499,6 @@ export default function TestMode() {
 
           {isSdMode ? (
             <div className="sd-answer">
-              <div className="sd-context">
-                <span className="sd-hint-label">Think about:</span>
-                <div className="sd-hints">
-                  {['Scale & capacity', 'Core components', 'Data model & APIs', 'Caching & queuing', 'Failure modes'].map(h => (
-                    <span key={h} className="sd-hint-tag">{h}</span>
-                  ))}
-                </div>
-              </div>
               <div className="sd-tabs">
                 {SD_TABS.map(tab => (
                   <button
@@ -516,15 +512,33 @@ export default function TestMode() {
                 ))}
               </div>
               {SD_TABS.map(tab => (
-                <div key={tab.id} className={`sd-section${sdTab === tab.id ? ' active' : ''}`}>
-                  <p className="sd-section-hint">{tab.hint}</p>
-                  <textarea
-                    value={sdSections[tab.id]}
-                    onChange={e => setSdSections(prev => ({ ...prev, [tab.id]: e.target.value }))}
-                    placeholder={`Write your ${tab.label.toLowerCase()} here…`}
-                    rows={12}
-                  />
-                </div>
+                tab.id === 'design' ? (
+                  <div key={tab.id} className={`sd-section${sdTab === tab.id ? ' active' : ''}`}>
+                    <p className="sd-section-hint">{tab.hint}</p>
+                    <div className="sd-canvas-wrap">
+                      <Suspense fallback={<div className="sd-canvas-loading">Loading whiteboard…</div>}>
+                        <ExcalidrawCanvas theme={theme === 'dark' ? 'dark' : 'light'} />
+                      </Suspense>
+                    </div>
+                    <p className="sd-canvas-label">Describe your architecture for Marcus to evaluate:</p>
+                    <textarea
+                      value={sdSections.design}
+                      onChange={e => setSdSections(prev => ({ ...prev, design: e.target.value }))}
+                      placeholder="Components, data flow, key design decisions…"
+                      rows={6}
+                    />
+                  </div>
+                ) : (
+                  <div key={tab.id} className={`sd-section${sdTab === tab.id ? ' active' : ''}`}>
+                    <p className="sd-section-hint">{tab.hint}</p>
+                    <textarea
+                      value={sdSections[tab.id]}
+                      onChange={e => setSdSections(prev => ({ ...prev, [tab.id]: e.target.value }))}
+                      placeholder={`Write your ${tab.label.toLowerCase()} here…`}
+                      rows={12}
+                    />
+                  </div>
+                )
               ))}
             </div>
           ) : isCodingQuestion(currentQ) ? (

@@ -659,16 +659,15 @@
   border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
-/* ── Two-column layout ── */
+/* ── Single centered column ── */
 
-.practice-body {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-  align-items: start;
+.practice-content {
+  max-width: 780px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
-
-/* ── Left: question context ── */
 
 .practice-question-panel {
   background: #ffffff;
@@ -676,8 +675,6 @@
   border-radius: 16px;
   padding: 1.75rem;
   box-shadow: var(--shadow-sm);
-  position: sticky;
-  top: 80px;
 }
 
 [data-theme="dark"] .practice-question-panel {
@@ -1116,12 +1113,8 @@ details[open] .practice-reference summary::before { content: '▼ '; }
 /* ── Responsive ── */
 
 @media (max-width: 860px) {
-  .practice-body {
-    grid-template-columns: 1fr;
-  }
-
-  .practice-question-panel {
-    position: static;
+  .practice-content {
+    max-width: 100%;
   }
 }
 
@@ -1336,4 +1329,33 @@ details[open] .practice-reference summary::before { content: '▼ '; }
 [data-theme="dark"] .sd-section textarea:focus {
   border-color: #6ee7b7;
   box-shadow: 0 0 0 3px rgba(110, 231, 183, 0.12);
+}
+
+/* ── Architecture whiteboard (Excalidraw) ─────────────────────── */
+
+.sd-canvas-wrap {
+  height: 420px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+}
+
+.sd-canvas-loading {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  background: var(--bg-secondary);
+}
+
+.sd-canvas-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin: 0 0 0.4rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
 }

@@ -1,10 +1,14 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, lazy, Suspense } from 'react'
 import Editor from '@monaco-editor/react'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { getAllQuestions, evaluateAnswer } from '../services/api'
 import type { Question, EvaluationResponse } from '../services/api'
 import './Questions.css'
+
+const ExcalidrawCanvas = lazy(() =>
+  import('@excalidraw/excalidraw').then(m => ({ default: m.Excalidraw }))
+)
 
 interface LangOption { label: string; monacoId: string; starter: string }
 
@@ -127,7 +131,7 @@ function PracticeView({
 
   return (
     <div className="practice-view">
-      {/* Practice header bar */}
+      {/* Header bar */}
       <div className="practice-header">
         <button className="practice-back-btn" onClick={onBack}>
           ← Back to Questions
@@ -140,53 +144,70 @@ function PracticeView({
         </div>
       </div>
 
-      {/* Two-column layout */}
-      <div className="practice-body">
+      {/* Single centered column */}
+      <div className="practice-content">
 
-        {/* Left: question context */}
-        <div className="practice-left">
-          <div className="practice-question-panel">
-            <p className="practice-panel-eyebrow">Question</p>
-            <h2 className="practice-question-text">{question.question_text}</h2>
-            {question.reference_answer && (
-              <details className="practice-reference">
-                <summary>Show reference answer</summary>
-                <p>{question.reference_answer}</p>
-              </details>
-            )}
-          </div>
+        {/* Question + hints */}
+        <div className="practice-question-panel">
+          <p className="practice-panel-eyebrow">Question</p>
+          <h2 className="practice-question-text">{question.question_text}</h2>
+          {isSd && (
+            <div className="sd-context">
+              <span className="sd-hint-label">Think about:</span>
+              <div className="sd-hints">
+                {['Scale & capacity', 'Core components', 'Data model & APIs', 'Caching & queuing', 'Failure modes'].map(h => (
+                  <span key={h} className="sd-hint-tag">{h}</span>
+                ))}
+              </div>
+            </div>
+          )}
+          {question.reference_answer && (
+            <details className="practice-reference">
+              <summary>Show reference answer</summary>
+              <p>{question.reference_answer}</p>
+            </details>
+          )}
         </div>
 
-        {/* Right: answer + feedback */}
-        <div className="practice-right">
-          {!evaluation ? (
-            <div className="practice-answer-panel">
-              <p className="practice-panel-eyebrow">Your Answer</p>
+        {/* Answer + feedback */}
+        {!evaluation ? (
+          <div className="practice-answer-panel">
+            <p className="practice-panel-eyebrow">Your Answer</p>
 
-              {isSd ? (
-                <div className="sd-answer">
-                  <div className="sd-context">
-                    <span className="sd-hint-label">Think about:</span>
-                    <div className="sd-hints">
-                      {['Scale & capacity', 'Core components', 'Data model & APIs', 'Caching & queuing', 'Failure modes'].map(h => (
-                        <span key={h} className="sd-hint-tag">{h}</span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="sd-tabs">
-                    {SD_TABS.map(tab => (
-                      <button
-                        key={tab.id}
-                        className={`sd-tab-btn${sdTab === tab.id ? ' active' : ''}${sdSections[tab.id].trim() ? ' filled' : ''}`}
-                        onClick={() => setSdTab(tab.id)}
-                        disabled={evaluating}
-                      >
-                        {tab.label}
-                        {sdSections[tab.id].trim() && <span className="sd-tab-dot" />}
-                      </button>
-                    ))}
-                  </div>
+            {isSd ? (
+              <div className="sd-answer">
+                <div className="sd-tabs">
                   {SD_TABS.map(tab => (
+                    <button
+                      key={tab.id}
+                      className={`sd-tab-btn${sdTab === tab.id ? ' active' : ''}${sdSections[tab.id].trim() ? ' filled' : ''}`}
+                      onClick={() => setSdTab(tab.id)}
+                      disabled={evaluating}
+                    >
+                      {tab.label}
+                      {sdSections[tab.id].trim() && <span className="sd-tab-dot" />}
+                    </button>
+                  ))}
+                </div>
+                {SD_TABS.map(tab => (
+                  tab.id === 'design' ? (
+                    <div key={tab.id} className={`sd-section${sdTab === tab.id ? ' active' : ''}`}>
+                      <p className="sd-section-hint">{tab.hint}</p>
+                      <div className="sd-canvas-wrap">
+                        <Suspense fallback={<div className="sd-canvas-loading">Loading whiteboard…</div>}>
+                          <ExcalidrawCanvas theme={theme === 'dark' ? 'dark' : 'light'} />
+                        </Suspense>
+                      </div>
+                      <p className="sd-canvas-label">Describe your architecture for Marcus to evaluate:</p>
+                      <textarea
+                        value={sdSections.design}
+                        onChange={e => setSdSections(prev => ({ ...prev, design: e.target.value }))}
+                        placeholder="Components, data flow, key design decisions…"
+                        rows={6}
+                        disabled={evaluating}
+                      />
+                    </div>
+                  ) : (
                     <div key={tab.id} className={`sd-section${sdTab === tab.id ? ' active' : ''}`}>
                       <p className="sd-section-hint">{tab.hint}</p>
                       <textarea
@@ -197,9 +218,10 @@ function PracticeView({
                         disabled={evaluating}
                       />
                     </div>
-                  ))}
-                </div>
-              ) : isCoding ? (
+                  )
+                ))}
+              </div>
+            ) : isCoding ? (
                 <div className="practice-monaco-wrap">
                   <div className="practice-lang-bar">
                     {LANGUAGES.map(lang => (
@@ -301,7 +323,7 @@ function PracticeView({
               </button>
             </div>
           )}
-        </div>
+
       </div>
     </div>
   )
