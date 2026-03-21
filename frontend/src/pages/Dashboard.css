@@ -4,21 +4,7 @@
   padding: 2rem 1.5rem 4rem;
 }
 
-/* Global reset: tie every element's text fill to its own color value.
-   Chrome promotes animated siblings to composite layers and -webkit-text-fill-color
-   can bleed across layer boundaries. currentColor means each element uses
-   whatever `color` is set on it (or inherited), which is always correct. */
-.dashboard * {
-  -webkit-text-fill-color: currentColor;
-}
-
 /* ── Hero banner ──────────────────────────────────────────────── */
-
-@keyframes heroGradientFlow {
-  0%   { background-position: 0% 50%; }
-  50%  { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-}
 
 @keyframes heroEnter {
   from { opacity: 0; transform: translateY(18px); }
@@ -29,15 +15,12 @@
   background: linear-gradient(
     135deg,
     #0d9488 0%,
-    #134e4a 20%,
-    #0f766e 40%,
-    #5eead4 60%,
-    #0f766e 78%,
-    #134e4a 90%,
+    #134e4a 25%,
+    #0f766e 50%,
+    #115e59 75%,
     #0d9488 100%
   );
-  background-size: 300% 300%;
-  animation: heroGradientFlow 10s ease infinite, heroEnter 0.6s ease-out both;
+  animation: heroEnter 0.6s ease-out both;
   border-radius: 20px;
   padding: 2.5rem 3rem;
   display: flex;
@@ -303,27 +286,22 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  /* Hardcoded — #64748b (var(--text-light)) is too faint at this size on white */
   color: #4b5563;
-  -webkit-text-fill-color: #4b5563;
 }
 
 [data-theme="dark"] .stat-label {
   color: #94a3b8;
-  -webkit-text-fill-color: #94a3b8;
 }
 
 .stat-value {
   font-size: 2.5rem;
   font-weight: 800;
   color: #111827;
-  -webkit-text-fill-color: #111827;
   line-height: 1;
 }
 
 [data-theme="dark"] .stat-value {
   color: #f1f5f9;
-  -webkit-text-fill-color: #f1f5f9;
 }
 
 .stat-value-sm {
@@ -331,12 +309,10 @@
   font-weight: 600;
   line-height: 1.4;
   color: #111827;
-  -webkit-text-fill-color: #111827;
 }
 
 [data-theme="dark"] .stat-value-sm {
   color: #f1f5f9;
-  -webkit-text-fill-color: #f1f5f9;
 }
 
 /* ── Score ring SVG ───────────────────────────────────────────── */
@@ -400,13 +376,11 @@
   font-size: 0.95rem;
   font-weight: 700;
   color: var(--text-dark);
-  -webkit-text-fill-color: var(--text-dark);
 }
 
 .recommendation-card p {
   margin: 0;
   color: var(--text-light);
-  -webkit-text-fill-color: var(--text-light);
   font-size: 0.9rem;
   line-height: 1.6;
 }
