@@ -163,6 +163,7 @@ export class ServiceStack extends cdk.Stack {
     if (isProduction && hostedZone) {
       new route53.ARecord(this, 'WebsiteAliasRecord', {
         zone: hostedZone,
+        recordName: 'interviewu',
         target: route53.RecordTarget.fromAlias(
           new route53Targets.CloudFrontTarget(distribution)
         ),
