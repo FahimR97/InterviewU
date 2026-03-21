@@ -21,6 +21,32 @@ function isCodingQuestion(q: Question): boolean {
   return `${q.category} ${q.competency}`.toLowerCase().match(/cod|programming|algorithm/) !== null
 }
 
+function isSystemDesignQuestion(q: Question): boolean {
+  return `${q.category} ${q.competency}`.toLowerCase().match(/system.design|architecture|design/) !== null
+}
+
+type SdTab = 'clarifying' | 'requirements' | 'design' | 'deepdive' | 'tradeoffs'
+interface SdSections { clarifying: string; requirements: string; design: string; deepdive: string; tradeoffs: string }
+const EMPTY_SD: SdSections = { clarifying: '', requirements: '', design: '', deepdive: '', tradeoffs: '' }
+
+const SD_TABS: { id: SdTab; label: string; hint: string }[] = [
+  { id: 'clarifying',   label: 'Clarify',       hint: 'What questions would you ask the interviewer before you start designing? (Users, scale, SLAs, read/write ratio, consistency…)' },
+  { id: 'requirements', label: 'Requirements',   hint: 'Functional requirements (what it does) and non-functional requirements (scale, latency, availability, durability).' },
+  { id: 'design',       label: 'Architecture',   hint: 'High-level components and data flow. Core services, how they communicate, where the main data stores sit.' },
+  { id: 'deepdive',     label: 'Deep Dive',      hint: 'Pick the hardest component and go deeper — data model, API design, database choice, caching, queuing strategy.' },
+  { id: 'tradeoffs',    label: 'Tradeoffs',      hint: 'Why these choices? Failure modes and how you handle them. What would change at 10x scale?' },
+]
+
+function buildSdAnswer(s: SdSections): string {
+  const parts: string[] = []
+  if (s.clarifying.trim())   parts.push(`=== CLARIFYING QUESTIONS ===\n${s.clarifying.trim()}`)
+  if (s.requirements.trim()) parts.push(`=== REQUIREMENTS ===\n${s.requirements.trim()}`)
+  if (s.design.trim())       parts.push(`=== HIGH-LEVEL ARCHITECTURE ===\n${s.design.trim()}`)
+  if (s.deepdive.trim())     parts.push(`=== DEEP DIVE ===\n${s.deepdive.trim()}`)
+  if (s.tradeoffs.trim())    parts.push(`=== TRADEOFFS & FAILURE MODES ===\n${s.tradeoffs.trim()}`)
+  return parts.join('\n\n')
+}
+
 function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()
 }
@@ -61,8 +87,11 @@ function PracticeView({
   const [selectedLang, setSelectedLang] = useState<LangOption>(LANGUAGES[0])
   const [evaluating, setEvaluating] = useState(false)
   const [evaluation, setEvaluation] = useState<EvaluationResponse | null>(null)
+  const [sdSections, setSdSections] = useState<SdSections>(EMPTY_SD)
+  const [sdTab, setSdTab] = useState<SdTab>('clarifying')
 
   const isCoding = isCodingQuestion(question)
+  const isSd = isSystemDesignQuestion(question)
 
   const handleLangChange = (lang: LangOption) => {
     setSelectedLang(lang)
@@ -70,14 +99,15 @@ function PracticeView({
   }
 
   const handleSubmit = async () => {
-    if (!userAnswer.trim()) return
+    const answerToSend = isSd ? buildSdAnswer(sdSections) : userAnswer
+    if (!answerToSend.trim()) return
     try {
       setEvaluating(true)
       const token = await getAuthToken()
       const result = await evaluateAnswer(
         {
           question: question.question_text,
-          answer: userAnswer,
+          answer: answerToSend,
           competency_type: question.competency,
           question_id: question.id,
           category: question.category,
@@ -133,7 +163,43 @@ function PracticeView({
             <div className="practice-answer-panel">
               <p className="practice-panel-eyebrow">Your Answer</p>
 
-              {isCoding ? (
+              {isSd ? (
+                <div className="sd-answer">
+                  <div className="sd-context">
+                    <span className="sd-hint-label">Think about:</span>
+                    <div className="sd-hints">
+                      {['Scale & capacity', 'Core components', 'Data model & APIs', 'Caching & queuing', 'Failure modes'].map(h => (
+                        <span key={h} className="sd-hint-tag">{h}</span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="sd-tabs">
+                    {SD_TABS.map(tab => (
+                      <button
+                        key={tab.id}
+                        className={`sd-tab-btn${sdTab === tab.id ? ' active' : ''}${sdSections[tab.id].trim() ? ' filled' : ''}`}
+                        onClick={() => setSdTab(tab.id)}
+                        disabled={evaluating}
+                      >
+                        {tab.label}
+                        {sdSections[tab.id].trim() && <span className="sd-tab-dot" />}
+                      </button>
+                    ))}
+                  </div>
+                  {SD_TABS.map(tab => (
+                    <div key={tab.id} className={`sd-section${sdTab === tab.id ? ' active' : ''}`}>
+                      <p className="sd-section-hint">{tab.hint}</p>
+                      <textarea
+                        value={sdSections[tab.id]}
+                        onChange={e => setSdSections(prev => ({ ...prev, [tab.id]: e.target.value }))}
+                        placeholder={`Write your ${tab.label.toLowerCase()} here…`}
+                        rows={12}
+                        disabled={evaluating}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : isCoding ? (
                 <div className="practice-monaco-wrap">
                   <div className="practice-lang-bar">
                     {LANGUAGES.map(lang => (
@@ -177,7 +243,7 @@ function PracticeView({
               <button
                 className="btn-evaluate"
                 onClick={handleSubmit}
-                disabled={evaluating || !userAnswer.trim()}
+                disabled={evaluating || (isSd ? buildSdAnswer(sdSections).trim().length === 0 : !userAnswer.trim())}
               >
                 {evaluating ? (
                   <>
@@ -226,6 +292,8 @@ function PracticeView({
                 className="btn-try-again"
                 onClick={() => {
                   setUserAnswer('')
+                  setSdSections(EMPTY_SD)
+                  setSdTab('clarifying')
                   setEvaluation(null)
                 }}
               >

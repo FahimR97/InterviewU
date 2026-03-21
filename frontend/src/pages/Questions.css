@@ -1189,3 +1189,151 @@ details[open] .practice-reference summary::before { content: '▼ '; }
     height: 1px;
   }
 }
+/* ── System Design tab answer (practice view) ─────────────────── */
+
+.sd-answer {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.sd-context {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.sd-hint-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.sd-hints {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.sd-hint-tag {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #0f766e;
+  background: rgba(13, 148, 136, 0.1);
+  border: 1px solid rgba(13, 148, 136, 0.2);
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+}
+
+[data-theme="dark"] .sd-hint-tag {
+  color: #6ee7b7;
+  background: rgba(110, 231, 183, 0.1);
+  border-color: rgba(110, 231, 183, 0.2);
+}
+
+.sd-tabs {
+  display: flex;
+  gap: 0;
+  border-bottom: 2px solid var(--border);
+  overflow-x: auto;
+}
+
+.sd-tab-btn {
+  position: relative;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.sd-tab-btn:hover { color: var(--text-dark); }
+
+.sd-tab-btn.active {
+  color: #0d9488;
+  border-bottom-color: #0d9488;
+}
+
+[data-theme="dark"] .sd-tab-btn.active {
+  color: #6ee7b7;
+  border-bottom-color: #6ee7b7;
+}
+
+.sd-tab-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #10b981;
+  flex-shrink: 0;
+}
+
+.sd-section {
+  display: none;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 1rem;
+}
+
+.sd-section.active { display: flex; }
+
+.sd-section-hint {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+  margin: 0;
+  padding: 0.6rem 0.85rem;
+  background: rgba(13, 148, 136, 0.05);
+  border-left: 3px solid rgba(13, 148, 136, 0.35);
+  border-radius: 0 6px 6px 0;
+}
+
+[data-theme="dark"] .sd-section-hint {
+  background: rgba(110, 231, 183, 0.05);
+  border-left-color: rgba(110, 231, 183, 0.25);
+}
+
+.sd-section textarea {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg-secondary);
+  color: var(--text-dark);
+  font-size: 0.95rem;
+  resize: vertical;
+  font-family: inherit;
+  line-height: 1.65;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+  min-height: 220px;
+}
+
+.sd-section textarea:focus {
+  outline: none;
+  border-color: #0d9488;
+  box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.12);
+}
+
+[data-theme="dark"] .sd-section textarea {
+  background: #1e293b;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .sd-section textarea:focus {
+  border-color: #6ee7b7;
+  box-shadow: 0 0 0 3px rgba(110, 231, 183, 0.12);
+}
