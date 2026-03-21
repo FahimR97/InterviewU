@@ -31,14 +31,14 @@ export class ServiceStack extends cdk.Stack {
     const environment = props?.environment ?? 'prod';
     const isProduction = environment === 'prod';
     const rootDomain = 'fahimray.people.aws.dev';
-    const websiteDomain = isProduction ? `interviewu.${rootDomain}` : undefined;
+    const websiteDomain = isProduction ? rootDomain : undefined;
     const apiDomain: string | undefined = undefined;
     const hostedZone = isProduction ? route53.HostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
       hostedZoneId: 'Z06640972CZPSKCSBKIIZ',
       zoneName: rootDomain,
     }) : undefined;
     const certificate = isProduction ? acm.Certificate.fromCertificateArn(this, 'SiteCert',
-      'arn:aws:acm:us-east-1:418107732011:certificate/11b8cbdf-8a1e-4ff5-a7af-48a2aeeb9d81'
+      'arn:aws:acm:us-east-1:418107732011:certificate/05a92d5c-7915-47c5-ba09-71affd0dc523'
     ) : undefined;
     const apiCertificate: acm.ICertificate | undefined = undefined;
 
@@ -163,7 +163,6 @@ export class ServiceStack extends cdk.Stack {
     if (isProduction && hostedZone) {
       new route53.ARecord(this, 'WebsiteAliasRecord', {
         zone: hostedZone,
-        recordName: 'interviewu',
         target: route53.RecordTarget.fromAlias(
           new route53Targets.CloudFrontTarget(distribution)
         ),
