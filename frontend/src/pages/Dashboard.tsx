@@ -14,7 +14,7 @@ import {
 } from 'recharts'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
-import { getAnalytics } from '../services/api'
+import { getAnalytics, getSettings, saveSettings } from '../services/api'
 import type { AnalyticsResponse, AnalyticsTimeEntry } from '../services/api'
 import './Dashboard.css'
 
@@ -57,20 +57,45 @@ function MetricCard({ icon, label, value, accent }: { icon: string; label: strin
 }
 
 function InterviewCountdown() {
+  const { getAuthToken } = useAuth()
+  // Seed from localStorage immediately so there's no flash on load
   const [targetDate, setTargetDate] = useState<string>(() => localStorage.getItem('interviewDate') || '')
   const [editing, setEditing] = useState(false)
   const [inputVal, setInputVal] = useState(targetDate)
+  const [saving, setSaving] = useState(false)
 
   const [now] = useState(() => Date.now())
+
+  // Load from API on mount — overwrites localStorage with server value
+  useEffect(() => {
+    getAuthToken().then(token =>
+      getSettings(token).then(s => {
+        if (s.interview_date) {
+          setTargetDate(s.interview_date)
+          setInputVal(s.interview_date)
+          localStorage.setItem('interviewDate', s.interview_date)
+        }
+      }).catch(() => { /* use localStorage fallback silently */ })
+    ).catch(() => {})
+  }, [getAuthToken])
 
   const daysLeft = targetDate
     ? Math.ceil((new Date(targetDate).getTime() - now) / 86400000)
     : null
 
-  const save = () => {
+  const save = async () => {
+    setSaving(true)
     localStorage.setItem('interviewDate', inputVal)
     setTargetDate(inputVal)
     setEditing(false)
+    try {
+      const token = await getAuthToken()
+      await saveSettings({ interview_date: inputVal }, token)
+    } catch {
+      // saved locally — will sync next session when API is available
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (
@@ -85,8 +110,8 @@ function InterviewCountdown() {
             onChange={e => setInputVal(e.target.value)}
             className="date-input"
           />
-          <button className="btn btn-small btn-primary" onClick={save} disabled={!inputVal}>
-            Save
+          <button className="btn btn-small btn-primary" onClick={save} disabled={!inputVal || saving}>
+            {saving ? 'Saving…' : 'Save'}
           </button>
           {editing && (
             <button className="btn btn-small" onClick={() => setEditing(false)}>

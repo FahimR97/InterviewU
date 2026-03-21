@@ -180,6 +180,20 @@ export class ServiceStack extends cdk.Stack {
       description: 'DynamoDB table for user answer history',
     });
 
+    // DynamoDB table for per-user settings (interview date, preferences, etc.)
+    const userSettingsTable = new dynamodb.Table(this, 'UserSettings', {
+      partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      encryption: dynamodb.TableEncryption.AWS_MANAGED,
+      pointInTimeRecovery: true,
+    });
+
+    new cdk.CfnOutput(this, 'UserSettingsTableName', {
+      value: userSettingsTable.tableName,
+      description: 'DynamoDB table for per-user settings',
+    });
+
     // Dynamo DB Table
     const table = new dynamodb.Table(this, 'InterviewQuestions', {
       partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
@@ -251,6 +265,19 @@ export class ServiceStack extends cdk.Stack {
 
     userAnswersTable.grantReadData(userAnalyticsHandler);
 
+    // Lambda for user settings (GET/PUT interview date, preferences)
+    const settingsHandler = new lambda.Function(this, 'SettingsHandler', {
+      runtime: lambda.Runtime.PYTHON_3_11,
+      handler: 'settings_handler.handler',
+      code: lambda.Code.fromAsset("../backend/src"),
+      timeout: cdk.Duration.seconds(15),
+      environment: {
+        USER_SETTINGS_TABLE_NAME: userSettingsTable.tableName,
+      },
+    });
+
+    userSettingsTable.grantReadWriteData(settingsHandler);
+
     // Lambda for user signup (bypasses selfSignUpEnabled restriction)
     const signupHandler = new lambda.Function(this, 'SignupHandler', {
       runtime: lambda.Runtime.PYTHON_3_11,
@@ -269,6 +296,7 @@ export class ServiceStack extends cdk.Stack {
     const evaluateIntegration = new apigw.LambdaIntegration(evaluateAnswerFn);
     const signupIntegration = new apigw.LambdaIntegration(signupHandler);
     const analyticsIntegration = new apigw.LambdaIntegration(userAnalyticsHandler);
+    const settingsIntegration = new apigw.LambdaIntegration(settingsHandler);
 
     const cognitoAuthorizer = new apigw.CognitoUserPoolsAuthorizer(this, 'CognitoAuthorizer', {
       cognitoUserPools: [userPool],
@@ -351,6 +379,17 @@ export class ServiceStack extends cdk.Stack {
     // Analytics endpoint (authenticated)
     const analytics = api.root.addResource('analytics');
     analytics.addMethod('GET', analyticsIntegration, {
+      authorizer: cognitoAuthorizer,
+      authorizationType: apigw.AuthorizationType.COGNITO,
+    });
+
+    // Settings endpoint (authenticated) — GET/PUT user preferences
+    const settings = api.root.addResource('settings');
+    settings.addMethod('GET', settingsIntegration, {
+      authorizer: cognitoAuthorizer,
+      authorizationType: apigw.AuthorizationType.COGNITO,
+    });
+    settings.addMethod('PUT', settingsIntegration, {
       authorizer: cognitoAuthorizer,
       authorizationType: apigw.AuthorizationType.COGNITO,
     });

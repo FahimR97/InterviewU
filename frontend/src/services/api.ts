@@ -158,6 +158,43 @@ export async function evaluateAnswer(
   return data;
 }
 
+export interface UserSettings {
+  interview_date?: string
+}
+
+/**
+ * Fetch persisted user settings
+ */
+export async function getSettings(authToken: string | null): Promise<UserSettings> {
+  const headers: HeadersInit = { 'Content-Type': 'application/json' }
+  if (authToken) headers['Authorization'] = authToken
+
+  const response = await fetch(`${API_BASE_URL}settings`, { method: 'GET', headers })
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`Failed to fetch settings: ${response.status} ${errorText}`)
+  }
+  return response.json()
+}
+
+/**
+ * Save user settings (partial update — only provided keys are written)
+ */
+export async function saveSettings(settings: UserSettings, authToken: string | null): Promise<void> {
+  const headers: HeadersInit = { 'Content-Type': 'application/json' }
+  if (authToken) headers['Authorization'] = authToken
+
+  const response = await fetch(`${API_BASE_URL}settings`, {
+    method: 'PUT',
+    headers,
+    body: JSON.stringify(settings),
+  })
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`Failed to save settings: ${response.status} ${errorText}`)
+  }
+}
+
 /**
  * Fetch analytics for the authenticated user
  */
