@@ -33,6 +33,11 @@
   to   { opacity: 1; transform: translateX(0); }
 }
 
+@keyframes panelEnter {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes feedbackReveal {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -662,7 +667,7 @@
 /* ── Single centered column ── */
 
 .practice-content {
-  max-width: 780px;
+  max-width: 960px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -675,6 +680,7 @@
   border-radius: 16px;
   padding: 1.75rem;
   box-shadow: var(--shadow-sm);
+  animation: panelEnter 0.4s ease-out both;
 }
 
 [data-theme="dark"] .practice-question-panel {
@@ -753,6 +759,7 @@ details[open] .practice-reference summary::before { content: '▼ '; }
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  animation: panelEnter 0.4s 0.1s ease-out both;
 }
 
 [data-theme="dark"] .practice-answer-panel {
@@ -1112,7 +1119,7 @@ details[open] .practice-reference summary::before { content: '▼ '; }
 
 /* ── Responsive ── */
 
-@media (max-width: 860px) {
+@media (max-width: 1020px) {
   .practice-content {
     max-width: 100%;
   }
@@ -1334,11 +1341,12 @@ details[open] .practice-reference summary::before { content: '▼ '; }
 /* ── Architecture whiteboard (Excalidraw) ─────────────────────── */
 
 .sd-canvas-wrap {
-  height: 420px;
+  height: 520px;
   border: 1px solid var(--border);
   border-radius: 12px;
-  overflow: hidden;
+  overflow: clip;
   margin-bottom: 0.75rem;
+  position: relative;
 }
 
 .sd-canvas-loading {

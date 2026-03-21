@@ -4,13 +4,11 @@ import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
 import { getAllQuestions, evaluateAnswer } from '../services/api'
 import type { Question, EvaluationResponse } from '../services/api'
+import '@excalidraw/excalidraw/index.css'
 import './Questions.css'
 
 const ExcalidrawCanvas = lazy(() =>
-  Promise.all([
-    import('@excalidraw/excalidraw'),
-    import('@excalidraw/excalidraw/index.css'),
-  ]).then(([m]) => ({ default: m.Excalidraw }))
+  import('@excalidraw/excalidraw').then(m => ({ default: m.Excalidraw }))
 )
 
 interface LangOption { label: string; monacoId: string; starter: string }

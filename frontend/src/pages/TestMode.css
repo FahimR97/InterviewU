@@ -959,11 +959,12 @@
 /* ── Architecture whiteboard (Excalidraw) ─────────────────────── */
 
 .sd-canvas-wrap {
-  height: 420px;
+  height: 520px;
   border: 1px solid var(--border);
   border-radius: 12px;
-  overflow: hidden;
+  overflow: clip;
   margin-bottom: 0.75rem;
+  position: relative;
 }
 
 .sd-canvas-loading {
