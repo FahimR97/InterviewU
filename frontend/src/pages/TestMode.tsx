@@ -349,11 +349,9 @@ export default function TestMode() {
   const sessionAvg = sessionScores.length > 0
     ? Math.round(sessionScores.reduce((a, b) => a + b, 0) / sessionScores.length)
     : null
-  const isSdMode = selectedMode === 'system_design'
-  const currentAnswer = isCodingQuestion(currentQ ?? queue[0]) ? codeAnswer : textAnswer
-  const hasAnswer = isSdMode
-    ? buildSdAnswer(sdSections).trim().length > 0
-    : currentAnswer.trim().length > 0 && currentAnswer !== selectedLang.starter.trim()
+  const currentAnswer = currentQ ? (isCodingQuestion(currentQ) ? codeAnswer : textAnswer) : ''
+  const hasAnswer = currentAnswer.trim().length > 0 &&
+    currentAnswer !== (selectedLang.starter).trim()
 
   return (
     <div className="test-container">
