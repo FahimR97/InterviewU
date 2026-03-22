@@ -1,4 +1,6 @@
 import * as cdk from 'aws-cdk-lib/core';
+import { config } from 'dotenv';
+config({ path: __dirname + '/../../.env' });
 import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigw from 'aws-cdk-lib/aws-apigateway';
@@ -32,15 +34,17 @@ export class ServiceStack extends cdk.Stack {
     const environment = props?.environment ?? 'prod';
     const isProduction = environment === 'prod';
     const rootDomain = 'fahimray.people.aws.dev';
-    const websiteDomain = isProduction ? rootDomain : undefined;
+    const websiteDomain = isProduction ? rootDomain : `alpha.${rootDomain}`;
     const apiDomain: string | undefined = undefined;
     const hostedZone = isProduction ? route53.HostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
       hostedZoneId: 'Z06640972CZPSKCSBKIIZ',
       zoneName: rootDomain,
     }) : undefined;
-    const certificate = isProduction ? acm.Certificate.fromCertificateArn(this, 'SiteCert',
-      'arn:aws:acm:us-east-1:418107732011:certificate/05a92d5c-7915-47c5-ba09-71affd0dc523'
-    ) : undefined;
+    const certificate = acm.Certificate.fromCertificateArn(this, 'SiteCert',
+      isProduction
+        ? 'arn:aws:acm:us-east-1:418107732011:certificate/05a92d5c-7915-47c5-ba09-71affd0dc523'
+        : 'arn:aws:acm:us-east-1:134667369518:certificate/b2f39608-866d-44bb-be6d-cf1f5fc38378'
+    );
     const apiCertificate: acm.ICertificate | undefined = undefined;
 
     const userPool = new cognito.UserPool(this, 'InterviewUUserPool', {
@@ -142,8 +146,8 @@ export class ServiceStack extends cdk.Stack {
         },
       ],
       priceClass: cloudfront.PriceClass.PRICE_CLASS_100,
-      domainNames: isProduction && websiteDomain ? [websiteDomain] : undefined,
-      certificate: isProduction ? certificate : undefined,
+      domainNames: [websiteDomain],
+      certificate,
     });
 
     new cdk.CfnOutput(this, 'FrontendBucketName', {
@@ -705,7 +709,7 @@ export class ServiceStack extends cdk.Stack {
           threshold: 80,
           thresholdType: 'PERCENTAGE',
         },
-        subscribers: [{ subscriptionType: 'EMAIL', address: 'fahimray@amazon.com' }],
+        subscribers: [{ subscriptionType: 'EMAIL', address: process.env.BUDGET_ALERT_EMAIL! }],
       }],
     });
   }

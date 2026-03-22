@@ -25,3 +25,4 @@ __pycache__/
 backend/lambda.zip
 backend/questions-export.json
 backend/import_to_alpha.py
+.env
