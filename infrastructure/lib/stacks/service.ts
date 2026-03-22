@@ -1,6 +1,15 @@
 import * as cdk from 'aws-cdk-lib/core';
-import { config } from 'dotenv';
-config({ path: __dirname + '/../../.env' });
+import * as fs from 'fs';
+import * as path from 'path';
+
+// Load .env file if it exists
+const envPath = path.resolve(__dirname, '../../.env');
+if (fs.existsSync(envPath)) {
+  fs.readFileSync(envPath, 'utf-8').split('\n').forEach(line => {
+    const [key, ...val] = line.split('=');
+    if (key && val.length) process.env[key.trim()] = val.join('=').trim();
+  });
+}
 import { Construct } from 'constructs';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigw from 'aws-cdk-lib/aws-apigateway';
