@@ -96,7 +96,15 @@ export async function getAllQuestions(authToken: string | null): Promise<Questio
   }
 
   const data = await response.json();
-  return data;
+  return (Array.isArray(data) ? data : []).map((q: Partial<Question>) => ({
+    id: q.id ?? '',
+    category: q.category ?? '',
+    competency: q.competency ?? '',
+    create_at: q.create_at ?? '',
+    difficulty: q.difficulty ?? 'medium',
+    question_text: q.question_text ?? '',
+    reference_answer: q.reference_answer ?? '',
+  }));
 }
 
 /**

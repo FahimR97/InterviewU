@@ -139,8 +139,8 @@ function PracticeView({
           ← Back to Questions
         </button>
         <div className="practice-header-meta">
-          <span className={`difficulty difficulty-${question.difficulty?.toLowerCase() ?? 'unknown'}`}>
-            {capitalize(question.difficulty ?? '')}
+          <span className={`difficulty difficulty-${question.difficulty.toLowerCase()}`}>
+            {capitalize(question.difficulty)}
           </span>
           <span className="practice-category-pill">{question.category}</span>
         </div>
@@ -372,12 +372,12 @@ export default function Questions() {
   }, [user])
 
   const categories = useMemo(() => {
-    const cats = new Set(questions.map(q => q.category))
+    const cats = new Set(questions.map(q => q.category).filter(Boolean))
     return ['All', ...Array.from(cats)]
   }, [questions])
 
   const difficulties = useMemo(() => {
-    const diffs = new Set(questions.map(q => q.difficulty?.toLowerCase()).filter(Boolean))
+    const diffs = new Set(questions.map(q => q.difficulty.toLowerCase()).filter(Boolean))
     return ['All', ...Array.from(diffs)]
   }, [questions])
 
@@ -391,12 +391,12 @@ export default function Questions() {
     return questions.filter(q => {
       const matchesSearch =
         q.question_text.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (q.difficulty?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
+        q.difficulty.toLowerCase().includes(searchTerm.toLowerCase()) ||
         q.category.toLowerCase().includes(searchTerm.toLowerCase())
       const matchesCategory = selectedCategory === 'All' || q.category === selectedCategory
       const matchesDifficulty =
         selectedDifficulty === 'All' ||
-        (q.difficulty?.toLowerCase() ?? '') === selectedDifficulty.toLowerCase()
+        q.difficulty.toLowerCase() === selectedDifficulty.toLowerCase()
       const matchesCompetency = selectedCompetency === 'All' || q.competency === selectedCompetency
       return matchesSearch && matchesCategory && matchesDifficulty && matchesCompetency
     })
@@ -554,8 +554,8 @@ export default function Questions() {
                     >
                       <div className="question-header">
                         <h3>{question.question_text}</h3>
-                        <span className={`difficulty difficulty-${question.difficulty?.toLowerCase() ?? 'unknown'}`}>
-                          {capitalize(question.difficulty ?? '')}
+                        <span className={`difficulty difficulty-${question.difficulty.toLowerCase()}`}>
+                          {capitalize(question.difficulty)}
                         </span>
                       </div>
                       <div className="question-footer">
