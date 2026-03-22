@@ -704,22 +704,24 @@ export class ServiceStack extends cdk.Stack {
     });
 
     // Budget alarm — alert when monthly spend exceeds $100
-    new budgets.CfnBudget(this, 'MonthlyBudget', {
-      budget: {
-        budgetName: 'InterviewU-Monthly',
-        budgetType: 'COST',
-        timeUnit: 'MONTHLY',
-        budgetLimit: { amount: 100, unit: 'USD' },
-      },
-      notificationsWithSubscribers: [{
-        notification: {
-          notificationType: 'ACTUAL',
-          comparisonOperator: 'GREATER_THAN',
-          threshold: 80,
-          thresholdType: 'PERCENTAGE',
+    if (process.env.BUDGET_ALERT_EMAIL) {
+      new budgets.CfnBudget(this, 'MonthlyBudget', {
+        budget: {
+          budgetName: 'InterviewU-Monthly',
+          budgetType: 'COST',
+          timeUnit: 'MONTHLY',
+          budgetLimit: { amount: 100, unit: 'USD' },
         },
-        subscribers: [{ subscriptionType: 'EMAIL', address: process.env.BUDGET_ALERT_EMAIL! }],
-      }],
-    });
+        notificationsWithSubscribers: [{
+          notification: {
+            notificationType: 'ACTUAL',
+            comparisonOperator: 'GREATER_THAN',
+            threshold: 80,
+            thresholdType: 'PERCENTAGE',
+          },
+          subscribers: [{ subscriptionType: 'EMAIL', address: process.env.BUDGET_ALERT_EMAIL }],
+        }],
+      });
+    }
   }
 }

@@ -129,6 +129,7 @@ jobs:
           CDK_DEFAULT_ACCOUNT: 134667369518
           CDK_DEFAULT_REGION: eu-west-2
           ENVIRONMENT: alpha
+          BUDGET_ALERT_EMAIL: ${{ secrets.BUDGET_ALERT_EMAIL }}
         run: npx cdk deploy ServiceStack --require-approval never
 
   integration-tests-alpha:
@@ -208,4 +209,5 @@ jobs:
           CDK_DEFAULT_ACCOUNT: 418107732011
           CDK_DEFAULT_REGION: eu-west-2
           ENVIRONMENT: prod
+          BUDGET_ALERT_EMAIL: ${{ secrets.BUDGET_ALERT_EMAIL }}
         run: npx cdk deploy ServiceStack --require-approval never
