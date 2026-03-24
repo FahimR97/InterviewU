@@ -37,21 +37,7 @@ A full-stack interview preparation platform with AI-powered answer evaluation, b
 
 ### Architecture Diagram
 
-```
-User → Route 53 → CloudFront → S3 (React SPA)
-                                    ↓
-                              API Gateway ← Cognito Auth
-                             (X-Ray enabled)
-                    ↙       ↓       ↓         ↓        ↘
-        QuestionsHandler  EvaluateAnswer  Analytics  Settings  AdminCreateUser
-               ↓               ↓    ↓        ↓          ↓           ↓
-      InterviewQuestions    Bedrock  UserAnswers  UserAnswers  UserSettings  Cognito
-                           (Claude)
-
-CloudTrail → S3 + CloudWatch Logs
-CloudWatch Alarms → SNS
-Budget Alarm → Email Alert
-```
+![Architecture Diagram](docs/architecture.jpg)
 
 ## 🚀 CI/CD Pipeline
 
