@@ -73,7 +73,9 @@ Respond ONLY with valid JSON in this exact format:
   "marcus_comment": "Your honest, direct feedback here"
 }}
 
-Be rigorous and specific. Candidates need accurate feedback to improve."""
+Be rigorous and accurate with scores — do not inflate them.
+Be direct and specific in your feedback, but stay encouraging and coaching in tone.
+The goal is to help candidates improve, not to discourage them."""
 
         # Call Bedrock Claude 3.7 Sonnet — track latency for monitoring
         t0 = timer()
