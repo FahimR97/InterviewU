@@ -91,6 +91,9 @@ jobs:
         env:
           CDK_DEFAULT_ACCOUNT: "000000000000"
           CDK_DEFAULT_REGION: eu-west-2
+          HOSTED_ZONE_ID: ${{ secrets.HOSTED_ZONE_ID }}
+          ALPHA_CERT_ARN: ${{ secrets.ALPHA_CERT_ARN }}
+          PROD_CERT_ARN: ${{ secrets.PROD_CERT_ARN }}
         run: npx cdk synth --no-lookups
 
   deploy-alpha:
