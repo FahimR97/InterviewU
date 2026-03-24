@@ -423,7 +423,7 @@ export default function Questions() {
           <span className="qbank-hero-dot" />
           AI-Powered Practice
         </div>
-        <h1 className="qbank-hero-title">Question Bank</h1>
+        <h1 className="qbank-hero-title">Practice Mode</h1>
         <p className="qbank-hero-subtitle">
           Curated interview questions across system design, DevOps, cloud, algorithms and more.
           Answer anything and get instant AI-scored feedback from Marcus.

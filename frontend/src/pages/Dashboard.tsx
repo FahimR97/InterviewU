@@ -452,7 +452,7 @@ export default function Dashboard() {
             <div className="empty-icon">📊</div>
             <h2>No {modeFilter === 'practice' ? 'Practice Mode' : 'Test Mode'} data yet</h2>
             <p>Answer some questions in {modeFilter === 'practice' ? 'Practice Mode' : 'Test Mode'} and your stats will appear here.</p>
-            <Link to="/questions" className="btn btn-primary">Go to Question Bank</Link>
+            <Link to="/questions" className="btn btn-primary">Go to Practice Mode</Link>
           </div>
         </>
       )}
