@@ -78,34 +78,17 @@
 [data-theme="dark"] .qbank-hero {
   background: linear-gradient(
     135deg,
-    #1e293b 0%,
-    #1e1b4b 28%,
-    #0f172a 52%,
-    #1e1b4b 76%,
-    #1e293b 100%
+    #0d9488 0%,
+    #134e4a 20%,
+    #1e1b4b 40%,
+    #6366f1 60%,
+    #1e1b4b 78%,
+    #134e4a 90%,
+    #0d9488 100%
   );
   background-size: 300% 300%;
   animation: qbankGradientFlow 12s ease infinite, qbankHeroEnter 0.6s ease-out both;
   border: 1px solid rgba(99, 102, 241, 0.2);
-}
-
-[data-theme="dark"] .qbank-hero::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 40%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.06) 45%,
-    rgba(255, 255, 255, 0.1) 50%,
-    rgba(255, 255, 255, 0.06) 55%,
-    transparent 100%
-  );
-  animation: qbankShimmer 6s ease-in-out infinite;
-  pointer-events: none;
 }
 
 /* Decorative orbs */
