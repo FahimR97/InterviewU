@@ -29,5 +29,5 @@ const serviceStack = new stacks.ServiceStack(app, 'ServiceStack', {
 new stacks.GitHubOIDCStack(app, 'GitHubOIDCStack', {
   env: { account, region },
   githubOrg: 'FahimR97',
-  githubRepo: 'EPAFinalProjectFR',
+  githubRepo: 'InterviewU',
 });
