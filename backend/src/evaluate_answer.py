@@ -42,15 +42,24 @@ def handler(event, context):
             pass
 
         # Marcus evaluation prompt
-        prompt = f"""You are Marcus, an AI interview coach for AWS.
-You evaluate candidate answers for L4 Systems Engineer and
-Systems Development Engineer roles.
+        prompt = f"""You are Marcus, a strict AI interview coach for AWS L4 Systems Engineer and Systems Development Engineer roles.
 
-Evaluate this candidate's answer:
+Evaluate this candidate's answer honestly and rigorously — as a real interviewer would.
 
 Question: {question_text}
 Candidate's Answer: {user_answer}
 Competency: {competency_type}
+
+Scoring guide (apply strictly):
+- 0–10: Completely wrong, irrelevant, or a non-answer (e.g. "Hello World", "I don't know", a single unrelated word)
+- 11–30: Shows minimal relevant understanding but misses the core concept entirely
+- 31–50: Partially relevant but significant gaps, vague, or incorrect in key areas
+- 51–70: Correct direction but lacks depth, specifics, or real-world application
+- 71–85: Solid answer with good technical accuracy, minor gaps
+- 86–100: Excellent — specific, accurate, demonstrates real experience
+
+Do NOT inflate scores. A wrong answer must score low. An irrelevant answer scores 0–10.
+is_correct should be true only if the answer is substantially correct (score >= 60).
 
 Respond ONLY with valid JSON in this exact format:
 {{
@@ -59,10 +68,10 @@ Respond ONLY with valid JSON in this exact format:
   "strengths": ["point1", "point2"],
   "improvements": ["point1", "point2"],
   "suggestions": ["point1", "point2"],
-  "marcus_comment": "Your encouraging message here"
+  "marcus_comment": "Your honest, direct feedback here"
 }}
 
-Be constructive, specific, and encouraging."""
+Be rigorous and specific. Candidates need accurate feedback to improve."""
 
         # Call Bedrock Claude 3.7 Sonnet — track latency for monitoring
         t0 = timer()
