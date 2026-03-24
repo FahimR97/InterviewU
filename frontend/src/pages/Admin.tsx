@@ -699,17 +699,13 @@ function Admin() {
 
       <div className="admin-tab-bar">
         <div className="admin-tab-bar-inner">
-          {([
-            { id: 'overview', label: 'Overview', icon: '📊' },
-            { id: 'questions', label: 'Questions', icon: '📝' },
-            { id: 'users', label: 'Users', icon: '👥' },
-          ] as { id: Tab; label: string; icon: string }[]).map(({ id, label, icon }) => (
+          {(['overview', 'questions', 'users'] as Tab[]).map(tab => (
             <button
-              key={id}
-              className={`admin-tab-btn ${activeTab === id ? 'active' : ''}`}
-              onClick={() => setTab(id)}
+              key={tab}
+              className={`admin-tab-btn ${activeTab === tab ? 'active' : ''}`}
+              onClick={() => setTab(tab)}
             >
-              <span className="tab-icon">{icon}</span>{label}
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
           ))}
         </div>
