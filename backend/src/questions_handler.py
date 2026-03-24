@@ -18,6 +18,8 @@ import uuid
 from datetime import datetime, timezone
 import boto3
 
+from custom_metrics import QuestionsMetrics
+
 # Configure JSON structured logging for CloudWatch
 logger = logging.getLogger()
 log_level = os.environ.get("LOG_LEVEL", "INFO")
@@ -162,6 +164,8 @@ def handler(event, context):
                     extra={**log_extra, "question_count": len(items)},
                 )
 
+                QuestionsMetrics.questions_listed(len(items))
+
                 return {
                     "statusCode": 200,
                     "headers": {"Access-Control-Allow-Origin": "*"},
@@ -225,6 +229,7 @@ def handler(event, context):
                         "Question found",
                         extra={**log_extra, "question_id": question_id},
                     )
+                    QuestionsMetrics.question_viewed(item.get("category"))
                     return {
                         "statusCode": 200,
                         "headers": {"Access-Control-Allow-Origin": "*"},
@@ -235,6 +240,7 @@ def handler(event, context):
                     "Question not found",
                     extra={**log_extra, "question_id": question_id},
                 )
+                QuestionsMetrics.question_not_found()
                 return {
                     "statusCode": 404,
                     "headers": {"Access-Control-Allow-Origin": "*"},

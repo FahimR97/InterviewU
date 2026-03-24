@@ -4,6 +4,8 @@ import boto3
 from decimal import Decimal
 from datetime import datetime, timezone
 
+from custom_metrics import EvaluationMetrics, timer
+
 bedrock = boto3.client("bedrock-runtime", region_name="eu-west-2")
 dynamodb = boto3.resource("dynamodb")
 
@@ -62,7 +64,8 @@ Respond ONLY with valid JSON in this exact format:
 
 Be constructive, specific, and encouraging."""
 
-        # Call Bedrock Claude 3.7 Sonnet
+        # Call Bedrock Claude 3.7 Sonnet — track latency for monitoring
+        t0 = timer()
         response = bedrock.invoke_model(
             modelId="anthropic.claude-3-7-sonnet-20250219-v1:0",
             body=json.dumps(
@@ -73,6 +76,7 @@ Be constructive, specific, and encouraging."""
                 }
             ),
         )
+        EvaluationMetrics.ai_response_time(timer() - t0)
 
         response_body = json.loads(response["body"].read())
         feedback_text = response_body["content"][0]["text"]
@@ -102,6 +106,14 @@ Be constructive, specific, and encouraging."""
             except Exception as write_err:
                 print(f"Warning: failed to persist answer record: {write_err}")
 
+        # Emit business metrics — score, category breakdown, pass rate
+        EvaluationMetrics.answer_evaluated(
+            score=feedback.get("score", 0),
+            category=category,
+            mode=mode,
+            is_correct=feedback.get("is_correct", False),
+        )
+
         return {
             "statusCode": 200,
             "headers": {"Access-Control-Allow-Origin": "*"},
@@ -109,6 +121,7 @@ Be constructive, specific, and encouraging."""
         }
 
     except Exception as e:
+        EvaluationMetrics.evaluation_failure(type(e).__name__)
         return {
             "statusCode": 500,
             "headers": {"Access-Control-Allow-Origin": "*"},

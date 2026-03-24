@@ -272,6 +272,13 @@ export class ServiceStack extends cdk.Stack {
     // Grant write access to user answers table
     userAnswersTable.grantWriteData(evaluateAnswerFn);
 
+    // Grant permission to emit custom CloudWatch metrics (EvaluationScore, MarcusResponseTime, etc.)
+    evaluateAnswerFn.addToRolePolicy(new iam.PolicyStatement({
+      actions: ['cloudwatch:PutMetricData'],
+      resources: ['*'],
+      conditions: { StringEquals: { 'cloudwatch:namespace': 'InterviewU' } },
+    }));
+
     // Lambda for user analytics
     const userAnalyticsHandler = new lambda.Function(this, 'UserAnalyticsHandler', {
       runtime: lambda.Runtime.PYTHON_3_11,
@@ -634,6 +641,48 @@ export class ServiceStack extends cdk.Stack {
             namespace: 'AWS/DynamoDB', metricName: 'ConsumedWriteCapacityUnits',
             dimensionsMap: { TableName: t.t.tableName }, statistic: 'Sum', label: t.name,
           })),
+          width: 12,
+        })
+      );
+
+      // how the platform is actually used and where improvement opportunities lie.
+      // EvaluationScore avg shows whether users are improving over time.
+      // EvaluationByCategory reveals which topic areas have the lowest scores.
+      // MarcusResponseTime p99 catches Bedrock throttling before users notice.
+      dashboard.addWidgets(
+        new cloudwatch.GraphWidget({
+          title: 'AI Evaluations & Answer Pass Rate',
+          left: [
+            new cloudwatch.Metric({ namespace: 'InterviewU', metricName: 'AnswerEvaluated', statistic: 'Sum', label: 'Total Evaluations', period: cdk.Duration.minutes(5) }),
+            new cloudwatch.Metric({ namespace: 'InterviewU', metricName: 'AnswerPassRate', statistic: 'Sum', dimensionsMap: { IsCorrect: 'true' }, label: 'Correct Answers', period: cdk.Duration.minutes(5) }),
+          ],
+          width: 12,
+        }),
+        new cloudwatch.GraphWidget({
+          title: 'Average Evaluation Score (0–100)',
+          left: [
+            new cloudwatch.Metric({ namespace: 'InterviewU', metricName: 'EvaluationScore', statistic: 'Average', label: 'Avg Score', period: cdk.Duration.minutes(30) }),
+          ],
+          width: 12,
+        })
+      );
+
+      dashboard.addWidgets(
+        new cloudwatch.GraphWidget({
+          title: 'Marcus AI Response Time (ms)',
+          left: [
+            new cloudwatch.Metric({ namespace: 'InterviewU', metricName: 'MarcusResponseTime', statistic: 'Average', label: 'Avg', period: cdk.Duration.minutes(5) }),
+            new cloudwatch.Metric({ namespace: 'InterviewU', metricName: 'MarcusResponseTime', statistic: 'p99', label: 'p99', period: cdk.Duration.minutes(5) }),
+          ],
+          width: 12,
+        }),
+        new cloudwatch.GraphWidget({
+          title: 'Questions Listed & Viewed',
+          left: [
+            new cloudwatch.Metric({ namespace: 'InterviewU', metricName: 'QuestionsListed', statistic: 'Sum', label: 'List Requests', period: cdk.Duration.minutes(5) }),
+            new cloudwatch.Metric({ namespace: 'InterviewU', metricName: 'QuestionViewed', statistic: 'Sum', label: 'Individual Views', period: cdk.Duration.minutes(5) }),
+            new cloudwatch.Metric({ namespace: 'InterviewU', metricName: 'QuestionNotFound', statistic: 'Sum', label: '404s', period: cdk.Duration.minutes(5) }),
+          ],
           width: 12,
         })
       );
