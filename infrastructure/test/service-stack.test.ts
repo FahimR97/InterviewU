@@ -3,6 +3,9 @@ import { Template, Match } from 'aws-cdk-lib/assertions';
 import { ServiceStack } from '../lib/stacks/service';
 
 function synthTemplate() {
+  process.env.HOSTED_ZONE_ID = 'Z00000000000000000000';
+  process.env.ALPHA_CERT_ARN = 'arn:aws:acm:us-east-1:123456789012:certificate/test';
+  process.env.PROD_CERT_ARN = 'arn:aws:acm:us-east-1:123456789012:certificate/test';
   const app = new cdk.App();
   const stack = new ServiceStack(app, 'TestServiceStack', {
     environment: 'alpha',
