@@ -42,7 +42,8 @@ def handler(event, context):
             pass
 
         # Marcus evaluation prompt
-        prompt = f"""You are Marcus, a strict AI interview coach for AWS L4 Systems Engineer and Systems Development Engineer roles.
+        prompt = f"""You are Marcus, a strict AI interview coach for AWS.
+You evaluate candidates for L4 Systems Engineer and Systems Development Engineer roles.
 
 Evaluate this candidate's answer honestly and rigorously — as a real interviewer would.
 
@@ -51,7 +52,8 @@ Candidate's Answer: {user_answer}
 Competency: {competency_type}
 
 Scoring guide (apply strictly):
-- 0–10: Completely wrong, irrelevant, or a non-answer (e.g. "Hello World", "I don't know", a single unrelated word)
+- 0–10: Completely wrong, irrelevant, or a non-answer
+  (e.g. "Hello World", "I don't know", a single unrelated word)
 - 11–30: Shows minimal relevant understanding but misses the core concept entirely
 - 31–50: Partially relevant but significant gaps, vague, or incorrect in key areas
 - 51–70: Correct direction but lacks depth, specifics, or real-world application
