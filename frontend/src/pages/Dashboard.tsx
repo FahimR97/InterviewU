@@ -370,10 +370,15 @@ export default function Dashboard() {
 
   const displayName = userName?.split(' ')[0] ?? null
 
-  useEffect(() => {
-    if (!user) return
+  const handleModeChange = (m: ModeFilter) => {
+    setModeFilter(m)
+    setAnalytics(null)
     setLoading(true)
     setError(null)
+  }
+
+  useEffect(() => {
+    if (!user) return
     getAuthToken()
       .then(token => getAnalytics(token, modeFilter === 'all' ? undefined : modeFilter))
       .then(data => setAnalytics(data))
@@ -417,7 +422,7 @@ export default function Dashboard() {
             <button
               key={m}
               className={`mode-btn${modeFilter === m ? ' mode-btn-active' : ''}`}
-              onClick={() => setModeFilter(m)}
+              onClick={() => handleModeChange(m)}
             >
               {m === 'all' ? 'All' : m === 'practice' ? 'Practice' : 'Test Mode'}
             </button>
