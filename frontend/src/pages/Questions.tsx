@@ -56,24 +56,20 @@ function capitalize(s: string) {
   return s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()
 }
 
-function ScoreMeter({ score }: { score: number }) {
-  const radius = 40
-  const circumference = 2 * Math.PI * radius
-  const offset = circumference - (score / 100) * circumference
-  const colour = score >= 70 ? '#10b981' : score >= 50 ? '#f59e0b' : '#ef4444'
+function StarRating({ score }: { score: number }) {
+  const stars = Math.round(score / 20)
+  const approved = score >= 80
   return (
-    <svg width="100" height="100" className="score-meter">
-      <circle cx="50" cy="50" r={radius} className="score-meter-track" />
-      <circle
-        cx="50" cy="50" r={radius}
-        className="score-meter-fill"
-        stroke={colour}
-        strokeDasharray={circumference}
-        strokeDashoffset={offset}
-      />
-      <text x="50" y="47" textAnchor="middle" className="score-meter-value">{score}</text>
-      <text x="50" y="62" textAnchor="middle" className="score-meter-sub">/100</text>
-    </svg>
+    <div className="star-rating">
+      <div className="stars">
+        {[1, 2, 3, 4, 5].map(i => (
+          <span key={i} className={i <= stars ? 'star filled' : 'star empty'}>
+            {i <= stars ? '★' : '☆'}
+          </span>
+        ))}
+      </div>
+      {approved && <div className="approved-badge">Interviewer Approved</div>}
+    </div>
   )
 }
 
@@ -286,11 +282,11 @@ function PracticeView({
             <div className="practice-feedback">
               {/* Score header */}
               <div className="feedback-score-row">
-                <ScoreMeter score={evaluation.score} />
+                <StarRating score={evaluation.score} />
                 <div className="feedback-score-meta">
                   <h3 className="feedback-heading">Marcus's Feedback</h3>
-                  <div className={`feedback-verdict ${evaluation.is_correct ? 'verdict-correct' : 'verdict-improve'}`}>
-                    {evaluation.is_correct ? '✓ Correct approach' : '⚠ Needs improvement'}
+                  <div className={`feedback-verdict ${evaluation.score >= 80 ? 'verdict-correct' : evaluation.score >= 60 ? 'verdict-getting-there' : 'verdict-improve'}`}>
+                    {evaluation.score >= 80 ? '✓ Interviewer Approved' : evaluation.score >= 60 ? '→ Getting there' : '⚠ Keep practising'}
                   </div>
                 </div>
               </div>

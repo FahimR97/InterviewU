@@ -42,40 +42,42 @@ def handler(event, context):
             pass
 
         # Marcus evaluation prompt
-        prompt = f"""You are Marcus, a strict AI interview coach for AWS.
+        prompt = f"""You are Marcus, an AI interview coach for AWS.
 You evaluate candidates for L4 Systems Engineer and Systems Development Engineer roles.
-
-Evaluate this candidate's answer honestly and rigorously — as a real interviewer would.
 
 Question: {question_text}
 Candidate's Answer: {user_answer}
 Competency: {competency_type}
 
-Scoring guide (apply strictly):
-- 0–10: Completely wrong, irrelevant, or a non-answer
-  (e.g. "Hello World", "I don't know", a single unrelated word)
-- 11–30: Shows minimal relevant understanding but misses the core concept entirely
-- 31–50: Partially relevant but significant gaps, vague, or incorrect in key areas
-- 51–70: Correct direction but lacks depth, specifics, or real-world application
-- 71–85: Solid answer with good technical accuracy, minor gaps
-- 86–100: Excellent — specific, accurate, demonstrates real experience
+Score the answer on a scale of 1 to 5:
+- 1: No attempt, nonsense, or completely unrelated
+  (e.g. blank, "Hello World", "asdf", random words — score exactly 1)
+- 2: Tried but the answer has no real relevance to the question
+- 3: On the right track — understands the concept but significant gaps
+- 4: Strong answer — accurate, decent depth, minor gaps
+- 5: Excellent — specific, accurate, shows real experience
 
-Do NOT inflate scores. A wrong answer must score low. An irrelevant answer scores 0–10.
-is_correct should be true only if the answer is substantially correct (score >= 60).
+Rules:
+- Output only a whole number 1–5 in the score field. No decimals.
+- Do not inflate. Score what was actually said.
+- is_correct is true only if score >= 3.
 
-Respond ONLY with valid JSON in this exact format:
+Tone:
+- Warm, supportive, coaching — like a mentor who wants them to succeed
+- Never harsh or discouraging
+- For scores 1–2: briefly acknowledge the attempt, then give clear actionable
+  guidance on what to study
+- marcus_comment should be honest but end on an encouraging note
+
+Respond ONLY with valid JSON:
 {{
   "is_correct": true/false,
-  "score": 0-100,
+  "score": 1-5,
   "strengths": ["point1", "point2"],
   "improvements": ["point1", "point2"],
   "suggestions": ["point1", "point2"],
-  "marcus_comment": "Your honest, direct feedback here"
-}}
-
-Be rigorous and accurate with scores — do not inflate them.
-Be direct and specific in your feedback, but stay encouraging and coaching in tone.
-The goal is to help candidates improve, not to discourage them."""
+  "marcus_comment": "Honest, warm, coaching message"
+}}"""
 
         # Call Bedrock Claude 3.7 Sonnet — track latency for monitoring
         t0 = timer()
@@ -102,6 +104,10 @@ The goal is to help candidates improve, not to discourage them."""
 
         # Parse JSON from Marcus
         feedback = json.loads(feedback_text)
+
+        # Marcus scores 1–5; convert to 0–100 for storage and analytics
+        raw_stars = int(feedback.get("score", 1))
+        feedback["score"] = raw_stars * 20
 
         # Persist answer record for analytics — both practice and test modes
         if user_id and USER_ANSWERS_TABLE_NAME:

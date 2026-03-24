@@ -13,7 +13,7 @@ const features = [
     tag: 'AI Feedback',
     icon: '🤖',
     title: 'Know exactly where you went wrong',
-    description: 'Every answer gets scored out of 100 with specific strengths, gaps, and suggestions — not generic tips.',
+    description: 'Every answer is rated out of 5 stars with specific strengths, gaps, and suggestions — not generic tips.',
   },
   {
     tag: 'Career Focus',
@@ -158,7 +158,7 @@ export default function Home() {
                 Marcus is evaluating…
               </div>
               <div className="float-badge float-badge-2">
-                ✅ Score: 87/100
+                ✅ 4 / 5 Stars
               </div>
 
             <div
@@ -178,10 +178,10 @@ export default function Home() {
                 <div className="mock-divider" />
                 <div className="mock-score-row">
                   <span className="mock-score-label">Your Score</span>
-                  <span className="mock-score-value">87 / 100</span>
+                  <span className="mock-score-value">★★★★☆</span>
                 </div>
                 <div className="mock-progress-track">
-                  <div className="mock-progress-fill" style={{ width: '87%' }} />
+                  <div className="mock-progress-fill" style={{ width: '80%' }} />
                 </div>
                 <div className="mock-feedback">
                   <div className="mock-feedback-item correct">
@@ -226,15 +226,15 @@ export default function Home() {
             <h2 className="marcus-heading reveal">Meet Marcus.</h2>
             <p className="marcus-desc reveal">
               Marcus is your personal AI interviewer — powered by Claude. He evaluates every answer,
-              scores it out of 100, and gives you honest, specific feedback that helps you actually
+              rates it out of 5 stars, and gives you honest, specific feedback that helps you actually
               improve. No generic tips. No vague encouragement.
             </p>
             <div className="marcus-traits">
               <div className="marcus-trait reveal">
                 <span className="trait-icon">🎯</span>
                 <div>
-                  <strong>Scores every answer out of 100</strong>
-                  <p>Precise scoring with clear reasoning — know exactly where you stand.</p>
+                  <strong>Rates every answer out of 5 stars</strong>
+                  <p>Clear star rating with honest reasoning — know exactly where you stand.</p>
                 </div>
               </div>
               <div className="marcus-trait reveal" style={{ transitionDelay: '0.1s' }}>
@@ -266,13 +266,13 @@ export default function Home() {
               <div className="chat-bubble chat-marcus">
                 <span className="chat-label marcus-label">Marcus</span>
                 Good instinct on Kafka. Your partitioning strategy is sound, but you haven't addressed
-                consumer group lag or at-least-once delivery guarantees under failure. Score: <strong>71/100</strong>.
+                consumer group lag or at-least-once delivery guarantees under failure. Score: <strong>★★★☆☆</strong>.
               </div>
               <div className="chat-score-row">
                 <div className="chat-score-bar">
-                  <div className="chat-score-fill" style={{ width: '71%' }} />
+                  <div className="chat-score-fill" style={{ width: '60%' }} />
                 </div>
-                <span className="chat-score-num">71</span>
+                <span className="chat-score-num">3 / 5</span>
               </div>
             </div>
           </div>

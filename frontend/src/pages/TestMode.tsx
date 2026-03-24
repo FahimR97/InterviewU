@@ -154,16 +154,22 @@ function formatTime(seconds: number): string {
   return `${m}:${s}`
 }
 
+function starsFromScore(score: number): string {
+  const n = Math.round(score / 20)
+  return '★'.repeat(n) + '☆'.repeat(5 - n)
+}
+
 function getMarcusSummary(name: string | null, scores: number[]): string {
   const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+  const avgStars = Math.round(avg / 20)
   const firstName = name?.split(' ')[0] || 'there'
   if (avg >= 80) {
-    return `Strong performance, ${firstName}. You averaged ${avg}/100 across ${scores.length} questions — that's genuinely solid. Keep that consistency going into the real thing.`
+    return `Strong performance, ${firstName}. You averaged ${avgStars}/5 stars across ${scores.length} questions — that's genuinely solid. Keep that consistency going into the real thing.`
   }
   if (avg >= 60) {
-    return `Good effort, ${firstName}. You averaged ${avg}/100. You're on the right track but there are gaps worth addressing. Review the areas marked for improvement and practice those specifically.`
+    return `Good effort, ${firstName}. You averaged ${avgStars}/5 stars. You're on the right track but there are gaps worth addressing. Review the areas marked for improvement and practice those specifically.`
   }
-  return `You averaged ${avg}/100, ${firstName}. There's real work to do here, but that's exactly what this is for. Go through the feedback on each answer and focus on the weak areas before your next session.`
+  return `You averaged ${avgStars}/5 stars, ${firstName}. There's real work to do here, but that's exactly what this is for. Go through the feedback on each answer and focus on the weak areas before your next session.`
 }
 
 export default function TestMode() {
@@ -631,8 +637,8 @@ export default function TestMode() {
           {sessionAvg !== null && (
             <div className="session-avg">
               <span className="session-avg-label">Session Average</span>
-              <span className={`session-avg-score ${sessionAvg >= 70 ? 'score-good' : sessionAvg >= 50 ? 'score-mid' : 'score-low'}`}>
-                {sessionAvg}<span>/100</span>
+              <span className={`session-avg-score ${sessionAvg >= 80 ? 'score-good' : sessionAvg >= 60 ? 'score-mid' : 'score-low'}`}>
+                {starsFromScore(sessionAvg)}
               </span>
             </div>
           )}
@@ -658,16 +664,16 @@ export default function TestMode() {
                   >
                     <span className="result-item-num">Q{i + 1}</span>
                     <span className="result-item-q">{r.question.question_text}</span>
-                    <span className={`result-item-score ${ev.score >= 70 ? 'score-good' : ev.score >= 50 ? 'score-mid' : 'score-low'}`}>
-                      {ev.score}/100
+                    <span className={`result-item-score ${ev.score >= 80 ? 'score-good' : ev.score >= 60 ? 'score-mid' : 'score-low'}`}>
+                      {starsFromScore(ev.score)}
                     </span>
                     <span className="result-item-chevron">{isOpen ? '▲' : '▼'}</span>
                   </button>
 
                   {isOpen && (
                     <div className="result-item-body">
-                      <div className={`correctness ${ev.is_correct ? 'correct' : 'incorrect'}`}>
-                        {ev.is_correct ? '✅ Correct approach' : '⚠️ Needs improvement'}
+                      <div className={`correctness ${ev.score >= 80 ? 'correct' : ev.score >= 60 ? 'getting-there' : 'incorrect'}`}>
+                        {ev.score >= 80 ? '✅ Interviewer Approved' : ev.score >= 60 ? '→ Getting there' : '⚠️ Keep practising'}
                       </div>
 
                       <div className="feedback-section">
