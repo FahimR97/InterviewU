@@ -16,7 +16,7 @@ A full-stack interview preparation platform with AI-powered answer evaluation, b
 - 🔐 **Secure Authentication** — AWS Cognito with email signup and temporary password flow; self-signup backed by admin Lambda
 - 📚 **Question Bank** — 539 interview questions across 7 categories with subcategory filtering
 - 👨‍💼 **Admin Dashboard** — Role-based access control with CSV bulk upload for question management
-- 🤖 **AI Interview Coach (Marcus)** — AWS Bedrock (Claude 3.7 Sonnet) powered answer evaluation with scoring (0–100)
+- 🤖 **AI Interview Coach (Marcus)** — AWS Bedrock (Claude 3.7 Sonnet) powered answer evaluation with 5-star scoring and "Interviewer Approved" rating
 - 🎯 **Test Mode** — Practice with integrated code editor (Monaco) and whiteboard (Excalidraw)
 - 📊 **Analytics Dashboard** — Mode toggle (Practice / Test), activity heatmap, score over time, category radar chart, difficulty breakdown, and interview countdown
 - ⚙️ **Settings Persistence** — Interview date and preferences synced across devices
@@ -44,7 +44,7 @@ A full-stack interview preparation platform with AI-powered answer evaluation, b
 GitHub Actions with OIDC authentication (no stored credentials):
 
 - **Frontend Pipeline**: ESLint → TypeScript Check → Trivy Scan → Build (Alpha) → Deploy Alpha → Build (Prod) → Deploy Production
-- **Backend Pipeline**: Unit Tests → CDK Synth/Diff → Trivy Scan → Deploy Alpha → Integration Tests → Deploy Production
+- **Backend Pipeline**: Unit Tests → CDK Synth/Diff → Trivy Scan → Deploy Alpha → Integration Tests → Manual Approval → Deploy Production
 
 **📊 [View Full Pipeline Diagram](docs/PIPELINE.md)**
 
@@ -75,6 +75,7 @@ InterviewU/
 ├── infrastructure/
 │   └── lib/stacks/         # CDK stack definitions
 ├── docs/                   # Documentation
+│   ├── architecture.jpg    # System architecture diagram
 │   ├── PIPELINE.md         # CI/CD pipeline diagram
 │   ├── USER_STORIES.md     # User stories and acceptance criteria
 │   └── THREAT_MODEL.md     # Security threat model
