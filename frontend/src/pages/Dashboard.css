@@ -11,16 +11,25 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes heroGradientFlow {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 .dashboard-hero {
   background: linear-gradient(
     135deg,
     #0d9488 0%,
-    #134e4a 25%,
-    #0f766e 50%,
-    #115e59 75%,
+    #134e4a 20%,
+    #0f766e 40%,
+    #5eead4 60%,
+    #0f766e 78%,
+    #134e4a 90%,
     #0d9488 100%
   );
-  animation: heroEnter 0.6s ease-out both;
+  background-size: 300% 300%;
+  animation: heroGradientFlow 12s ease infinite, heroEnter 0.6s ease-out both;
   border-radius: 20px;
   padding: 2.5rem 3rem;
   display: flex;
@@ -60,13 +69,16 @@
 [data-theme="dark"] .dashboard-hero {
   background: linear-gradient(
     135deg,
-    #1e293b 0%,
-    #1e1b4b 28%,
-    #0f172a 52%,
-    #1e1b4b 76%,
-    #1e293b 100%
+    #0f172a 0%,
+    #1e1b4b 20%,
+    #312e81 40%,
+    #4338ca 60%,
+    #312e81 78%,
+    #1e1b4b 90%,
+    #0f172a 100%
   );
   background-size: 300% 300%;
+  animation: heroGradientFlow 12s ease infinite, heroEnter 0.6s ease-out both;
   border: 1px solid rgba(99, 102, 241, 0.2);
 }
 

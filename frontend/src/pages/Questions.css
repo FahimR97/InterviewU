@@ -78,13 +78,13 @@
 [data-theme="dark"] .qbank-hero {
   background: linear-gradient(
     135deg,
-    #0d9488 0%,
-    #134e4a 20%,
-    #1e1b4b 40%,
-    #6366f1 60%,
-    #1e1b4b 78%,
-    #134e4a 90%,
-    #0d9488 100%
+    #0f172a 0%,
+    #1e1b4b 20%,
+    #312e81 40%,
+    #4338ca 60%,
+    #312e81 78%,
+    #1e1b4b 90%,
+    #0f172a 100%
   );
   background-size: 300% 300%;
   animation: qbankGradientFlow 12s ease infinite, qbankHeroEnter 0.6s ease-out both;
