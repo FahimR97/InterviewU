@@ -21,7 +21,7 @@ def test_evaluate_answer_success(mock_bedrock):
                             "text": json.dumps(
                                 {
                                     "is_correct": True,
-                                    "score": 85,
+                                    "score": 4,
                                     "strengths": ["Good explanation"],
                                     "improvements": ["Add more detail"],
                                     "suggestions": ["Include examples"],
@@ -51,7 +51,7 @@ def test_evaluate_answer_success(mock_bedrock):
 
     assert response["statusCode"] == 200
     body = json.loads(response["body"])
-    assert body["score"] == 85
+    assert body["score"] == 80  # 4 stars × 20
     assert body["is_correct"] is True
 
 
@@ -77,7 +77,7 @@ def test_evaluate_answer_strips_markdown(mock_bedrock):
                 {
                     "content": [
                         {
-                            "text": '```json\n{"is_correct": true, "score": 90, "strengths": [], "improvements": [], "suggestions": [], "marcus_comment": "Good"}\n```'
+                            "text": '```json\n{"is_correct": true, "score": 5, "strengths": [], "improvements": [], "suggestions": [], "marcus_comment": "Good"}\n```'
                         }
                     ]
                 }
@@ -97,4 +97,4 @@ def test_evaluate_answer_strips_markdown(mock_bedrock):
 
     assert response["statusCode"] == 200
     body = json.loads(response["body"])
-    assert body["score"] == 90
+    assert body["score"] == 100  # 5 stars × 20
