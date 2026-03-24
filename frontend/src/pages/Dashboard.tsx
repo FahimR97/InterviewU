@@ -11,6 +11,10 @@ import {
   AreaChart,
   Area,
   CartesianGrid,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
 } from 'recharts'
 import { useAuth } from '../contexts/AuthContext'
 import { useTheme } from '../contexts/ThemeContext'
@@ -18,7 +22,7 @@ import { getAnalytics, getSettings, saveSettings } from '../services/api'
 import type { AnalyticsResponse, AnalyticsTimeEntry } from '../services/api'
 import './Dashboard.css'
 
-type ModeFilter = 'all' | 'practice' | 'test'
+type ModeFilter = 'practice' | 'test'
 
 const CATEGORY_LABELS: Record<string, string> = {
   behavioural: 'Behavioural',
@@ -65,42 +69,37 @@ function MetricCard({ icon, label, value, accent }: { icon: string; label: strin
   )
 }
 
-function PassRateDonut({ rate }: { rate: number }) {
-  const r = 52
-  const circ = 2 * Math.PI * r
-  const dashoffset = circ * (1 - rate / 100)
-  const color = rate >= 70 ? '#10b981' : rate >= 50 ? '#f59e0b' : '#ef4444'
+function CategoryRadar({ data, theme }: { data: { category: string; avg_score: number }[]; theme: string }) {
+  const radarData = data.map(d => ({ subject: fmtCategory(d.category), score: d.avg_score }))
+  const gridColor = theme === 'dark' ? '#334155' : '#e2e8f0'
+  const tickColor = theme === 'dark' ? '#94a3b8' : '#64748b'
 
   return (
-    <div className="chart-card pass-rate-card">
-      <h3>Pass Rate</h3>
-      <div className="pass-rate-container">
-        <svg width="150" height="150" viewBox="0 0 150 150">
-          <circle cx="75" cy="75" r={r} fill="none" stroke="var(--bg-tertiary)" strokeWidth="14" />
-          <circle
-            cx="75" cy="75" r={r}
-            fill="none"
-            stroke={color}
-            strokeWidth="14"
-            strokeDasharray={circ}
-            strokeDashoffset={dashoffset}
-            strokeLinecap="round"
-            transform="rotate(-90 75 75)"
-            style={{ transition: 'stroke-dashoffset 0.8s ease' }}
+    <div className="chart-card">
+      <h3>Strength Profile</h3>
+      <ResponsiveContainer width="100%" height={220}>
+        <RadarChart data={radarData} margin={{ top: 10, right: 20, bottom: 10, left: 20 }}>
+          <PolarGrid stroke={gridColor} />
+          <PolarAngleAxis dataKey="subject" tick={{ fontSize: 11, fill: tickColor }} />
+          <Radar
+            name="Score"
+            dataKey="score"
+            stroke="#6366f1"
+            fill="#6366f1"
+            fillOpacity={0.25}
+            strokeWidth={2}
           />
-          <text x="75" y="70" textAnchor="middle" dominantBaseline="middle" fill={color} fontSize="28" fontWeight="800" fontFamily="inherit">
-            {rate}%
-          </text>
-          <text x="75" y="92" textAnchor="middle" dominantBaseline="middle" fill="var(--text-muted)" fontSize="11" fontFamily="inherit">
-            answers correct
-          </text>
-        </svg>
-        <div className="pass-rate-legend">
-          <span className="pass-rate-badge" style={{ background: `${color}20`, color }}>
-            {rate >= 70 ? 'Strong performance' : rate >= 50 ? 'Room to improve' : 'Needs focus'}
-          </span>
-        </div>
-      </div>
+          <Tooltip
+            formatter={(v: unknown) => [`${v}/100`, 'Avg Score']}
+            contentStyle={{
+              background: theme === 'dark' ? '#1e293b' : '#ffffff',
+              border: `1px solid ${theme === 'dark' ? '#334155' : '#e2e8f0'}`,
+              borderRadius: 8,
+              color: theme === 'dark' ? '#f1f5f9' : '#111827',
+            }}
+          />
+        </RadarChart>
+      </ResponsiveContainer>
     </div>
   )
 }
@@ -118,7 +117,7 @@ function ModeBreakdown({ byMode }: { byMode: Record<string, { count: number; avg
         </div>
         <div className="mode-card-stat">
           <span className="mode-card-big">{practice.count}</span>
-          <span className="mode-card-unit">sessions</span>
+          <span className="mode-card-unit">questions</span>
         </div>
         <div className="mode-card-pills">
           <span className="mode-pill">{practice.avg_score}/100 avg</span>
@@ -132,7 +131,7 @@ function ModeBreakdown({ byMode }: { byMode: Record<string, { count: number; avg
         </div>
         <div className="mode-card-stat">
           <span className="mode-card-big">{test.count}</span>
-          <span className="mode-card-unit">sessions</span>
+          <span className="mode-card-unit">questions</span>
         </div>
         <div className="mode-card-pills">
           <span className="mode-pill">{test.avg_score}/100 avg</span>
@@ -366,7 +365,7 @@ export default function Dashboard() {
   const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [modeFilter, setModeFilter] = useState<ModeFilter>('all')
+  const [modeFilter, setModeFilter] = useState<ModeFilter>('practice')
 
   const displayName = userName?.split(' ')[0] ?? null
 
@@ -380,7 +379,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!user) return
     getAuthToken()
-      .then(token => getAnalytics(token, modeFilter === 'all' ? undefined : modeFilter))
+      .then(token => getAnalytics(token, modeFilter))
       .then(data => setAnalytics(data))
       .catch(err => setError(err instanceof Error ? err.message : 'Failed to load analytics'))
       .finally(() => setLoading(false))
@@ -418,13 +417,13 @@ export default function Dashboard() {
       {/* Mode toggle */}
       <div className="mode-toggle-row">
         <div className="mode-toggle">
-          {(['all', 'practice', 'test'] as ModeFilter[]).map(m => (
+          {(['practice', 'test'] as ModeFilter[]).map(m => (
             <button
               key={m}
               className={`mode-btn${modeFilter === m ? ' mode-btn-active' : ''}`}
               onClick={() => handleModeChange(m)}
             >
-              {m === 'all' ? 'All' : m === 'practice' ? 'Practice' : 'Test Mode'}
+              {m === 'practice' ? 'Practice Mode' : 'Test Mode'}
             </button>
           ))}
         </div>
@@ -451,12 +450,8 @@ export default function Dashboard() {
           )}
           <div className="dashboard-empty-state">
             <div className="empty-icon">📊</div>
-            <h2>No {modeFilter === 'all' ? '' : modeFilter + ' '}data yet</h2>
-            <p>
-              {modeFilter === 'all'
-                ? 'Start practising questions and your analytics will appear here.'
-                : `Switch to ${modeFilter} mode and answer some questions to see stats here.`}
-            </p>
+            <h2>No {modeFilter === 'practice' ? 'Practice Mode' : 'Test Mode'} data yet</h2>
+            <p>Answer some questions in {modeFilter === 'practice' ? 'Practice Mode' : 'Test Mode'} and your stats will appear here.</p>
             <Link to="/questions" className="btn btn-primary">Go to Question Bank</Link>
           </div>
         </>
@@ -562,7 +557,7 @@ export default function Dashboard() {
                 </ResponsiveContainer>
               </div>
 
-              <PassRateDonut rate={analytics.pass_rate} />
+              <CategoryRadar data={analytics.by_category} theme={theme} />
             </div>
           )}
 
