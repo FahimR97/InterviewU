@@ -48,14 +48,22 @@ export interface AnalyticsTimeEntry {
   categories?: Record<string, number>;
 }
 
+export interface AnalyticsModeEntry {
+  count: number;
+  avg_score: number;
+  pass_rate: number;
+}
+
 export interface AnalyticsResponse {
   total_attempts: number;
   avg_score: number | null;
+  pass_rate: number;
   by_category: AnalyticsCategoryEntry[];
   by_difficulty: AnalyticsDifficultyEntry[];
   scores_over_time: AnalyticsTimeEntry[];
   weak_areas: string[];
   recommendation: string;
+  by_mode: Record<string, AnalyticsModeEntry>;
 }
 
 const API_BASE_URL = awsConfig.API.REST.InterviewQuestionsAPI.endpoint;
@@ -206,11 +214,15 @@ export async function saveSettings(settings: UserSettings, authToken: string | n
 /**
  * Fetch analytics for the authenticated user
  */
-export async function getAnalytics(authToken: string | null): Promise<AnalyticsResponse> {
+export async function getAnalytics(authToken: string | null, mode?: 'practice' | 'test'): Promise<AnalyticsResponse> {
   const headers: HeadersInit = { 'Content-Type': 'application/json' };
   if (authToken) headers['Authorization'] = authToken;
 
-  const response = await fetch(`${API_BASE_URL}analytics`, {
+  const url = mode
+    ? `${API_BASE_URL}analytics?mode=${mode}`
+    : `${API_BASE_URL}analytics`;
+
+  const response = await fetch(url, {
     method: 'GET',
     headers,
   });

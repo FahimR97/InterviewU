@@ -18,8 +18,9 @@ import { getAnalytics, getSettings, saveSettings } from '../services/api'
 import type { AnalyticsResponse, AnalyticsTimeEntry } from '../services/api'
 import './Dashboard.css'
 
+type ModeFilter = 'all' | 'practice' | 'test'
+
 const CATEGORY_LABELS: Record<string, string> = {
-  // Current categories
   behavioural: 'Behavioural',
   behavioral: 'Behavioural',
   automation: 'Automation',
@@ -28,7 +29,6 @@ const CATEGORY_LABELS: Record<string, string> = {
   linux: 'Linux & Bash',
   coding: 'Coding',
   operational_excellence: 'Operational Excellence',
-  // Legacy category names — fold into their current equivalents
   leadership_principle: 'Behavioural',
   leadership: 'Behavioural',
   soft_skills: 'Behavioural',
@@ -46,6 +46,13 @@ const CATEGORY_COLOURS = [
   '#0d9488', '#6366f1', '#10b981', '#3b82f6', '#f59e0b', '#ec4899', '#ef4444',
 ]
 
+const DIFFICULTY_COLOURS: Record<string, string> = {
+  easy: '#10b981',
+  medium: '#f59e0b',
+  hard: '#ef4444',
+  unknown: '#94a3b8',
+}
+
 function MetricCard({ icon, label, value, accent }: { icon: string; label: string; value: string | number; accent: string }) {
   return (
     <div className="metric-card" style={{ borderLeft: `4px solid ${accent}` }}>
@@ -58,17 +65,92 @@ function MetricCard({ icon, label, value, accent }: { icon: string; label: strin
   )
 }
 
+function PassRateDonut({ rate }: { rate: number }) {
+  const r = 52
+  const circ = 2 * Math.PI * r
+  const dashoffset = circ * (1 - rate / 100)
+  const color = rate >= 70 ? '#10b981' : rate >= 50 ? '#f59e0b' : '#ef4444'
+
+  return (
+    <div className="chart-card pass-rate-card">
+      <h3>Pass Rate</h3>
+      <div className="pass-rate-container">
+        <svg width="150" height="150" viewBox="0 0 150 150">
+          <circle cx="75" cy="75" r={r} fill="none" stroke="var(--bg-tertiary)" strokeWidth="14" />
+          <circle
+            cx="75" cy="75" r={r}
+            fill="none"
+            stroke={color}
+            strokeWidth="14"
+            strokeDasharray={circ}
+            strokeDashoffset={dashoffset}
+            strokeLinecap="round"
+            transform="rotate(-90 75 75)"
+            style={{ transition: 'stroke-dashoffset 0.8s ease' }}
+          />
+          <text x="75" y="70" textAnchor="middle" dominantBaseline="middle" fill={color} fontSize="28" fontWeight="800" fontFamily="inherit">
+            {rate}%
+          </text>
+          <text x="75" y="92" textAnchor="middle" dominantBaseline="middle" fill="var(--text-muted)" fontSize="11" fontFamily="inherit">
+            answers correct
+          </text>
+        </svg>
+        <div className="pass-rate-legend">
+          <span className="pass-rate-badge" style={{ background: `${color}20`, color }}>
+            {rate >= 70 ? 'Strong performance' : rate >= 50 ? 'Room to improve' : 'Needs focus'}
+          </span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function ModeBreakdown({ byMode }: { byMode: Record<string, { count: number; avg_score: number; pass_rate: number }> }) {
+  const practice = byMode.practice ?? { count: 0, avg_score: 0, pass_rate: 0 }
+  const test = byMode.test ?? { count: 0, avg_score: 0, pass_rate: 0 }
+
+  return (
+    <div className="mode-breakdown">
+      <div className="mode-card mode-card-practice">
+        <div className="mode-card-header">
+          <span className="mode-card-icon">📚</span>
+          <span className="mode-card-label">Practice</span>
+        </div>
+        <div className="mode-card-stat">
+          <span className="mode-card-big">{practice.count}</span>
+          <span className="mode-card-unit">sessions</span>
+        </div>
+        <div className="mode-card-pills">
+          <span className="mode-pill">{practice.avg_score}/100 avg</span>
+          <span className="mode-pill">{practice.pass_rate}% pass</span>
+        </div>
+      </div>
+      <div className="mode-card mode-card-test">
+        <div className="mode-card-header">
+          <span className="mode-card-icon">🎯</span>
+          <span className="mode-card-label">Test Mode</span>
+        </div>
+        <div className="mode-card-stat">
+          <span className="mode-card-big">{test.count}</span>
+          <span className="mode-card-unit">sessions</span>
+        </div>
+        <div className="mode-card-pills">
+          <span className="mode-pill">{test.avg_score}/100 avg</span>
+          <span className="mode-pill">{test.pass_rate}% pass</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function InterviewCountdown() {
   const { getAuthToken } = useAuth()
-  // Seed from localStorage immediately so there's no flash on load
   const [targetDate, setTargetDate] = useState<string>(() => localStorage.getItem('interviewDate') || '')
   const [editing, setEditing] = useState(false)
   const [inputVal, setInputVal] = useState(targetDate)
   const [saving, setSaving] = useState(false)
-
   const [now] = useState(() => Date.now())
 
-  // Load from API on mount — overwrites localStorage with server value
   useEffect(() => {
     getAuthToken().then(token =>
       getSettings(token).then(s => {
@@ -77,7 +159,7 @@ function InterviewCountdown() {
           setInputVal(s.interview_date)
           localStorage.setItem('interviewDate', s.interview_date)
         }
-      }).catch(() => { /* use localStorage fallback silently */ })
+      }).catch(() => {})
     ).catch(() => {})
   }, [getAuthToken])
 
@@ -94,7 +176,7 @@ function InterviewCountdown() {
       const token = await getAuthToken()
       await saveSettings({ interview_date: inputVal }, token)
     } catch {
-      // saved locally — will sync next session when API is available
+      // saved locally
     } finally {
       setSaving(false)
     }
@@ -116,9 +198,7 @@ function InterviewCountdown() {
             {saving ? 'Saving…' : 'Save'}
           </button>
           {editing && (
-            <button className="btn btn-small" onClick={() => setEditing(false)}>
-              Cancel
-            </button>
+            <button className="btn btn-small" onClick={() => setEditing(false)}>Cancel</button>
           )}
         </div>
       ) : daysLeft !== null && daysLeft < 0 ? (
@@ -252,7 +332,6 @@ function ActivityHeatmap({ data }: { data: AnalyticsTimeEntry[] }) {
           <span>More</span>
         </div>
       </div>
-
       {tooltip && (
         <div className="heatmap-tooltip" style={{
           top: tooltip.y - 12,
@@ -287,17 +366,20 @@ export default function Dashboard() {
   const [analytics, setAnalytics] = useState<AnalyticsResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [modeFilter, setModeFilter] = useState<ModeFilter>('all')
 
   const displayName = userName?.split(' ')[0] ?? null
 
   useEffect(() => {
     if (!user) return
+    setLoading(true)
+    setError(null)
     getAuthToken()
-      .then(token => getAnalytics(token))
+      .then(token => getAnalytics(token, modeFilter === 'all' ? undefined : modeFilter))
       .then(data => setAnalytics(data))
       .catch(err => setError(err instanceof Error ? err.message : 'Failed to load analytics'))
       .finally(() => setLoading(false))
-  }, [user, getAuthToken])
+  }, [user, getAuthToken, modeFilter])
 
   if (!user) {
     return (
@@ -314,7 +396,6 @@ export default function Dashboard() {
     color: theme === 'dark' ? '#f1f5f9' : '#111827',
   }
   const labelStyle = { color: theme === 'dark' ? '#94a3b8' : '#64748b' }
-
   const hasTimeSeries = analytics && analytics.scores_over_time.length >= 2
 
   return (
@@ -327,6 +408,21 @@ export default function Dashboard() {
           <p className="dashboard-sub">Let's get to work.</p>
         </div>
         <InterviewCountdown />
+      </div>
+
+      {/* Mode toggle */}
+      <div className="mode-toggle-row">
+        <div className="mode-toggle">
+          {(['all', 'practice', 'test'] as ModeFilter[]).map(m => (
+            <button
+              key={m}
+              className={`mode-btn${modeFilter === m ? ' mode-btn-active' : ''}`}
+              onClick={() => setModeFilter(m)}
+            >
+              {m === 'all' ? 'All' : m === 'practice' ? 'Practice' : 'Test Mode'}
+            </button>
+          ))}
+        </div>
       </div>
 
       {loading && (
@@ -343,12 +439,22 @@ export default function Dashboard() {
       )}
 
       {!loading && !error && analytics && analytics.total_attempts === 0 && (
-        <div className="dashboard-empty-state">
-          <div className="empty-icon">📊</div>
-          <h2>No data yet</h2>
-          <p>Start practising questions and your analytics will appear here.</p>
-          <Link to="/questions" className="btn btn-primary">Go to Question Bank</Link>
-        </div>
+        <>
+          {/* Always show mode breakdown even with no filtered data */}
+          {Object.keys(analytics.by_mode).length > 0 && (
+            <ModeBreakdown byMode={analytics.by_mode} />
+          )}
+          <div className="dashboard-empty-state">
+            <div className="empty-icon">📊</div>
+            <h2>No {modeFilter === 'all' ? '' : modeFilter + ' '}data yet</h2>
+            <p>
+              {modeFilter === 'all'
+                ? 'Start practising questions and your analytics will appear here.'
+                : `Switch to ${modeFilter} mode and answer some questions to see stats here.`}
+            </p>
+            <Link to="/questions" className="btn btn-primary">Go to Question Bank</Link>
+          </div>
+        </>
       )}
 
       {!loading && !error && analytics && analytics.total_attempts > 0 && (
@@ -378,6 +484,9 @@ export default function Dashboard() {
             />
           </div>
 
+          {/* Mode breakdown — always global totals */}
+          <ModeBreakdown byMode={analytics.by_mode} />
+
           {/* Recommendation */}
           <div className="recommendation-card">
             <div className="rec-icon">💡</div>
@@ -387,7 +496,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Charts grid: score over time + score by category */}
+          {/* Row 1: score over time + score by category */}
           <div className={`charts-grid${hasTimeSeries ? '' : ' charts-grid-single'}`}>
             {hasTimeSeries && (
               <div className="chart-card">
@@ -401,23 +510,10 @@ export default function Dashboard() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#334155' : '#e2e8f0'} />
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fontSize: 11, fill: theme === 'dark' ? '#64748b' : '#94a3b8' }}
-                      tickFormatter={d => d.slice(5)}
-                    />
+                    <XAxis dataKey="date" tick={{ fontSize: 11, fill: theme === 'dark' ? '#64748b' : '#94a3b8' }} tickFormatter={d => d.slice(5)} />
                     <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: theme === 'dark' ? '#64748b' : '#94a3b8' }} />
                     <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} formatter={(v: unknown) => [`${v}/100`, 'Avg Score']} />
-                    <Area
-                      type="monotone"
-                      dataKey="avg_score"
-                      stroke="#0d9488"
-                      strokeWidth={2.5}
-                      fill="url(#scoreGrad)"
-                      dot={{ fill: '#0d9488', r: 4, strokeWidth: 0 }}
-                      activeDot={{ r: 6, strokeWidth: 0 }}
-                      name="Avg Score"
-                    />
+                    <Area type="monotone" dataKey="avg_score" stroke="#0d9488" strokeWidth={2.5} fill="url(#scoreGrad)" dot={{ fill: '#0d9488', r: 4, strokeWidth: 0 }} activeDot={{ r: 6, strokeWidth: 0 }} name="Avg Score" />
                   </AreaChart>
                 </ResponsiveContainer>
               </div>
@@ -426,26 +522,11 @@ export default function Dashboard() {
             <div className="chart-card">
               <h3>Score by Category</h3>
               <ResponsiveContainer width="100%" height={240}>
-                <BarChart
-                  data={analytics.by_category}
-                  layout="vertical"
-                  margin={{ top: 0, right: 24, left: 0, bottom: 0 }}
-                >
+                <BarChart data={analytics.by_category} layout="vertical" margin={{ top: 0, right: 24, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#334155' : '#e2e8f0'} horizontal={false} />
                   <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: theme === 'dark' ? '#64748b' : '#94a3b8' }} />
-                  <YAxis
-                    type="category"
-                    dataKey="category"
-                    width={120}
-                    tick={{ fontSize: 11, fill: theme === 'dark' ? '#94a3b8' : '#64748b' }}
-                    tickFormatter={fmtCategory}
-                  />
-                  <Tooltip
-                    contentStyle={tooltipStyle}
-                    labelStyle={labelStyle}
-                    formatter={(v: unknown) => [`${v}/100`, 'Avg Score']}
-                    labelFormatter={(label: unknown) => fmtCategory(String(label))}
-                  />
+                  <YAxis type="category" dataKey="category" width={120} tick={{ fontSize: 11, fill: theme === 'dark' ? '#94a3b8' : '#64748b' }} tickFormatter={fmtCategory} />
+                  <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} formatter={(v: unknown) => [`${v}/100`, 'Avg Score']} labelFormatter={(label: unknown) => fmtCategory(String(label))} />
                   <Bar dataKey="avg_score" name="Avg Score" radius={[0, 6, 6, 0]}>
                     {analytics.by_category.map((_, idx) => (
                       <Cell key={idx} fill={CATEGORY_COLOURS[idx % CATEGORY_COLOURS.length]} />
@@ -455,6 +536,30 @@ export default function Dashboard() {
               </ResponsiveContainer>
             </div>
           </div>
+
+          {/* Row 2: score by difficulty + pass rate donut */}
+          {analytics.by_difficulty.length > 0 && (
+            <div className="charts-grid charts-grid-diff-pass">
+              <div className="chart-card">
+                <h3>Score by Difficulty</h3>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={analytics.by_difficulty} layout="vertical" margin={{ top: 0, right: 24, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke={theme === 'dark' ? '#334155' : '#e2e8f0'} horizontal={false} />
+                    <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11, fill: theme === 'dark' ? '#64748b' : '#94a3b8' }} />
+                    <YAxis type="category" dataKey="difficulty" width={70} tick={{ fontSize: 11, fill: theme === 'dark' ? '#94a3b8' : '#64748b' }} tickFormatter={d => d.charAt(0).toUpperCase() + d.slice(1)} />
+                    <Tooltip contentStyle={tooltipStyle} labelStyle={labelStyle} formatter={(v: unknown) => [`${v}/100`, 'Avg Score']} labelFormatter={(l: unknown) => String(l).charAt(0).toUpperCase() + String(l).slice(1)} />
+                    <Bar dataKey="avg_score" name="Avg Score" radius={[0, 6, 6, 0]}>
+                      {analytics.by_difficulty.map((entry, idx) => (
+                        <Cell key={idx} fill={DIFFICULTY_COLOURS[entry.difficulty.toLowerCase()] ?? '#94a3b8'} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              <PassRateDonut rate={analytics.pass_rate} />
+            </div>
+          )}
 
           {/* Activity heatmap */}
           <ActivityHeatmap data={analytics.scores_over_time} />

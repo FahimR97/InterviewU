@@ -648,3 +648,176 @@
     font-size: 1.8rem;
   }
 }
+
+/* ── Mode toggle ──────────────────────────────────────────────── */
+
+.mode-toggle-row {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  animation: heroEnter 0.4s 0.05s ease-out both;
+}
+
+.mode-toggle {
+  display: inline-flex;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px;
+  gap: 2px;
+}
+
+.mode-btn {
+  background: transparent;
+  border: none;
+  padding: 0.45rem 1.25rem;
+  border-radius: 9px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+}
+
+.mode-btn:hover {
+  color: var(--text-dark);
+  background: var(--bg-tertiary);
+}
+
+.mode-btn-active {
+  background: var(--primary) !important;
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
+}
+
+/* ── Mode breakdown cards ─────────────────────────────────────── */
+
+.mode-breakdown {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  animation: heroEnter 0.4s 0.15s ease-out both;
+}
+
+.mode-card {
+  border-radius: 16px;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  transition: transform 0.2s, box-shadow 0.2s;
+  background: #ffffff;
+}
+
+[data-theme="dark"] .mode-card {
+  background: var(--bg-secondary);
+}
+
+.mode-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.mode-card-practice {
+  border-left: 4px solid #6366f1;
+}
+
+.mode-card-test {
+  border-left: 4px solid #0d9488;
+}
+
+.mode-card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.mode-card-icon {
+  font-size: 1.25rem;
+}
+
+.mode-card-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.mode-card-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.mode-card-big {
+  font-size: 2.5rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-dark);
+}
+
+.mode-card-unit {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.mode-card-pills {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.mode-pill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--bg-tertiary);
+  color: var(--text-light);
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+}
+
+/* ── Pass rate donut ──────────────────────────────────────────── */
+
+.pass-rate-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.pass-rate-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+}
+
+.pass-rate-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.3rem 0.85rem;
+  border-radius: 20px;
+}
+
+/* ── Difficulty / pass rate row ───────────────────────────────── */
+
+.charts-grid-diff-pass {
+  margin-bottom: 1.5rem;
+}
+
+/* ── Responsive additions ─────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  .mode-breakdown {
+    grid-template-columns: 1fr;
+  }
+
+  .mode-btn {
+    padding: 0.4rem 0.9rem;
+    font-size: 0.8rem;
+  }
+}

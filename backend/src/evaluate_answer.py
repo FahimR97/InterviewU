@@ -90,8 +90,8 @@ Be constructive, specific, and encouraging."""
         # Parse JSON from Marcus
         feedback = json.loads(feedback_text)
 
-        # Persist answer record for analytics — only in test mode
-        if mode == "test" and user_id and USER_ANSWERS_TABLE_NAME:
+        # Persist answer record for analytics — both practice and test modes
+        if user_id and USER_ANSWERS_TABLE_NAME:
             try:
                 table = dynamodb.Table(USER_ANSWERS_TABLE_NAME)
                 table.put_item(Item={
@@ -100,6 +100,7 @@ Be constructive, specific, and encouraging."""
                     "questionId": question_id,
                     "category": category,
                     "difficulty": difficulty,
+                    "mode": mode,
                     "score": Decimal(str(feedback.get("score", 0))),
                     "is_correct": feedback.get("is_correct", False),
                 })
