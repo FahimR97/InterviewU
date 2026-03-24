@@ -18,6 +18,11 @@
   100% { background-position: 0% 50%; }
 }
 
+@keyframes qbankShimmer {
+  0%   { transform: translateX(-100%) skewX(-15deg); }
+  100% { transform: translateX(200%) skewX(-15deg); }
+}
+
 @keyframes qbankHeroEnter {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -82,6 +87,25 @@
   background-size: 300% 300%;
   animation: qbankGradientFlow 12s ease infinite, qbankHeroEnter 0.6s ease-out both;
   border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+[data-theme="dark"] .qbank-hero::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 45%,
+    rgba(255, 255, 255, 0.1) 50%,
+    rgba(255, 255, 255, 0.06) 55%,
+    transparent 100%
+  );
+  animation: qbankShimmer 6s ease-in-out infinite;
+  pointer-events: none;
 }
 
 /* Decorative orbs */
