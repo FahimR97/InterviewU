@@ -46,13 +46,13 @@ export class ServiceStack extends cdk.Stack {
     const websiteDomain = isProduction ? rootDomain : `alpha.${rootDomain}`;
     const apiDomain: string | undefined = undefined;
     const hostedZone = isProduction ? route53.HostedZone.fromHostedZoneAttributes(this, 'HostedZone', {
-      hostedZoneId: 'Z06640972CZPSKCSBKIIZ',
+      hostedZoneId: process.env.HOSTED_ZONE_ID!,
       zoneName: rootDomain,
     }) : undefined;
     const certificate = acm.Certificate.fromCertificateArn(this, 'SiteCert',
       isProduction
-        ? 'arn:aws:acm:us-east-1:418107732011:certificate/05a92d5c-7915-47c5-ba09-71affd0dc523'
-        : 'arn:aws:acm:us-east-1:134667369518:certificate/b2f39608-866d-44bb-be6d-cf1f5fc38378'
+        ? process.env.PROD_CERT_ARN!
+        : process.env.ALPHA_CERT_ARN!
     );
     const apiCertificate: acm.ICertificate | undefined = undefined;
 

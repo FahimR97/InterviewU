@@ -116,7 +116,7 @@ jobs:
       - name: Configure AWS Credentials (Alpha)
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: arn:aws:iam::134667369518:role/github-actions-deploy
+          role-to-assume: arn:aws:iam::${{ secrets.ALPHA_AWS_ACCOUNT_ID }}:role/github-actions-deploy
           aws-region: eu-west-2
 
       - name: Verify AWS caller (Alpha)
@@ -126,10 +126,13 @@ jobs:
 
       - name: CDK deploy (Alpha)
         env:
-          CDK_DEFAULT_ACCOUNT: 134667369518
+          CDK_DEFAULT_ACCOUNT: ${{ secrets.ALPHA_AWS_ACCOUNT_ID }}
           CDK_DEFAULT_REGION: eu-west-2
           ENVIRONMENT: alpha
           BUDGET_ALERT_EMAIL: ${{ secrets.BUDGET_ALERT_EMAIL }}
+          HOSTED_ZONE_ID: ${{ secrets.HOSTED_ZONE_ID }}
+          ALPHA_CERT_ARN: ${{ secrets.ALPHA_CERT_ARN }}
+          PROD_CERT_ARN: ${{ secrets.PROD_CERT_ARN }}
         run: npx cdk deploy ServiceStack --require-approval never
 
   integration-tests-alpha:
@@ -155,7 +158,7 @@ jobs:
       - name: Configure AWS Credentials (Alpha)
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: arn:aws:iam::134667369518:role/github-actions-deploy
+          role-to-assume: arn:aws:iam::${{ secrets.ALPHA_AWS_ACCOUNT_ID }}:role/github-actions-deploy
           aws-region: eu-west-2
 
       - name: Get Alpha API URL from CloudFormation
@@ -196,7 +199,7 @@ jobs:
       - name: Configure AWS Credentials (Prod)
         uses: aws-actions/configure-aws-credentials@v6
         with:
-          role-to-assume: arn:aws:iam::418107732011:role/github-actions-deploy
+          role-to-assume: arn:aws:iam::${{ secrets.PROD_AWS_ACCOUNT_ID }}:role/github-actions-deploy
           aws-region: eu-west-2
 
       - name: Verify AWS caller (Prod)
@@ -206,8 +209,11 @@ jobs:
 
       - name: CDK deploy (Prod)
         env:
-          CDK_DEFAULT_ACCOUNT: 418107732011
+          CDK_DEFAULT_ACCOUNT: ${{ secrets.PROD_AWS_ACCOUNT_ID }}
           CDK_DEFAULT_REGION: eu-west-2
           ENVIRONMENT: prod
           BUDGET_ALERT_EMAIL: ${{ secrets.BUDGET_ALERT_EMAIL }}
+          HOSTED_ZONE_ID: ${{ secrets.HOSTED_ZONE_ID }}
+          ALPHA_CERT_ARN: ${{ secrets.ALPHA_CERT_ARN }}
+          PROD_CERT_ARN: ${{ secrets.PROD_CERT_ARN }}
         run: npx cdk deploy ServiceStack --require-approval never
