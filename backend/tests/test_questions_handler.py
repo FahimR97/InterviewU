@@ -33,9 +33,9 @@ def test_get_all_questions(mock_table):
         'Items': [
             {
                 'id': '1',
-                'title': 'Test Question',
-                'difficulty': 'Easy',
-                'tags': {'Networking', 'Fundamentals'}
+                'question_text': 'What is the OSI model?',
+                'category': 'networking',
+                'difficulty': 'easy',
             }
         ]
     }
@@ -46,8 +46,8 @@ def test_get_all_questions(mock_table):
     assert response["statusCode"] == 200
     body = json.loads(response["body"])
     assert len(body) == 1
-    assert body[0]["title"] == "Test Question"
-    assert isinstance(body[0]["tags"], list)
+    assert body[0]["question_text"] == "What is the OSI model?"
+    assert body[0]["category"] == "networking"
 
 
 @patch('questions_handler.table')
@@ -55,9 +55,9 @@ def test_get_single_question(mock_table):
     mock_table.get_item.return_value = {
         'Item': {
             'id': '1',
-            'title': 'Test Question',
-            'difficulty': 'Easy',
-            'tags': {'Networking'}
+            'question_text': 'What is the OSI model?',
+            'category': 'networking',
+            'difficulty': 'easy',
         }
     }
 
@@ -66,8 +66,8 @@ def test_get_single_question(mock_table):
 
     assert response["statusCode"] == 200
     body = json.loads(response["body"])
-    assert body["title"] == "Test Question"
-    assert isinstance(body["tags"], list)
+    assert body["question_text"] == "What is the OSI model?"
+    assert body["category"] == "networking"
 
 
 @patch('questions_handler.table')

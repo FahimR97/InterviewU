@@ -736,7 +736,7 @@ export class ServiceStack extends cdk.Stack {
       cloudWatchLogGroup: trailLogGroup,
       enableFileValidation: true, // Ensure log integrity
       includeGlobalServiceEvents: true, // Include IAM, CloudFront, etc.
-      isMultiRegionTrail: false, // Single region (eu-west-1) to save costs
+      isMultiRegionTrail: false, // Single region (eu-west-2) to save costs
       managementEvents: cloudtrail.ReadWriteType.ALL, // Track all API calls
       sendToCloudWatchLogs: true,
     });
