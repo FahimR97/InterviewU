@@ -125,7 +125,9 @@ def handler(event, context):
         ]
 
         # Scores over time — group by date (first 10 chars of ISO timestamp)
-        day_data: dict = defaultdict(lambda: {"scores": [], "categories": defaultdict(int)})
+        day_data: dict = defaultdict(
+            lambda: {"scores": [], "categories": defaultdict(int)}
+        )
         for item in items:
             day = item.get("timestamp", "")[:10]  # "2026-03-17"
             if day:
