@@ -50,18 +50,22 @@ function OverviewTab({ questions }: { questions: Question[] }) {
     <div className="admin-overview">
       <div className="overview-stat-grid">
         <div className="overview-stat-card total">
+          <span className="overview-stat-icon">📚</span>
           <span className="overview-stat-value">{questions.length}</span>
           <span className="overview-stat-label">Total Questions</span>
         </div>
         <div className="overview-stat-card easy">
+          <span className="overview-stat-icon">✅</span>
           <span className="overview-stat-value">{byDifficulty['easy'] || 0}</span>
           <span className="overview-stat-label">Easy</span>
         </div>
         <div className="overview-stat-card medium">
+          <span className="overview-stat-icon">⚡</span>
           <span className="overview-stat-value">{byDifficulty['medium'] || 0}</span>
           <span className="overview-stat-label">Medium</span>
         </div>
         <div className="overview-stat-card hard">
+          <span className="overview-stat-icon">🔥</span>
           <span className="overview-stat-value">{byDifficulty['hard'] || 0}</span>
           <span className="overview-stat-label">Hard</span>
         </div>
@@ -124,11 +128,13 @@ function QuestionsTab({
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [selectedDifficulty, setSelectedDifficulty] = useState('All')
+  const [missingHintOnly, setMissingHintOnly] = useState(false)
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null)
   const [createForm, setCreateForm] = useState<QuestionForm>(emptyForm)
   const [csvUploading, setCsvUploading] = useState(false)
   const [csvResult, setCsvResult] = useState<{ success: number; failed: number } | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   const categories = useMemo(() => {
     const cats = new Set(questions.map(q => q.category))
@@ -149,9 +155,10 @@ function QuestionsTab({
       const matchesDifficulty =
         selectedDifficulty === 'All' ||
         q.difficulty.toLowerCase() === selectedDifficulty.toLowerCase()
-      return matchesSearch && matchesCategory && matchesDifficulty
+      const matchesHint = !missingHintOnly || !q.reference_answer
+      return matchesSearch && matchesCategory && matchesDifficulty && matchesHint
     })
-  }, [questions, searchTerm, selectedCategory, selectedDifficulty])
+  }, [questions, searchTerm, selectedCategory, selectedDifficulty, missingHintOnly])
 
   const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -223,6 +230,60 @@ function QuestionsTab({
     }
   }
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredQuestions.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(filteredQuestions.map(q => q.id)))
+    }
+  }
+
+  const handleBulkDelete = async () => {
+    if (!confirm(`Delete ${selectedIds.size} question${selectedIds.size !== 1 ? 's' : ''}? This cannot be undone.`)) return
+    const token = await getAuthToken()
+    for (const id of Array.from(selectedIds)) {
+      try {
+        await fetch(`${API_BASE_URL}questions/${id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      } catch (error) {
+        console.error('Error deleting question:', error)
+      }
+    }
+    setSelectedIds(new Set())
+    onRefresh()
+  }
+
+  const handleExportCsv = () => {
+    const rows = [
+      ['question_text', 'category', 'difficulty', 'reference_answer'],
+      ...questions.map(q => [
+        `"${q.question_text.replace(/"/g, '""')}"`,
+        q.category,
+        q.difficulty,
+        `"${(q.reference_answer || '').replace(/"/g, '""')}"`,
+      ]),
+    ]
+    const csv = rows.map(r => r.join(',')).join('\n')
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = 'questions.csv'
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
   const handleCsvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -281,6 +342,7 @@ function QuestionsTab({
           {csvUploading ? 'Uploading...' : '📄 Upload CSV'}
           <input type="file" accept=".csv" onChange={handleCsvUpload} hidden disabled={csvUploading} />
         </label>
+        <button className="admin-btn admin-btn-export" onClick={handleExportCsv}>⬇ Export CSV</button>
         <button className="admin-btn admin-btn-ghost" onClick={onRefresh}>{loading ? 'Refreshing…' : 'Refresh'}</button>
       </div>
 
@@ -407,9 +469,32 @@ function QuestionsTab({
         <select value={selectedDifficulty} onChange={e => setSelectedDifficulty(e.target.value)}>
           {difficulties.map(d => <option key={d}>{capitalize(d)}</option>)}
         </select>
+        <button
+          className={`admin-btn admin-btn-ghost hint-toggle ${missingHintOnly ? 'active' : ''}`}
+          onClick={() => setMissingHintOnly(v => !v)}
+        >
+          💡 Missing hint
+        </button>
       </div>
 
-      <p className="admin-results-count">{filteredQuestions.length} of {questions.length} questions</p>
+      <div className="admin-results-bar">
+        <span className="admin-results-count">{filteredQuestions.length} of {questions.length} questions</span>
+        <div className="admin-bulk-actions">
+          <label className="select-all-label">
+            <input
+              type="checkbox"
+              checked={selectedIds.size === filteredQuestions.length && filteredQuestions.length > 0}
+              onChange={toggleSelectAll}
+            />
+            Select all
+          </label>
+          {selectedIds.size > 0 && (
+            <button className="admin-btn admin-btn-delete" onClick={handleBulkDelete}>
+              🗑 Delete {selectedIds.size} selected
+            </button>
+          )}
+        </div>
+      </div>
 
       <div className="admin-questions-list">
         {filteredQuestions.length === 0 ? (
@@ -418,10 +503,17 @@ function QuestionsTab({
           </p>
         ) : (
           filteredQuestions.map(q => (
-            <div key={q.id} className="admin-question-card">
+            <div key={q.id} className={`admin-question-card ${selectedIds.has(q.id) ? 'selected' : ''}`}>
               <div className="admin-question-top">
+                <input
+                  type="checkbox"
+                  className="question-checkbox"
+                  checked={selectedIds.has(q.id)}
+                  onChange={() => toggleSelect(q.id)}
+                />
                 <span className={difficultyClass(q.difficulty)}>{capitalize(q.difficulty)}</span>
                 <span className="admin-question-category">{q.category}</span>
+                {!q.reference_answer && <span className="no-hint-badge">No hint</span>}
               </div>
               <p className="admin-question-text">{q.question_text}</p>
               <div className="admin-question-actions">
@@ -607,13 +699,17 @@ function Admin() {
 
       <div className="admin-tab-bar">
         <div className="admin-tab-bar-inner">
-          {(['overview', 'questions', 'users'] as Tab[]).map(tab => (
+          {([
+            { id: 'overview', label: 'Overview', icon: '📊' },
+            { id: 'questions', label: 'Questions', icon: '📝' },
+            { id: 'users', label: 'Users', icon: '👥' },
+          ] as { id: Tab; label: string; icon: string }[]).map(({ id, label, icon }) => (
             <button
-              key={tab}
-              className={`admin-tab-btn ${activeTab === tab ? 'active' : ''}`}
-              onClick={() => setTab(tab)}
+              key={id}
+              className={`admin-tab-btn ${activeTab === id ? 'active' : ''}`}
+              onClick={() => setTab(id)}
             >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              <span className="tab-icon">{icon}</span>{label}
             </button>
           ))}
         </div>

@@ -31,16 +31,43 @@
 
 /* ── Header band ─────────────────────────────────────────────────── */
 
+@keyframes adminGradientFlow {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 .admin-header-band {
-  /* Teal accent on a dark base — on-brand but distinct as admin */
-  background: linear-gradient(135deg, #0f172a 0%, #134e4a 35%, #0f766e 65%, #0f172a 100%);
+  background: linear-gradient(
+    135deg,
+    #0d9488 0%,
+    #134e4a 20%,
+    #0f766e 40%,
+    #5eead4 60%,
+    #0f766e 78%,
+    #134e4a 90%,
+    #0d9488 100%
+  );
+  background-size: 300% 300%;
+  animation: adminGradientFlow 12s ease infinite;
   color: #fff;
   padding: 2rem 0 1.75rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 [data-theme="dark"] .admin-header-band {
-  background: linear-gradient(135deg, #020617 0%, #134e4a 35%, #0f766e 65%, #020617 100%);
+  background: linear-gradient(
+    135deg,
+    #0f172a 0%,
+    #1e1b4b 20%,
+    #312e81 40%,
+    #4338ca 60%,
+    #312e81 78%,
+    #1e1b4b 90%,
+    #0f172a 100%
+  );
+  background-size: 300% 300%;
+  animation: adminGradientFlow 12s ease infinite;
   border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
 
@@ -144,6 +171,10 @@
   border-bottom-color: var(--primary);
 }
 
+.tab-icon {
+  margin-right: 0.4rem;
+}
+
 /* ── Content area ────────────────────────────────────────────────── */
 
 .admin-content {
@@ -188,6 +219,15 @@
 }
 
 .admin-btn-create:hover {
+  filter: brightness(1.1);
+}
+
+.admin-btn-export {
+  background: linear-gradient(135deg, #0369a1 0%, #0284c7 100%);
+  color: #fff;
+}
+
+.admin-btn-export:hover {
   filter: brightness(1.1);
 }
 
@@ -377,6 +417,12 @@
 .overview-stat-card.medium::before { background: #f59e0b; }
 .overview-stat-card.hard::before  { background: #ef4444; }
 
+.overview-stat-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+  margin-bottom: 0.3rem;
+}
+
 .overview-stat-value {
   font-size: 2.25rem;
   font-weight: 800;
@@ -544,10 +590,76 @@
   cursor: pointer;
 }
 
+.admin-results-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
 .admin-results-count {
   font-size: 0.825rem;
   color: var(--text-light);
-  margin-bottom: 1rem;
+}
+
+.admin-bulk-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.select-all-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--text-medium);
+  cursor: pointer;
+  user-select: none;
+}
+
+.question-checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.admin-question-card.selected {
+  border-left-color: var(--primary);
+  background: var(--bg-tertiary);
+}
+
+.no-hint-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #92400e;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  margin-left: auto;
+}
+
+[data-theme="dark"] .no-hint-badge {
+  color: #fcd34d;
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.hint-toggle.active {
+  color: #92400e;
+  background: rgba(245, 158, 11, 0.12);
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+[data-theme="dark"] .hint-toggle.active {
+  color: #fcd34d;
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.25);
 }
 
 .admin-questions-list {
