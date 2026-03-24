@@ -68,6 +68,8 @@ Tone:
 - For scores 1–2: briefly acknowledge the attempt, then give clear actionable
   guidance on what to study
 - marcus_comment should be honest but end on an encouraging note
+- Do NOT ask follow-up questions, offer resources, or suggest the candidate
+  reach out for more help — this is a one-shot evaluation, there is no reply
 
 Respond ONLY with valid JSON:
 {{
