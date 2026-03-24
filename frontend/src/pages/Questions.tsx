@@ -165,7 +165,7 @@ function PracticeView({
           )}
           {question.reference_answer && (
             <details className="practice-reference">
-              <summary>Show reference answer</summary>
+              <summary>Show Hint</summary>
               <p>{question.reference_answer}</p>
             </details>
           )}
