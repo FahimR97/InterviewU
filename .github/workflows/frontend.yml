@@ -54,8 +54,12 @@ jobs:
           severity: "CRITICAL"
           ignore-unfixed: true
 
-      - name: Build frontend
+      - name: Build frontend (Alpha)
         working-directory: frontend
+        env:
+          VITE_API_URL: ${{ vars.ALPHA_API_URL }}
+          VITE_USER_POOL_ID: ${{ vars.ALPHA_USER_POOL_ID }}
+          VITE_CLIENT_ID: ${{ vars.ALPHA_CLIENT_ID }}
         run: npm run build
 
       - name: Configure AWS Credentials (Alpha)
@@ -147,8 +151,12 @@ jobs:
         working-directory: frontend
         run: npx tsc -b --noEmit
 
-      - name: Build frontend
+      - name: Build frontend (Prod)
         working-directory: frontend
+        env:
+          VITE_API_URL: ${{ vars.PROD_API_URL }}
+          VITE_USER_POOL_ID: ${{ vars.PROD_USER_POOL_ID }}
+          VITE_CLIENT_ID: ${{ vars.PROD_CLIENT_ID }}
         run: npm run build
 
       - name: Configure AWS Credentials (Prod)
