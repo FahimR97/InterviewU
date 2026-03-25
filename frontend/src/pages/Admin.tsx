@@ -337,7 +337,7 @@ function QuestionsTab({
         >
           {showCreateForm ? 'Cancel' : '+ New Question'}
         </button>
-        <label className="btn-small btn-csv">
+        <label className="admin-btn admin-btn-ghost btn-csv">
           {csvUploading ? 'Uploading...' : '📄 Upload CSV'}
           <input type="file" accept=".csv" onChange={handleCsvUpload} hidden disabled={csvUploading} />
         </label>
