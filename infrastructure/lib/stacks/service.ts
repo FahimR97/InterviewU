@@ -293,20 +293,6 @@ export class ServiceStack extends cdk.Stack {
 
     userAnswersTable.grantReadData(userAnalyticsHandler);
 
-    // Lambda for admin platform analytics (cross-user aggregation)
-    const adminAnalyticsHandler = new lambda.Function(this, 'AdminAnalyticsHandler', {
-      runtime: lambda.Runtime.PYTHON_3_11,
-      handler: 'admin_analytics_handler.handler',
-      code: lambda.Code.fromAsset("../backend/src"),
-      timeout: cdk.Duration.seconds(30),
-      tracing: lambda.Tracing.ACTIVE,
-      environment: {
-        USER_ANSWERS_TABLE_NAME: userAnswersTable.tableName,
-      },
-    });
-
-    userAnswersTable.grantReadData(adminAnalyticsHandler);
-
     // Lambda for user settings (GET/PUT interview date, preferences)
     const settingsHandler = new lambda.Function(this, 'SettingsHandler', {
       runtime: lambda.Runtime.PYTHON_3_11,
@@ -340,7 +326,6 @@ export class ServiceStack extends cdk.Stack {
     const evaluateIntegration = new apigw.LambdaIntegration(evaluateAnswerFn);
     const signupIntegration = new apigw.LambdaIntegration(signupHandler);
     const analyticsIntegration = new apigw.LambdaIntegration(userAnalyticsHandler);
-    const adminAnalyticsIntegration = new apigw.LambdaIntegration(adminAnalyticsHandler);
     const settingsIntegration = new apigw.LambdaIntegration(settingsHandler);
 
     const cognitoAuthorizer = new apigw.CognitoUserPoolsAuthorizer(this, 'CognitoAuthorizer', {
@@ -427,13 +412,6 @@ export class ServiceStack extends cdk.Stack {
     // Analytics endpoint (authenticated)
     const analytics = api.root.addResource('analytics');
     analytics.addMethod('GET', analyticsIntegration, {
-      authorizer: cognitoAuthorizer,
-      authorizationType: apigw.AuthorizationType.COGNITO,
-    });
-
-    // Admin platform analytics endpoint (Admin group only — enforced in Lambda)
-    const adminAnalytics = api.root.addResource('admin-analytics');
-    adminAnalytics.addMethod('GET', adminAnalyticsIntegration, {
       authorizer: cognitoAuthorizer,
       authorizationType: apigw.AuthorizationType.COGNITO,
     });
