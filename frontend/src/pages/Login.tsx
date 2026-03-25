@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { fetchAuthSession } from 'aws-amplify/auth';
 import { useAuth } from '../contexts/AuthContext';
 import './Login.css';
 
@@ -15,9 +16,11 @@ export default function Login() {
   const { user, login } = useAuth();
 
   useEffect(() => {
-    if (user) {
-      navigate('/dashboard');
-    }
+    if (!user) return;
+    fetchAuthSession().then(session => {
+      const groups = (session.tokens?.accessToken?.payload['cognito:groups'] as string[]) || [];
+      navigate(groups.includes('Admin') ? '/admin' : '/dashboard');
+    }).catch(() => navigate('/dashboard'));
   }, [user, navigate]);
 
   useEffect(() => {
@@ -40,7 +43,9 @@ export default function Login() {
 
     try {
       await login(email, password);
-      navigate('/dashboard');
+      const session = await fetchAuthSession();
+      const groups = (session.tokens?.accessToken?.payload['cognito:groups'] as string[]) || [];
+      navigate(groups.includes('Admin') ? '/admin' : '/dashboard');
     } catch (err: unknown) {
       console.error('Login error:', err);
       const errorMessage = err instanceof Error ? err.message : 'Unknown error';

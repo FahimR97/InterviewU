@@ -2,14 +2,14 @@ import { useState, useMemo, useEffect, useCallback } from 'react'
 import { fetchAuthSession } from 'aws-amplify/auth'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { getAllQuestions, signupUser } from '../services/api'
-import type { Question } from '../services/api'
+import { getAllQuestions, signupUser, getAdminAnalytics } from '../services/api'
+import type { Question, AdminAnalyticsResponse } from '../services/api'
 import { awsConfig } from '../aws-config'
 import './Admin.css'
 
 const API_BASE_URL = awsConfig.API.REST.InterviewQuestionsAPI.endpoint
 
-type Tab = 'overview' | 'questions' | 'users'
+type Tab = 'overview' | 'questions' | 'users' | 'analytics'
 
 type QuestionForm = {
   question_text: string
@@ -128,7 +128,7 @@ function QuestionsTab({
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [selectedDifficulty, setSelectedDifficulty] = useState('All')
-  const [missingHintOnly, setMissingHintOnly] = useState(false)
+
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null)
   const [createForm, setCreateForm] = useState<QuestionForm>(emptyForm)
@@ -155,10 +155,9 @@ function QuestionsTab({
       const matchesDifficulty =
         selectedDifficulty === 'All' ||
         q.difficulty.toLowerCase() === selectedDifficulty.toLowerCase()
-      const matchesHint = !missingHintOnly || !q.reference_answer
-      return matchesSearch && matchesCategory && matchesDifficulty && matchesHint
+      return matchesSearch && matchesCategory && matchesDifficulty
     })
-  }, [questions, searchTerm, selectedCategory, selectedDifficulty, missingHintOnly])
+  }, [questions, searchTerm, selectedCategory, selectedDifficulty])
 
   const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -391,10 +390,10 @@ function QuestionsTab({
               </div>
             </div>
             <div className="admin-form-group">
-              <label>Reference Answer (optional)</label>
+              <label>Practice Hint <span className="form-label-note">(shown to users in Practice Mode)</span></label>
               <textarea
                 rows={4}
-                placeholder="Model answer..."
+                placeholder="What should a good answer cover? Users will see this as a hint."
                 value={createForm.reference_answer}
                 onChange={e => setCreateForm({ ...createForm, reference_answer: e.target.value })}
               />
@@ -440,9 +439,10 @@ function QuestionsTab({
               </div>
             </div>
             <div className="admin-form-group">
-              <label>Reference Answer</label>
+              <label>Practice Hint <span className="form-label-note">(shown to users in Practice Mode)</span></label>
               <textarea
                 rows={4}
+                placeholder="What should a good answer cover? Users will see this as a hint."
                 value={editingQuestion.reference_answer}
                 onChange={e => setEditingQuestion({ ...editingQuestion, reference_answer: e.target.value })}
               />
@@ -469,12 +469,6 @@ function QuestionsTab({
         <select value={selectedDifficulty} onChange={e => setSelectedDifficulty(e.target.value)}>
           {difficulties.map(d => <option key={d}>{capitalize(d)}</option>)}
         </select>
-        <button
-          className={`admin-btn admin-btn-ghost hint-toggle ${missingHintOnly ? 'active' : ''}`}
-          onClick={() => setMissingHintOnly(v => !v)}
-        >
-          💡 Missing hint
-        </button>
       </div>
 
       <div className="admin-results-bar">
@@ -611,6 +605,134 @@ function UsersTab() {
   )
 }
 
+// ── Analytics Tab ─────────────────────────────────────────────────
+function AnalyticsTab({ getAuthToken }: { getAuthToken: () => Promise<string | null> }) {
+  const [data, setData] = useState<AdminAnalyticsResponse | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    getAuthToken().then(token => getAdminAnalytics(token))
+      .then(setData)
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false))
+  }, [getAuthToken])
+
+  if (loading) return <div className="analytics-loading"><div className="admin-spinner" /></div>
+  if (error) return <div className="analytics-error">Failed to load analytics: {error}</div>
+  if (!data) return null
+
+  const scoreToStars = (score: number) => {
+    const stars = Math.round(score / 20)
+    return '★'.repeat(stars) + '☆'.repeat(5 - stars)
+  }
+
+  return (
+    <div className="analytics-tab">
+      <div className="analytics-hero-stats">
+        <div className="analytics-stat-card">
+          <span className="analytics-stat-icon">📊</span>
+          <span className="analytics-stat-value">{data.total_attempts.toLocaleString()}</span>
+          <span className="analytics-stat-label">Total Attempts</span>
+        </div>
+        <div className="analytics-stat-card">
+          <span className="analytics-stat-icon">👥</span>
+          <span className="analytics-stat-value">{data.unique_users}</span>
+          <span className="analytics-stat-label">Active Users</span>
+        </div>
+        <div className="analytics-stat-card">
+          <span className="analytics-stat-icon">⭐</span>
+          <span className="analytics-stat-value">
+            {data.avg_score !== null ? scoreToStars(data.avg_score) : '—'}
+          </span>
+          <span className="analytics-stat-label">Platform Avg</span>
+        </div>
+        <div className="analytics-stat-card">
+          <span className="analytics-stat-icon">✅</span>
+          <span className="analytics-stat-value">{data.pass_rate}%</span>
+          <span className="analytics-stat-label">Pass Rate</span>
+        </div>
+      </div>
+
+      {data.low_scoring_categories.length > 0 && (
+        <div className="analytics-alert">
+          <strong>Content gaps:</strong> candidates consistently score below 3 stars in{' '}
+          {data.low_scoring_categories.join(', ')}. Consider adding easier questions or improving hints in those categories.
+        </div>
+      )}
+
+      <div className="analytics-tables">
+        <div className="analytics-table-block">
+          <h3>By Category</h3>
+          <table className="analytics-table">
+            <thead>
+              <tr><th>Category</th><th>Attempts</th><th>Avg Score</th><th>Pass Rate</th></tr>
+            </thead>
+            <tbody>
+              {data.by_category.map(row => (
+                <tr key={row.category}>
+                  <td>{row.category}</td>
+                  <td>{row.attempts}</td>
+                  <td>
+                    <span className={`analytics-score ${row.avg_score >= 80 ? 'high' : row.avg_score >= 60 ? 'mid' : 'low'}`}>
+                      {scoreToStars(row.avg_score)}
+                    </span>
+                  </td>
+                  <td>{row.pass_rate}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        <div className="analytics-table-block">
+          <h3>By Difficulty</h3>
+          <table className="analytics-table">
+            <thead>
+              <tr><th>Difficulty</th><th>Attempts</th><th>Avg Score</th><th>Pass Rate</th></tr>
+            </thead>
+            <tbody>
+              {data.by_difficulty.map(row => (
+                <tr key={row.difficulty}>
+                  <td style={{ textTransform: 'capitalize' }}>{row.difficulty}</td>
+                  <td>{row.attempts}</td>
+                  <td>
+                    <span className={`analytics-score ${row.avg_score >= 80 ? 'high' : row.avg_score >= 60 ? 'mid' : 'low'}`}>
+                      {scoreToStars(row.avg_score)}
+                    </span>
+                  </td>
+                  <td>{row.pass_rate}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <h3 style={{ marginTop: '1.5rem' }}>By Mode</h3>
+          <table className="analytics-table">
+            <thead>
+              <tr><th>Mode</th><th>Attempts</th><th>Avg Score</th><th>Pass Rate</th></tr>
+            </thead>
+            <tbody>
+              {Object.entries(data.by_mode).map(([mode, row]) => (
+                <tr key={mode}>
+                  <td style={{ textTransform: 'capitalize' }}>{mode}</td>
+                  <td>{row.attempts}</td>
+                  <td>
+                    <span className={`analytics-score ${row.avg_score >= 80 ? 'high' : row.avg_score >= 60 ? 'mid' : 'low'}`}>
+                      {scoreToStars(row.avg_score)}
+                    </span>
+                  </td>
+                  <td>{row.pass_rate}%</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Root Admin Page ───────────────────────────────────────────────
 function Admin() {
   const [isAdmin, setIsAdmin] = useState(false)
@@ -620,7 +742,7 @@ function Admin() {
   const [searchParams, setSearchParams] = useSearchParams()
   const { getAuthToken } = useAuth()
 
-  const activeTab: Tab = (['overview', 'questions', 'users'].includes(searchParams.get('tab') ?? '')
+  const activeTab: Tab = (['overview', 'questions', 'users', 'analytics'].includes(searchParams.get('tab') ?? '')
     ? (searchParams.get('tab') as Tab)
     : 'overview')
 
@@ -699,7 +821,7 @@ function Admin() {
 
       <div className="admin-tab-bar">
         <div className="admin-tab-bar-inner">
-          {(['overview', 'questions', 'users'] as Tab[]).map(tab => (
+          {(['overview', 'questions', 'users', 'analytics'] as Tab[]).map(tab => (
             <button
               key={tab}
               className={`admin-tab-btn ${activeTab === tab ? 'active' : ''}`}
@@ -722,6 +844,7 @@ function Admin() {
           />
         )}
         {activeTab === 'users' && <UsersTab />}
+        {activeTab === 'analytics' && <AnalyticsTab getAuthToken={getAuthToken} />}
       </div>
     </div>
   )

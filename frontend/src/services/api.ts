@@ -211,6 +211,52 @@ export async function saveSettings(settings: UserSettings, authToken: string | n
   }
 }
 
+export interface AdminAnalyticsCategoryEntry {
+  category: string
+  attempts: number
+  avg_score: number
+  pass_rate: number
+}
+
+export interface AdminAnalyticsDifficultyEntry {
+  difficulty: string
+  attempts: number
+  avg_score: number
+  pass_rate: number
+}
+
+export interface AdminAnalyticsModeEntry {
+  attempts: number
+  avg_score: number
+  pass_rate: number
+}
+
+export interface AdminAnalyticsResponse {
+  total_attempts: number
+  unique_users: number
+  avg_score: number | null
+  pass_rate: number
+  by_category: AdminAnalyticsCategoryEntry[]
+  by_difficulty: AdminAnalyticsDifficultyEntry[]
+  by_mode: Record<string, AdminAnalyticsModeEntry>
+  low_scoring_categories: string[]
+}
+
+/**
+ * Fetch platform-wide analytics (Admin group only)
+ */
+export async function getAdminAnalytics(authToken: string | null): Promise<AdminAnalyticsResponse> {
+  const headers: HeadersInit = { 'Content-Type': 'application/json' }
+  if (authToken) headers['Authorization'] = authToken
+
+  const response = await fetch(`${API_BASE_URL}admin-analytics`, { method: 'GET', headers })
+  if (!response.ok) {
+    const errorText = await response.text()
+    throw new Error(`Failed to fetch admin analytics: ${response.status} ${errorText}`)
+  }
+  return response.json()
+}
+
 /**
  * Fetch analytics for the authenticated user
  */
