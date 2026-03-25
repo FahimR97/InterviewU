@@ -298,6 +298,13 @@
   color: var(--text-medium);
 }
 
+.form-label-note {
+  font-weight: 400;
+  font-size: 0.78rem;
+  color: var(--text-light);
+  margin-left: 0.3rem;
+}
+
 .admin-form-group input,
 .admin-form-group textarea,
 .admin-form-group select {
@@ -809,13 +816,10 @@
 }
 
 .btn-csv {
-  background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
-  color: #fff;
+  background: var(--bg-tertiary);
+  color: var(--text-medium);
+  border: 1px solid var(--border);
   cursor: pointer;
-}
-
-[data-theme="dark"] .btn-csv {
-  background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
 }
 
 .btn-csv:hover {

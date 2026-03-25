@@ -128,7 +128,7 @@ function QuestionsTab({
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [selectedDifficulty, setSelectedDifficulty] = useState('All')
-  const [missingHintOnly, setMissingHintOnly] = useState(false)
+
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null)
   const [createForm, setCreateForm] = useState<QuestionForm>(emptyForm)
@@ -155,10 +155,9 @@ function QuestionsTab({
       const matchesDifficulty =
         selectedDifficulty === 'All' ||
         q.difficulty.toLowerCase() === selectedDifficulty.toLowerCase()
-      const matchesHint = !missingHintOnly || !q.reference_answer
-      return matchesSearch && matchesCategory && matchesDifficulty && matchesHint
+      return matchesSearch && matchesCategory && matchesDifficulty
     })
-  }, [questions, searchTerm, selectedCategory, selectedDifficulty, missingHintOnly])
+  }, [questions, searchTerm, selectedCategory, selectedDifficulty])
 
   const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -391,10 +390,10 @@ function QuestionsTab({
               </div>
             </div>
             <div className="admin-form-group">
-              <label>Reference Answer (optional)</label>
+              <label>Practice Hint <span className="form-label-note">(shown to users in Practice Mode)</span></label>
               <textarea
                 rows={4}
-                placeholder="Model answer..."
+                placeholder="What should a good answer cover? Users will see this as a hint."
                 value={createForm.reference_answer}
                 onChange={e => setCreateForm({ ...createForm, reference_answer: e.target.value })}
               />
@@ -440,9 +439,10 @@ function QuestionsTab({
               </div>
             </div>
             <div className="admin-form-group">
-              <label>Reference Answer</label>
+              <label>Practice Hint <span className="form-label-note">(shown to users in Practice Mode)</span></label>
               <textarea
                 rows={4}
+                placeholder="What should a good answer cover? Users will see this as a hint."
                 value={editingQuestion.reference_answer}
                 onChange={e => setEditingQuestion({ ...editingQuestion, reference_answer: e.target.value })}
               />
@@ -469,12 +469,6 @@ function QuestionsTab({
         <select value={selectedDifficulty} onChange={e => setSelectedDifficulty(e.target.value)}>
           {difficulties.map(d => <option key={d}>{capitalize(d)}</option>)}
         </select>
-        <button
-          className={`admin-btn admin-btn-ghost hint-toggle ${missingHintOnly ? 'active' : ''}`}
-          onClick={() => setMissingHintOnly(v => !v)}
-        >
-          💡 Missing hint
-        </button>
       </div>
 
       <div className="admin-results-bar">
@@ -722,6 +716,7 @@ function Admin() {
           />
         )}
         {activeTab === 'users' && <UsersTab />}
+
       </div>
     </div>
   )
