@@ -14,6 +14,7 @@ type Tab = 'overview' | 'questions' | 'users'
 type QuestionForm = {
   question_text: string
   category: string
+  competency: string
   difficulty: string
   reference_answer: string
 }
@@ -21,6 +22,7 @@ type QuestionForm = {
 const emptyForm: QuestionForm = {
   question_text: '',
   category: '',
+  competency: '',
   difficulty: 'Medium',
   reference_answer: '',
 }
@@ -145,6 +147,12 @@ function QuestionsTab({
     const diffs = new Set(questions.map(q => q.difficulty.toLowerCase()))
     return ['All', ...Array.from(diffs)]
   }, [questions])
+
+  const competenciesFor = (category: string) => {
+    if (!category) return []
+    const comps = new Set(questions.filter(q => q.category === category).map(q => q.competency).filter(Boolean))
+    return Array.from(comps).sort()
+  }
 
   const filteredQuestions = useMemo(() => {
     return questions.filter(q => {
@@ -372,7 +380,7 @@ function QuestionsTab({
                 <select
                   required
                   value={createForm.category}
-                  onChange={e => setCreateForm({ ...createForm, category: e.target.value })}
+                  onChange={e => setCreateForm({ ...createForm, category: e.target.value, competency: '' })}
                 >
                   <option value="">Select a category…</option>
                   {categories.slice(1).map(c => <option key={c}>{c}</option>)}
@@ -390,6 +398,18 @@ function QuestionsTab({
                 </select>
               </div>
             </div>
+            {competenciesFor(createForm.category).length > 0 && (
+              <div className="admin-form-group">
+                <label>Subcategory</label>
+                <select
+                  value={createForm.competency}
+                  onChange={e => setCreateForm({ ...createForm, competency: e.target.value })}
+                >
+                  <option value="">Select a subcategory…</option>
+                  {competenciesFor(createForm.category).map(c => <option key={c}>{c}</option>)}
+                </select>
+              </div>
+            )}
             <div className="admin-form-group">
               <label>Practice Hint <span className="form-label-note">(shown to users in Practice Mode)</span></label>
               <textarea
@@ -423,7 +443,7 @@ function QuestionsTab({
                 <select
                   required
                   value={editingQuestion.category}
-                  onChange={e => setEditingQuestion({ ...editingQuestion, category: e.target.value })}
+                  onChange={e => setEditingQuestion({ ...editingQuestion, category: e.target.value, competency: '' })}
                 >
                   <option value="">Select a category…</option>
                   {categories.slice(1).map(c => <option key={c}>{c}</option>)}
@@ -441,6 +461,18 @@ function QuestionsTab({
                 </select>
               </div>
             </div>
+            {competenciesFor(editingQuestion.category).length > 0 && (
+              <div className="admin-form-group">
+                <label>Subcategory</label>
+                <select
+                  value={editingQuestion.competency}
+                  onChange={e => setEditingQuestion({ ...editingQuestion, competency: e.target.value })}
+                >
+                  <option value="">Select a subcategory…</option>
+                  {competenciesFor(editingQuestion.category).map(c => <option key={c}>{c}</option>)}
+                </select>
+              </div>
+            )}
             <div className="admin-form-group">
               <label>Practice Hint <span className="form-label-note">(shown to users in Practice Mode)</span></label>
               <textarea
