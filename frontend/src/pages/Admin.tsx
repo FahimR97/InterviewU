@@ -369,13 +369,14 @@ function QuestionsTab({
             <div className="admin-form-row">
               <div className="admin-form-group">
                 <label>Category</label>
-                <input
-                  type="text"
+                <select
                   required
-                  placeholder="e.g. AWS, System Design..."
                   value={createForm.category}
                   onChange={e => setCreateForm({ ...createForm, category: e.target.value })}
-                />
+                >
+                  <option value="">Select a category…</option>
+                  {categories.slice(1).map(c => <option key={c}>{c}</option>)}
+                </select>
               </div>
               <div className="admin-form-group">
                 <label>Difficulty</label>
@@ -419,12 +420,14 @@ function QuestionsTab({
             <div className="admin-form-row">
               <div className="admin-form-group">
                 <label>Category</label>
-                <input
-                  type="text"
+                <select
                   required
                   value={editingQuestion.category}
                   onChange={e => setEditingQuestion({ ...editingQuestion, category: e.target.value })}
-                />
+                >
+                  <option value="">Select a category…</option>
+                  {categories.slice(1).map(c => <option key={c}>{c}</option>)}
+                </select>
               </div>
               <div className="admin-form-group">
                 <label>Difficulty</label>
