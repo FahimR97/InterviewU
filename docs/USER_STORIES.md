@@ -146,19 +146,116 @@ Acceptance Criteria:
 ## 2.2. Should Have
 
 ### End User
-- I want a Test Mode with a timer and code editor so that I can simulate real interview conditions.
-- I want to reset my password if I forget it so that I can regain access to my account.
-- I want my settings to persist across devices so that I can switch between laptop and desktop seamlessly.
+
+**Story 1: Simulate Real Interview Conditions**
+
+As an end user, I want a Test Mode with a timer so that I can simulate real interview conditions.
+
+Acceptance Criteria:
+- I can start a dedicated Test Mode session within the platform.
+- A timer is displayed during the session.
+- A defined set of questions is presented in sequence.
+- The session provides a more structured experience in completing a series of questions than standard question practice.
+
+---
+
+**Story 2: Reset My Password**
+
+As an end user, I want to reset my password if I forget it so that I can regain access to my account.
+
+Acceptance Criteria:
+- I can begin a password reset flow from the platform.
+- A verification step is required before a new password is set.
+- I can set a new password and use it to log in.
+- The reset flow works without administrator intervention.
+
+---
+
+**Story 3: Persist My Settings Across Devices**
+
+As an end user, I want my settings to persist across devices so that I can switch between devices seamlessly.
+
+Acceptance Criteria:
+- My settings are stored against my user account.
+- My settings remain available after logging out and back in.
+- The same settings are applied when I access the platform on another device.
+- Settings changes are reflected consistently across sessions.
+
+---
 
 ### Administrator
-- I want to search and filter questions so that I can find and manage specific content efficiently.
-- I want to bulk upload questions via CSV so that I can add content at scale.
+
+**Story 1: Search and Filter Questions for Management**
+
+As an administrator, I want to search and filter questions so that I can find and manage specific content efficiently.
+
+Acceptance Criteria:
+- I can search questions by keyword.
+- I can filter questions by relevant attributes such as category and difficulty.
+- Search and filter results update within the admin view.
+- This allows me to locate questions more efficiently for management tasks.
+
+---
+
+**Story 2: Bulk Upload Questions**
+
+As an administrator, I want to bulk upload questions via CSV so that I can add content at scale.
+
+Acceptance Criteria:
+- I can upload a CSV file through the admin interface.
+- Multiple questions can be added in one action.
+- Uploaded content is processed and added to the question bank.
+- Bulk upload reduces manual effort when adding larger sets of content.
+
+---
 
 ### Developer
-- I want vulnerability scanning on every build so that security issues are caught early.
-- I want OIDC-based deployment credentials so that no long-lived AWS access keys are stored.
-- I want CloudWatch monitoring and alarms so that I am alerted to errors and performance issues.
-- I want custom metrics so that I have business-level visibility into platform behaviour.
+
+**Story 1: Vulnerability Scanning on Every Build**
+
+As a developer, I want vulnerability scanning on every build so that security issues are caught early.
+
+Acceptance Criteria:
+- Vulnerability scanning runs automatically in the pipeline.
+- Dependency issues are identified before deployment.
+- CRITICAL and HIGH findings block the build.
+- Scanning applies to relevant project dependencies.
+
+---
+
+**Story 2: OIDC-Based Deployment Credentials**
+
+As a developer, I want OIDC-based deployment credentials so that no long-lived AWS access keys are stored.
+
+Acceptance Criteria:
+- The deployment workflow uses OIDC-based role assumption.
+- Long-lived AWS deployment keys are not required in repository secrets.
+- Deployment access is granted through short-lived credentials.
+- This reduces credential management risk.
+
+---
+
+**Story 3: CloudWatch Monitoring and Alarms**
+
+As a developer, I want CloudWatch monitoring and alarms so that I am alerted to errors and performance issues.
+
+Acceptance Criteria:
+- Logs and metrics are available through CloudWatch.
+- Alarm thresholds are configured for key platform issues.
+- Notifications are sent when alarms are triggered.
+- Monitoring supports faster identification of operational problems.
+
+---
+
+**Story 4: Custom Metrics for Platform Behaviour**
+
+As a developer, I want custom metrics so that I have business-level visibility into platform behaviour.
+
+Acceptance Criteria:
+- The platform emits custom metrics for question usage and AI evaluation activity.
+- These include usage, score, mode, response time, and failure metrics.
+- The metrics are visible through the monitoring layer.
+- They provide visibility beyond default infrastructure metrics.
 
 ---
 
