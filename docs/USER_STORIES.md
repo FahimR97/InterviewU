@@ -74,13 +74,40 @@ Acceptance Criteria:
 - Only admin users can create, edit or delete questions.
 - Non-admin users cannot access admin-only actions.
 - Read access remains available to authenticated non-admin users.
-- Role checks are enforced at the API level.
+- Role checks are enforced by the platform.
 
 ---
 
 ### Developer
 
-**Story 1: Define Infrastructure as Code**
+**Story 1: Secure Backend API**
+
+As a developer, I want to implement secure authentication and authorisation so that only authorised users can access protected resources and data.
+
+Acceptance Criteria:
+- Amazon Cognito is used for user authentication.
+- Protected API routes use JWT validation through API Gateway.
+- Unauthenticated access to protected endpoints returns a 401 response.
+- Admin-only actions are restricted to authorised users.
+- Service permissions follow least-privilege access.
+- Platform access is secured over HTTPS.
+
+---
+
+**Story 2: Scalable Data Layer**
+
+As a developer, I want to use Amazon DynamoDB for application data so that the platform can store and retrieve content reliably at scale.
+
+Acceptance Criteria:
+- Amazon DynamoDB is used as the platform's managed data store.
+- The platform can persist and retrieve interview questions, user answers, and user settings.
+- The data layer supports scalable access with low infrastructure overhead.
+- Data is protected through encryption at rest.
+- Point-in-time recovery is enabled for data protection.
+
+---
+
+**Story 3: Define Infrastructure as Code**
 
 As a developer, I want infrastructure defined as code so that environments are consistent and reproducible.
 
@@ -92,20 +119,19 @@ Acceptance Criteria:
 
 ---
 
-**Story 2: Build an Automated CI/CD Pipeline**
+**Story 4: Build an Automated CI/CD Pipeline**
 
 As a developer, I want an automated CI/CD pipeline so that changes are tested and deployed reliably.
 
 Acceptance Criteria:
 - Code changes trigger automated validation steps.
-- The pipeline includes testing and validation before deployment.
-- Failed checks prevent unsuitable changes from progressing.
-- Deployments are triggered through the pipeline rather than being carried out manually.
-- Production deployment requires manual approval before changes are released.
+- The pipeline includes testing, linting, type checking, vulnerability scanning, and infrastructure validation.
+- Successful changes are deployed to Alpha automatically.
+- Production deployment requires manual approval.
 
 ---
 
-**Story 3: Maintain Separate Alpha and Production Environments**
+**Story 5: Maintain Separate Alpha and Production Environments**
 
 As a developer, I want separate Alpha and Production environments so that changes can be validated before reaching users.
 
@@ -119,30 +145,34 @@ Acceptance Criteria:
 
 ## 2.2. Should Have
 
-| Priority | User Story |
-|----------|------------|
-| Should Have | I want a Test Mode with a timer and code editor so I can simulate real interview conditions. |
-| Should Have | I want to set my interview date and see a countdown so I can stay motivated. |
-| Should Have | I want my settings to persist across devices so I can switch between laptop and desktop seamlessly. |
-| Should Have | I want to reset my password if I forget it so I can regain access to my account. |
-| Should Have | I want to search and filter questions so I can find and manage specific content efficiently. (Admin) |
-| Should Have | I want to bulk upload questions via CSV so I can add content at scale. (Admin) |
-| Should Have | I want vulnerability scanning on every build so that security issues are caught early. (Developer) |
-| Should Have | I want OIDC-based deployment credentials so that no long-lived AWS access keys are stored. (Developer) |
-| Should Have | I want CloudWatch monitoring and alarms so that I am alerted to errors and performance issues. (Developer) |
-| Should Have | I want custom metrics so that I have business-level visibility into platform behaviour. (Developer) |
-| Should Have | I want threat modelling documented so that known attack vectors are identified and mitigated. (Developer) |
+### End User
+- I want a Test Mode with a timer and code editor so that I can simulate real interview conditions.
+- I want to reset my password if I forget it so that I can regain access to my account.
+- I want my settings to persist across devices so that I can switch between laptop and desktop seamlessly.
+
+### Administrator
+- I want to search and filter questions so that I can find and manage specific content efficiently.
+- I want to bulk upload questions via CSV so that I can add content at scale.
+
+### Developer
+- I want vulnerability scanning on every build so that security issues are caught early.
+- I want OIDC-based deployment credentials so that no long-lived AWS access keys are stored.
+- I want CloudWatch monitoring and alarms so that I am alerted to errors and performance issues.
+- I want custom metrics so that I have business-level visibility into platform behaviour.
 
 ---
 
 ## 2.3. Nice to Have
 
-| Priority | User Story |
-|----------|------------|
-| Nice to Have | I want to see detailed analytics breakdowns including radar charts, heatmaps and difficulty views so I can get deeper insight into my performance. (End User) |
-| Nice to Have | I want to use a whiteboard in Test Mode so I can work through system design problems visually. (End User) |
-| Nice to Have | I want to export questions as CSV so I can back up or audit the question bank. (Admin) |
-| Nice to Have | I want to bulk delete questions so I can remove outdated content efficiently. (Admin) |
-| Nice to Have | I want X-Ray tracing so I can debug request flows across services. (Developer) |
-| Nice to Have | I want budget alerts so I am notified if costs exceed expectations. (Developer) |
-| Nice to Have | I want Dependabot with auto-merge so low-risk dependency updates are handled automatically. (Developer) |
+### End User
+- I want to see detailed analytics breakdowns including radar charts, heatmaps and difficulty views so I can get deeper insight into my performance.
+- I want to use a whiteboard in Test Mode so I can work through system design problems visually.
+
+### Administrator
+- I want to export questions as CSV so I can back up or audit the question bank.
+- I want to bulk delete questions so I can remove outdated content efficiently.
+
+### Developer
+- I want X-Ray tracing so I can debug request flows across services.
+- I want budget alerts so I am notified if costs exceed expectations.
+- I want Dependabot with auto-merge so low-risk dependency updates are handled automatically.
