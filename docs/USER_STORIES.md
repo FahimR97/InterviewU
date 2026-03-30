@@ -262,8 +262,40 @@ Acceptance Criteria:
 ## 2.3. Nice to Have
 
 ### End User
-- I want to see detailed analytics breakdowns including radar charts, heatmaps and difficulty views so I can get deeper insight into my performance.
-- I want to use a whiteboard in Test Mode so I can work through system design problems visually.
+
+**Story 1: Use a Code Editor for Coding Questions**
+
+As an end user, I want a code editor available for coding questions so that I can write and structure code as part of my answer.
+
+Acceptance Criteria:
+- Coding questions can be opened in an embedded code editor.
+- I can write and edit code directly within the platform.
+- The editor supports a more realistic coding response experience.
+- I do not need to use an external tool to answer coding questions.
+
+---
+
+**Story 2: Use a Whiteboard for System Design Questions**
+
+As an end user, I want a whiteboard available for system design questions so that I can sketch out diagrams as part of my answer.
+
+Acceptance Criteria:
+- System design questions include a whiteboard-style drawing area.
+- I can create and adjust diagrams within the platform.
+- The whiteboard is available as part of the question experience.
+- This supports non-text responses for design-based questions.
+
+---
+
+**Story 3: View Detailed Visual Performance Insights**
+
+As an end user, I want to view my performance through detailed charts and visualisations so that I can get deeper insight into my progress.
+
+Acceptance Criteria:
+- I can view charts and visual summaries of my performance.
+- The visualisations show trends across my activity over time.
+- The dashboard provides more detailed insight than a basic score summary.
+- These views help me identify patterns in my performance.
 
 ### Administrator
 - I want to export questions as CSV so I can back up or audit the question bank.
