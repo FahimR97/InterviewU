@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { fetchAuthSession } from 'aws-amplify/auth'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
@@ -39,6 +39,8 @@ function ThemeToggle() {
 function NavBar() {
   const { user, logout } = useAuth()
   const [isAdmin, setIsAdmin] = useState(false)
+  const location = useLocation()
+  const onAdminPage = location.pathname.startsWith('/admin')
 
   useEffect(() => {
     if (!user) return
@@ -64,7 +66,7 @@ function NavBar() {
     <nav className={`navbar${user ? ' navbar-sticky' : ''}`}>
       <div className="navbar-container">
         <Link to="/" className="navbar-brand">
-          InterviewU
+          {onAdminPage ? 'InterviewU Admin' : 'InterviewU'}
         </Link>
 
         {/* Toggle sits between brand and links on desktop;

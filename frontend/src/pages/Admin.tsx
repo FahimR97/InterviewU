@@ -28,7 +28,6 @@ import Alert from '@cloudscape-design/components/alert'
 import ColumnLayout from '@cloudscape-design/components/column-layout'
 import Form from '@cloudscape-design/components/form'
 import Spinner from '@cloudscape-design/components/spinner'
-import ContentLayout from '@cloudscape-design/components/content-layout'
 
 const API_BASE_URL = awsConfig.API.REST.InterviewQuestionsAPI.endpoint
 
@@ -468,15 +467,22 @@ function Admin() {
   }, [loadQuestions])
 
   if (loading) {
-    return <Box textAlign="center" padding="xxl"><Spinner size="large" /><Box variant="p">Loading...</Box></Box>
+    return (
+      <Box padding="xxl" textAlign="center">
+        <SpaceBetween size="m" alignItems="center">
+          <Spinner size="large" />
+          <Box variant="p" color="text-body-secondary">Loading admin console...</Box>
+        </SpaceBetween>
+      </Box>
+    )
   }
 
   if (!isAdmin) {
     return (
-      <Box textAlign="center" padding="xxl">
-        <SpaceBetween size="m">
+      <Box padding="xxl" textAlign="center">
+        <SpaceBetween size="m" alignItems="center">
           <Header variant="h1">Access Denied</Header>
-          <Box variant="p">You need to be in the Admin group to access this page.</Box>
+          <Box variant="p" color="text-body-secondary">You need Admin group membership to access this page.</Box>
           <Button onClick={() => navigate('/')}>Back to Home</Button>
         </SpaceBetween>
       </Box>
@@ -484,23 +490,25 @@ function Admin() {
   }
 
   return (
-    <ContentLayout
-      header={
-        <Header variant="h1" description={`${questions.length} questions in platform`}>
-          InterviewU Administration
+    <Box padding={{ horizontal: 'xl', vertical: 'l' }}>
+      <SpaceBetween size="l">
+        <Header
+          variant="h1"
+          description={`${questions.length} questions · manage content, categories and users`}
+        >
+          Admin Console
         </Header>
-      }
-    >
-      <Tabs
-        activeTabId={activeTab}
-        onChange={({ detail }) => setTab(detail.activeTabId)}
-        tabs={[
-          { id: 'overview', label: 'Overview', content: <OverviewTab questions={questions} /> },
-          { id: 'questions', label: 'Questions', content: <QuestionsTab questions={questions} loading={loading} onRefresh={loadQuestions} getAuthToken={getAuthToken} /> },
-          { id: 'users', label: 'Users', content: <UsersTab /> },
-        ]}
-      />
-    </ContentLayout>
+        <Tabs
+          activeTabId={activeTab}
+          onChange={({ detail }) => setTab(detail.activeTabId)}
+          tabs={[
+            { id: 'overview', label: 'Overview', content: <Box padding={{ top: 'l' }}><OverviewTab questions={questions} /></Box> },
+            { id: 'questions', label: 'Questions', content: <Box padding={{ top: 'l' }}><QuestionsTab questions={questions} loading={loading} onRefresh={loadQuestions} getAuthToken={getAuthToken} /></Box> },
+            { id: 'users', label: 'Users', content: <Box padding={{ top: 'l' }}><UsersTab /></Box> },
+          ]}
+        />
+      </SpaceBetween>
+    </Box>
   )
 }
 
