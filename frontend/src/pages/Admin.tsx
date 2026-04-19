@@ -120,6 +120,13 @@ function QuestionsTab({
     return [...new Set(questions.map(q => q.category))].sort()
   }, [questions])
 
+  const competenciesFor = (category: string): string[] => {
+    if (!category) return []
+    return [...new Set(
+      questions.filter(q => q.category === category).map(q => q.competency).filter(Boolean)
+    )].sort() as string[]
+  }
+
   const filteredQuestions = useMemo(() => {
     return questions.filter(q => {
       const matchesText = !filterText || q.question_text.toLowerCase().includes(filterText.toLowerCase()) || q.category.toLowerCase().includes(filterText.toLowerCase())
@@ -159,6 +166,7 @@ function QuestionsTab({
         body: JSON.stringify({
           question_text: editingQuestion.question_text,
           category: editingQuestion.category,
+          competency: editingQuestion.competency,
           difficulty: editingQuestion.difficulty,
           reference_answer: editingQuestion.reference_answer,
         }),
@@ -251,7 +259,7 @@ function QuestionsTab({
                 <FormField label="Category">
                   <Select
                     selectedOption={createForm.category ? { label: createForm.category, value: createForm.category } : null}
-                    onChange={({ detail }) => setCreateForm({ ...createForm, category: detail.selectedOption.value || '' })}
+                    onChange={({ detail }) => setCreateForm({ ...createForm, category: detail.selectedOption.value || '', competency: '' })}
                     options={categories.map(c => ({ label: c, value: c }))}
                     placeholder="Select category"
                   />
@@ -264,6 +272,16 @@ function QuestionsTab({
                   />
                 </FormField>
               </ColumnLayout>
+              {competenciesFor(createForm.category).length > 0 && (
+                <FormField label="Subcategory">
+                  <Select
+                    selectedOption={createForm.competency ? { label: createForm.competency, value: createForm.competency } : null}
+                    onChange={({ detail }) => setCreateForm({ ...createForm, competency: detail.selectedOption.value || '' })}
+                    options={competenciesFor(createForm.category).map(c => ({ label: c, value: c }))}
+                    placeholder="Select subcategory"
+                  />
+                </FormField>
+              )}
               <FormField label="Reference Answer">
                 <Textarea value={createForm.reference_answer} onChange={({ detail }) => setCreateForm({ ...createForm, reference_answer: detail.value })} rows={3} />
               </FormField>
@@ -288,7 +306,7 @@ function QuestionsTab({
                 <FormField label="Category">
                   <Select
                     selectedOption={{ label: editingQuestion.category, value: editingQuestion.category }}
-                    onChange={({ detail }) => setEditingQuestion({ ...editingQuestion, category: detail.selectedOption.value || '' })}
+                    onChange={({ detail }) => setEditingQuestion({ ...editingQuestion, category: detail.selectedOption.value || '', competency: '' })}
                     options={categories.map(c => ({ label: c, value: c }))}
                   />
                 </FormField>
@@ -300,6 +318,16 @@ function QuestionsTab({
                   />
                 </FormField>
               </ColumnLayout>
+              {competenciesFor(editingQuestion.category).length > 0 && (
+                <FormField label="Subcategory">
+                  <Select
+                    selectedOption={editingQuestion.competency ? { label: editingQuestion.competency, value: editingQuestion.competency } : null}
+                    onChange={({ detail }) => setEditingQuestion({ ...editingQuestion, competency: detail.selectedOption.value || '' })}
+                    options={competenciesFor(editingQuestion.category).map(c => ({ label: c, value: c }))}
+                    placeholder="Select subcategory"
+                  />
+                </FormField>
+              )}
               <FormField label="Reference Answer">
                 <Textarea value={editingQuestion.reference_answer || ''} onChange={({ detail }) => setEditingQuestion({ ...editingQuestion, reference_answer: detail.value })} rows={3} />
               </FormField>
