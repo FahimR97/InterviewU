@@ -65,7 +65,7 @@ function OverviewTab({ questions }: { questions: Question[] }) {
 
   return (
     <SpaceBetween size="l">
-      <ColumnLayout columns={4} variant="text-grid">
+      <ColumnLayout columns={4} variant="text-grid" minColumnWidth={140}>
         <Container>
           <Box variant="awsui-key-label">Total Questions</Box>
           <Box variant="h1">{questions.length}</Box>
@@ -255,7 +255,7 @@ function QuestionsTab({
               <FormField label="Question">
                 <Textarea value={createForm.question_text} onChange={({ detail }) => setCreateForm({ ...createForm, question_text: detail.value })} rows={3} />
               </FormField>
-              <ColumnLayout columns={2}>
+              <ColumnLayout columns={competenciesFor(createForm.category).length > 0 ? 3 : 2}>
                 <FormField label="Category">
                   <Select
                     selectedOption={createForm.category ? { label: createForm.category, value: createForm.category } : null}
@@ -264,6 +264,16 @@ function QuestionsTab({
                     placeholder="Select category"
                   />
                 </FormField>
+                {competenciesFor(createForm.category).length > 0 && (
+                  <FormField label="Subcategory">
+                    <Select
+                      selectedOption={createForm.competency ? { label: createForm.competency, value: createForm.competency } : null}
+                      onChange={({ detail }) => setCreateForm({ ...createForm, competency: detail.selectedOption.value || '' })}
+                      options={competenciesFor(createForm.category).map(c => ({ label: c, value: c }))}
+                      placeholder="Select subcategory"
+                    />
+                  </FormField>
+                )}
                 <FormField label="Difficulty">
                   <Select
                     selectedOption={{ label: createForm.difficulty, value: createForm.difficulty }}
@@ -272,16 +282,6 @@ function QuestionsTab({
                   />
                 </FormField>
               </ColumnLayout>
-              {competenciesFor(createForm.category).length > 0 && (
-                <FormField label="Subcategory">
-                  <Select
-                    selectedOption={createForm.competency ? { label: createForm.competency, value: createForm.competency } : null}
-                    onChange={({ detail }) => setCreateForm({ ...createForm, competency: detail.selectedOption.value || '' })}
-                    options={competenciesFor(createForm.category).map(c => ({ label: c, value: c }))}
-                    placeholder="Select subcategory"
-                  />
-                </FormField>
-              )}
               <FormField label="Reference Answer">
                 <Textarea value={createForm.reference_answer} onChange={({ detail }) => setCreateForm({ ...createForm, reference_answer: detail.value })} rows={3} />
               </FormField>
@@ -302,7 +302,7 @@ function QuestionsTab({
               <FormField label="Question">
                 <Textarea value={editingQuestion.question_text} onChange={({ detail }) => setEditingQuestion({ ...editingQuestion, question_text: detail.value })} rows={3} />
               </FormField>
-              <ColumnLayout columns={2}>
+              <ColumnLayout columns={competenciesFor(editingQuestion.category).length > 0 ? 3 : 2}>
                 <FormField label="Category">
                   <Select
                     selectedOption={{ label: editingQuestion.category, value: editingQuestion.category }}
@@ -310,6 +310,16 @@ function QuestionsTab({
                     options={categories.map(c => ({ label: c, value: c }))}
                   />
                 </FormField>
+                {competenciesFor(editingQuestion.category).length > 0 && (
+                  <FormField label="Subcategory">
+                    <Select
+                      selectedOption={editingQuestion.competency ? { label: editingQuestion.competency, value: editingQuestion.competency } : null}
+                      onChange={({ detail }) => setEditingQuestion({ ...editingQuestion, competency: detail.selectedOption.value || '' })}
+                      options={competenciesFor(editingQuestion.category).map(c => ({ label: c, value: c }))}
+                      placeholder="Select subcategory"
+                    />
+                  </FormField>
+                )}
                 <FormField label="Difficulty">
                   <Select
                     selectedOption={{ label: editingQuestion.difficulty, value: editingQuestion.difficulty }}
@@ -318,16 +328,6 @@ function QuestionsTab({
                   />
                 </FormField>
               </ColumnLayout>
-              {competenciesFor(editingQuestion.category).length > 0 && (
-                <FormField label="Subcategory">
-                  <Select
-                    selectedOption={editingQuestion.competency ? { label: editingQuestion.competency, value: editingQuestion.competency } : null}
-                    onChange={({ detail }) => setEditingQuestion({ ...editingQuestion, competency: detail.selectedOption.value || '' })}
-                    options={competenciesFor(editingQuestion.category).map(c => ({ label: c, value: c }))}
-                    placeholder="Select subcategory"
-                  />
-                </FormField>
-              )}
               <FormField label="Reference Answer">
                 <Textarea value={editingQuestion.reference_answer || ''} onChange={({ detail }) => setEditingQuestion({ ...editingQuestion, reference_answer: detail.value })} rows={3} />
               </FormField>
@@ -351,6 +351,8 @@ function QuestionsTab({
         items={paginatedQuestions}
         loading={loading}
         loadingText="Loading questions"
+        wrapLines
+        resizableColumns
         selectionType="multi"
         selectedItems={selectedItems}
         onSelectionChange={({ detail }) => setSelectedItems(detail.selectedItems)}
@@ -518,7 +520,7 @@ function Admin() {
   }
 
   return (
-    <Box padding={{ horizontal: 'xxl', vertical: 'l' }}>
+    <Box padding={{ horizontal: 'l', vertical: 'l' }}>
       <SpaceBetween size="l">
         <Header
           variant="h1"
