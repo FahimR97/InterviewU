@@ -195,6 +195,7 @@ def handler(event, context):
                     "id": question_id,
                     "question_text": body["question_text"],
                     "category": body["category"],
+                    "competency": body.get("competency", ""),
                     "difficulty": body["difficulty"],
                     "reference_answer": body.get("reference_answer", ""),
                     "created_at": datetime.now(timezone.utc).isoformat(),
@@ -266,6 +267,7 @@ def handler(event, context):
                 updatable_fields = [
                     "question_text",
                     "category",
+                    "competency",
                     "difficulty",
                     "reference_answer",
                 ]

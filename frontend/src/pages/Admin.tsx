@@ -129,7 +129,7 @@ function QuestionsTab({
 
   const filteredQuestions = useMemo(() => {
     return questions.filter(q => {
-      const matchesText = !filterText || q.question_text.toLowerCase().includes(filterText.toLowerCase()) || q.category.toLowerCase().includes(filterText.toLowerCase())
+      const matchesText = !filterText || q.question_text.toLowerCase().includes(filterText.toLowerCase()) || q.category.toLowerCase().includes(filterText.toLowerCase()) || (q.competency || '').toLowerCase().includes(filterText.toLowerCase())
       const matchesCat = !selectedCategory || q.category === selectedCategory
       const matchesDiff = !selectedDifficulty || q.difficulty.toLowerCase() === selectedDifficulty.toLowerCase()
       return matchesText && matchesCat && matchesDiff
@@ -344,6 +344,7 @@ function QuestionsTab({
         columnDefinitions={[
           { id: 'question', header: 'Question', cell: (item: Question) => item.question_text, width: 400 },
           { id: 'category', header: 'Category', cell: (item: Question) => item.category },
+          { id: 'competency', header: 'Subcategory', cell: (item: Question) => item.competency || '—' },
           { id: 'difficulty', header: 'Difficulty', cell: (item: Question) => <Badge color={item.difficulty.toLowerCase() === 'easy' ? 'green' : item.difficulty.toLowerCase() === 'hard' ? 'red' : 'blue'}>{item.difficulty}</Badge> },
           { id: 'actions', header: 'Actions', cell: (item: Question) => (
             <SpaceBetween direction="horizontal" size="xs">
