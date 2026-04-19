@@ -107,6 +107,7 @@ function QuestionsTab({
 }) {
   const [filterText, setFilterText] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedCompetency, setSelectedCompetency] = useState<string | null>(null)
   const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedItems, setSelectedItems] = useState<Question[]>([])
@@ -131,10 +132,11 @@ function QuestionsTab({
     return questions.filter(q => {
       const matchesText = !filterText || q.question_text.toLowerCase().includes(filterText.toLowerCase()) || q.category.toLowerCase().includes(filterText.toLowerCase()) || (q.competency || '').toLowerCase().includes(filterText.toLowerCase())
       const matchesCat = !selectedCategory || q.category === selectedCategory
+      const matchesComp = !selectedCompetency || q.competency === selectedCompetency
       const matchesDiff = !selectedDifficulty || q.difficulty.toLowerCase() === selectedDifficulty.toLowerCase()
-      return matchesText && matchesCat && matchesDiff
+      return matchesText && matchesCat && matchesComp && matchesDiff
     })
-  }, [questions, filterText, selectedCategory, selectedDifficulty])
+  }, [questions, filterText, selectedCategory, selectedCompetency, selectedDifficulty])
 
   const paginatedQuestions = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE
@@ -391,9 +393,16 @@ function QuestionsTab({
             <TextFilter filteringText={filterText} onChange={({ detail }) => { setFilterText(detail.filteringText); setCurrentPage(1) }} filteringPlaceholder="Search questions..." />
             <Select
               selectedOption={selectedCategory ? { label: selectedCategory, value: selectedCategory } : { label: 'All categories', value: '' }}
-              onChange={({ detail }) => { setSelectedCategory(detail.selectedOption.value || null); setCurrentPage(1) }}
+              onChange={({ detail }) => { setSelectedCategory(detail.selectedOption.value || null); setSelectedCompetency(null); setCurrentPage(1) }}
               options={[{ label: 'All categories', value: '' }, ...categories.map(c => ({ label: c, value: c }))]}
             />
+            {selectedCategory && competenciesFor(selectedCategory).length > 0 && (
+              <Select
+                selectedOption={selectedCompetency ? { label: selectedCompetency, value: selectedCompetency } : { label: 'All subcategories', value: '' }}
+                onChange={({ detail }) => { setSelectedCompetency(detail.selectedOption.value || null); setCurrentPage(1) }}
+                options={[{ label: 'All subcategories', value: '' }, ...competenciesFor(selectedCategory).map(c => ({ label: c, value: c }))]}
+              />
+            )}
             <Select
               selectedOption={selectedDifficulty ? { label: selectedDifficulty, value: selectedDifficulty } : { label: 'All difficulties', value: '' }}
               onChange={({ detail }) => { setSelectedDifficulty(detail.selectedOption.value || null); setCurrentPage(1) }}
