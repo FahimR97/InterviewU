@@ -89,11 +89,11 @@ jobs:
 
       - name: CDK synth
         env:
-          CDK_DEFAULT_ACCOUNT: "000000000000"
+          CDK_DEFAULT_ACCOUNT: "134667369518"
           CDK_DEFAULT_REGION: eu-west-2
-          HOSTED_ZONE_ID: ${{ secrets.HOSTED_ZONE_ID }}
-          ALPHA_CERT_ARN: ${{ secrets.ALPHA_CERT_ARN }}
-          PROD_CERT_ARN: ${{ secrets.PROD_CERT_ARN }}
+          HOSTED_ZONE_ID: Z0000000000000
+          ALPHA_CERT_ARN: arn:aws:acm:us-east-1:134667369518:certificate/placeholder
+          PROD_CERT_ARN: arn:aws:acm:us-east-1:134667369518:certificate/placeholder
         run: npx cdk synth --no-lookups
 
   deploy-alpha:
