@@ -518,7 +518,7 @@ function Admin() {
   }
 
   return (
-    <Box padding={{ horizontal: 'xl', vertical: 'l' }}>
+    <Box padding={{ horizontal: 'xxl', vertical: 'l' }}>
       <SpaceBetween size="l">
         <Header
           variant="h1"
