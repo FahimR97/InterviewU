@@ -141,6 +141,8 @@ function QuestionsTab({
     return filteredQuestions.slice(start, start + PAGE_SIZE)
   }, [filteredQuestions, currentPage])
 
+  const showCompetencyColumn = filteredQuestions.some(q => q.competency)
+
   const handleCreate = async () => {
     try {
       const token = await getAuthToken()
@@ -344,7 +346,7 @@ function QuestionsTab({
         columnDefinitions={[
           { id: 'question', header: 'Question', cell: (item: Question) => item.question_text, width: 400 },
           { id: 'category', header: 'Category', cell: (item: Question) => item.category },
-          { id: 'competency', header: 'Subcategory', cell: (item: Question) => item.competency || '—' },
+          ...(showCompetencyColumn ? [{ id: 'competency', header: 'Subcategory', cell: (item: Question) => item.competency || '—' }] : []),
           { id: 'difficulty', header: 'Difficulty', cell: (item: Question) => <Badge color={item.difficulty.toLowerCase() === 'easy' ? 'green' : item.difficulty.toLowerCase() === 'hard' ? 'red' : 'blue'}>{item.difficulty}</Badge> },
           { id: 'actions', header: 'Actions', cell: (item: Question) => (
             <SpaceBetween direction="horizontal" size="xs">
