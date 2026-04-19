@@ -31,12 +31,20 @@
 }
 
 .navbar-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
   width: 100%;
-  padding: 0 2.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   box-sizing: border-box;
+}
+
+.navbar-container--wide {
+  max-width: 100%;
+  margin: 0;
+  padding: 0 2rem;
 }
 
 .navbar-brand {

@@ -64,7 +64,7 @@ function NavBar() {
 
   return (
     <nav className={`navbar${user ? ' navbar-sticky' : ''}`}>
-      <div className="navbar-container">
+      <div className={`navbar-container${onAdminPage ? ' navbar-container--wide' : ''}`}>
         <Link to="/" className="navbar-brand">
           {onAdminPage ? 'InterviewU Admin' : 'InterviewU'}
         </Link>
