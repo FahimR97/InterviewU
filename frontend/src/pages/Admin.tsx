@@ -2,11 +2,13 @@ import { useState, useMemo, useEffect, useCallback } from 'react'
 import { fetchAuthSession } from 'aws-amplify/auth'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useTheme } from '../contexts/ThemeContext'
 import { getAllQuestions, signupUser } from '../services/api'
 import type { Question } from '../services/api'
 import { awsConfig } from '../aws-config'
 
 // Cloudscape imports
+import { applyMode, Mode } from '@cloudscape-design/global-styles'
 import '@cloudscape-design/global-styles/index.css'
 import Table from '@cloudscape-design/components/table'
 import Header from '@cloudscape-design/components/header'
@@ -309,10 +311,10 @@ function QuestionsTab({
 
       <Table
         columnDefinitions={[
-          { id: 'question', header: 'Question', cell: item => item.question_text, width: 400 },
-          { id: 'category', header: 'Category', cell: item => item.category },
-          { id: 'difficulty', header: 'Difficulty', cell: item => <Badge color={item.difficulty.toLowerCase() === 'easy' ? 'green' : item.difficulty.toLowerCase() === 'hard' ? 'red' : 'blue'}>{item.difficulty}</Badge> },
-          { id: 'actions', header: 'Actions', cell: item => (
+          { id: 'question', header: 'Question', cell: (item: Question) => item.question_text, width: 400 },
+          { id: 'category', header: 'Category', cell: (item: Question) => item.category },
+          { id: 'difficulty', header: 'Difficulty', cell: (item: Question) => <Badge color={item.difficulty.toLowerCase() === 'easy' ? 'green' : item.difficulty.toLowerCase() === 'hard' ? 'red' : 'blue'}>{item.difficulty}</Badge> },
+          { id: 'actions', header: 'Actions', cell: (item: Question) => (
             <SpaceBetween direction="horizontal" size="xs">
               <Button variant="link" onClick={() => { setEditingQuestion(item); setShowCreateForm(false) }}>Edit</Button>
               <Button variant="link" onClick={() => handleDelete(item.id)}>Delete</Button>
@@ -423,6 +425,13 @@ function Admin() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const { getAuthToken } = useAuth()
+  const { theme } = useTheme()
+
+  // Sync Cloudscape's colour mode with the app's ThemeContext
+  useEffect(() => {
+    applyMode(theme === 'dark' ? Mode.Dark : Mode.Light)
+    return () => { applyMode(Mode.Light) }
+  }, [theme])
 
   const activeTab = searchParams.get('tab') || 'overview'
   const setTab = (tab: string) => setSearchParams({ tab })
