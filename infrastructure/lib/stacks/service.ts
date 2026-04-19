@@ -79,6 +79,32 @@ export class ServiceStack extends cdk.Stack {
         requireSymbols: false,
       },
       accountRecovery: cognito.AccountRecovery.EMAIL_ONLY,
+      userInvitation: {
+        emailSubject: 'Welcome to InterviewU – Your Account is Ready 🎯',
+        emailBody: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;max-width:600px;margin:0 auto;background:#0f0f23;border-radius:12px;overflow:hidden;border:1px solid #2d2d5e">
+  <div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);padding:32px;text-align:center">
+    <div style="display:inline-block;width:48px;height:48px;background:rgba(255,255,255,0.2);border-radius:12px;line-height:48px;font-size:20px;font-weight:800;color:white;letter-spacing:-0.5px;margin-bottom:12px">IU</div>
+    <h1 style="color:white;margin:8px 0 0;font-size:24px;font-weight:700">InterviewU</h1>
+    <p style="color:rgba(255,255,255,0.8);margin:4px 0 0;font-size:14px">Interview Preparation Platform</p>
+  </div>
+  <div style="padding:32px;color:#e2e8f0">
+    <p style="font-size:16px;margin:0 0 16px">Hi {username},</p>
+    <p style="font-size:15px;line-height:1.6;margin:0 0 24px">You've been invited to <strong style="color:#a78bfa">InterviewU</strong> — your AI-powered interview preparation platform.</p>
+    <div style="background:#1a1a3e;border:1px solid #2d2d5e;border-radius:8px;padding:20px;margin:0 0 24px">
+      <p style="margin:0 0 8px;font-size:13px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.5px">Your Temporary Password</p>
+      <p style="margin:0;font-size:20px;font-weight:600;color:#6366f1;font-family:monospace">{####}</p>
+    </div>
+    <p style="font-size:15px;font-weight:600;color:#e2e8f0;margin:0 0 12px">Getting Started:</p>
+    <ol style="font-size:14px;line-height:1.8;color:#cbd5e1;padding-left:20px;margin:0 0 24px">
+      <li>Go to the InterviewU login page</li>
+      <li>Sign in with your email and the temporary password above</li>
+      <li>Set your new password when prompted</li>
+    </ol>
+    <p style="font-size:14px;line-height:1.6;color:#94a3b8;margin:0 0 24px">Once logged in, you can browse questions across multiple categories, practise your answers, and receive AI-powered feedback from Marcus — our evaluation engine.</p>
+    <p style="font-size:13px;color:#64748b;margin:0;border-top:1px solid #2d2d5e;padding-top:16px">If you didn't request this account, you can safely ignore this email.</p>
+  </div>
+</div>`,
+      },
       removalPolicy: cdk.RemovalPolicy.RETAIN,
     });
 

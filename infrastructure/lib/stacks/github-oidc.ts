@@ -18,7 +18,7 @@ export class GitHubOIDCStack extends cdk.Stack {
       thumbprints: ['6938fd4d98bab03faadb97b34396831e3780aea1'],
     });
 
-    // IAM Role for GitHub Actions
+    // IAM Role for GitHub Actions (least-privilege)
     const role = new iam.Role(this, 'GitHubActionsRole', {
       roleName: 'github-actions-deploy',
       assumedBy: new iam.WebIdentityPrincipal(provider.openIdConnectProviderArn, {
@@ -30,10 +30,56 @@ export class GitHubOIDCStack extends cdk.Stack {
         },
       }),
       managedPolicies: [
-        iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AWSCloudFormationFullAccess'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AWSLambda_FullAccess'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonDynamoDBFullAccess'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonCognitoPowerUser'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonAPIGatewayAdministrator'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('CloudFrontFullAccess'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('CloudWatchFullAccessV2'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSNSFullAccess'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AWSXRayFullAccess'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonRoute53FullAccess'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AWSCertificateManagerFullAccess'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AWSCloudTrail_FullAccess'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonBedrockFullAccess'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMReadOnlyAccess'),
       ],
       maxSessionDuration: cdk.Duration.hours(1),
     });
+
+    // Inline policy for IAM role lifecycle, Budgets, and STS (no user/key creation)
+    role.addToPolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        'iam:CreateRole',
+        'iam:DeleteRole',
+        'iam:AttachRolePolicy',
+        'iam:DetachRolePolicy',
+        'iam:PutRolePolicy',
+        'iam:DeleteRolePolicy',
+        'iam:GetRole',
+        'iam:GetRolePolicy',
+        'iam:ListRolePolicies',
+        'iam:ListAttachedRolePolicies',
+        'iam:PassRole',
+        'iam:TagRole',
+        'iam:UntagRole',
+        'iam:UpdateAssumeRolePolicy',
+        'iam:CreatePolicy',
+        'iam:DeletePolicy',
+        'iam:GetPolicy',
+        'iam:GetPolicyVersion',
+        'iam:ListPolicyVersions',
+        'iam:CreatePolicyVersion',
+        'iam:DeletePolicyVersion',
+        'iam:CreateServiceLinkedRole',
+        'budgets:*',
+        'sts:AssumeRole',
+      ],
+      resources: ['*'],
+    }));
 
     new cdk.CfnOutput(this, 'RoleArn', {
       value: role.roleArn,

@@ -13,6 +13,8 @@
   },
   "dependencies": {
     "@aws-amplify/ui-react": "^6.15.3",
+    "@cloudscape-design/components": "^3.0.1277",
+    "@cloudscape-design/global-styles": "^1.0.57",
     "@excalidraw/excalidraw": "^0.18.0",
     "@monaco-editor/react": "^4.7.0",
     "aws-amplify": "^6.15.9",
@@ -23,7 +25,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
-    "@types/node": "^24.10.1",
+    "@types/node": "^25.6.0",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",

@@ -2,14 +2,35 @@ import { useState, useMemo, useEffect, useCallback } from 'react'
 import { fetchAuthSession } from 'aws-amplify/auth'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useTheme } from '../contexts/ThemeContext'
 import { getAllQuestions, signupUser } from '../services/api'
 import type { Question } from '../services/api'
 import { awsConfig } from '../aws-config'
-import './Admin.css'
+
+// Cloudscape imports
+import { applyMode, Mode } from '@cloudscape-design/global-styles'
+import '@cloudscape-design/global-styles/index.css'
+import Table from '@cloudscape-design/components/table'
+import Header from '@cloudscape-design/components/header'
+import Button from '@cloudscape-design/components/button'
+import SpaceBetween from '@cloudscape-design/components/space-between'
+import Box from '@cloudscape-design/components/box'
+import TextFilter from '@cloudscape-design/components/text-filter'
+import Pagination from '@cloudscape-design/components/pagination'
+import Container from '@cloudscape-design/components/container'
+import FormField from '@cloudscape-design/components/form-field'
+import Input from '@cloudscape-design/components/input'
+import Select from '@cloudscape-design/components/select'
+import Textarea from '@cloudscape-design/components/textarea'
+import Tabs from '@cloudscape-design/components/tabs'
+import Badge from '@cloudscape-design/components/badge'
+import Alert from '@cloudscape-design/components/alert'
+import ColumnLayout from '@cloudscape-design/components/column-layout'
+import Form from '@cloudscape-design/components/form'
+import Spinner from '@cloudscape-design/components/spinner'
+import ContentLayout from '@cloudscape-design/components/content-layout'
 
 const API_BASE_URL = awsConfig.API.REST.InterviewQuestionsAPI.endpoint
-
-type Tab = 'overview' | 'questions' | 'users'
 
 type QuestionForm = {
   question_text: string
@@ -27,175 +48,113 @@ const emptyForm: QuestionForm = {
   reference_answer: '',
 }
 
+const PAGE_SIZE = 20
+
 // ── Overview Tab ──────────────────────────────────────────────────
 function OverviewTab({ questions }: { questions: Question[] }) {
   const byCategory = useMemo(() => {
     const map: Record<string, number> = {}
-    questions.forEach(q => {
-      map[q.category] = (map[q.category] || 0) + 1
-    })
+    questions.forEach(q => { map[q.category] = (map[q.category] || 0) + 1 })
     return Object.entries(map).sort((a, b) => b[1] - a[1])
   }, [questions])
 
   const byDifficulty = useMemo(() => {
     const map: Record<string, number> = {}
-    questions.forEach(q => {
-      const d = q.difficulty.toLowerCase()
-      map[d] = (map[d] || 0) + 1
-    })
+    questions.forEach(q => { map[q.difficulty.toLowerCase()] = (map[q.difficulty.toLowerCase()] || 0) + 1 })
     return map
   }, [questions])
 
-  const diffOrder = ['easy', 'medium', 'hard']
-
   return (
-    <div className="admin-overview">
-      <div className="overview-stat-grid">
-        <div className="overview-stat-card total">
-          <span className="overview-stat-icon">📚</span>
-          <span className="overview-stat-value">{questions.length}</span>
-          <span className="overview-stat-label">Total Questions</span>
-        </div>
-        <div className="overview-stat-card easy">
-          <span className="overview-stat-icon">✅</span>
-          <span className="overview-stat-value">{byDifficulty['easy'] || 0}</span>
-          <span className="overview-stat-label">Easy</span>
-        </div>
-        <div className="overview-stat-card medium">
-          <span className="overview-stat-icon">⚡</span>
-          <span className="overview-stat-value">{byDifficulty['medium'] || 0}</span>
-          <span className="overview-stat-label">Medium</span>
-        </div>
-        <div className="overview-stat-card hard">
-          <span className="overview-stat-icon">🔥</span>
-          <span className="overview-stat-value">{byDifficulty['hard'] || 0}</span>
-          <span className="overview-stat-label">Hard</span>
-        </div>
-      </div>
+    <SpaceBetween size="l">
+      <ColumnLayout columns={4} variant="text-grid">
+        <Container>
+          <Box variant="awsui-key-label">Total Questions</Box>
+          <Box variant="h1">{questions.length}</Box>
+        </Container>
+        <Container>
+          <Box variant="awsui-key-label">Easy</Box>
+          <Box variant="h1">{byDifficulty['easy'] || 0}</Box>
+        </Container>
+        <Container>
+          <Box variant="awsui-key-label">Medium</Box>
+          <Box variant="h1">{byDifficulty['medium'] || 0}</Box>
+        </Container>
+        <Container>
+          <Box variant="awsui-key-label">Hard</Box>
+          <Box variant="h1">{byDifficulty['hard'] || 0}</Box>
+        </Container>
+      </ColumnLayout>
 
-      <div className="overview-sections">
-        <div className="overview-panel">
-          <h3 className="overview-panel-title">Questions by Category</h3>
-          <div className="overview-bar-list">
-            {byCategory.map(([cat, count]) => (
-              <div key={cat} className="overview-bar-row">
-                <span className="overview-bar-label">{cat}</span>
-                <div className="overview-bar-track">
-                  <div
-                    className="overview-bar-fill"
-                    style={{ width: `${(count / questions.length) * 100}%` }}
-                  />
-                </div>
-                <span className="overview-bar-count">{count}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="overview-panel">
-          <h3 className="overview-panel-title">Difficulty Breakdown</h3>
-          <div className="overview-difficulty-list">
-            {diffOrder.map(d => {
-              const count = byDifficulty[d] || 0
-              const pct = questions.length ? Math.round((count / questions.length) * 100) : 0
-              return (
-                <div key={d} className={`overview-diff-row diff-${d}`}>
-                  <span className="overview-diff-label">{d.charAt(0).toUpperCase() + d.slice(1)}</span>
-                  <div className="overview-diff-track">
-                    <div className="overview-diff-fill" style={{ width: `${pct}%` }} />
-                  </div>
-                  <span className="overview-diff-pct">{pct}%</span>
-                </div>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-    </div>
+      <Container header={<Header variant="h2">Questions by Category</Header>}>
+        <Table
+          columnDefinitions={[
+            { id: 'category', header: 'Category', cell: item => item[0] },
+            { id: 'count', header: 'Count', cell: item => item[1] },
+            { id: 'pct', header: '%', cell: item => `${Math.round((item[1] / questions.length) * 100)}%` },
+          ]}
+          items={byCategory}
+          variant="embedded"
+        />
+      </Container>
+    </SpaceBetween>
   )
 }
 
 // ── Questions Tab ─────────────────────────────────────────────────
 function QuestionsTab({
-  questions,
-  loading,
-  onRefresh,
-  getAuthToken,
+  questions, loading, onRefresh, getAuthToken,
 }: {
-  questions: Question[]
-  loading: boolean
-  onRefresh: () => void
-  getAuthToken: () => Promise<string | null>
+  questions: Question[]; loading: boolean; onRefresh: () => void; getAuthToken: () => Promise<string | null>
 }) {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('All')
-  const [selectedDifficulty, setSelectedDifficulty] = useState('All')
-
+  const [filterText, setFilterText] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [selectedItems, setSelectedItems] = useState<Question[]>([])
   const [showCreateForm, setShowCreateForm] = useState(false)
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null)
   const [createForm, setCreateForm] = useState<QuestionForm>(emptyForm)
   const [csvUploading, setCsvUploading] = useState(false)
   const [csvResult, setCsvResult] = useState<{ success: number; failed: number } | null>(null)
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   const categories = useMemo(() => {
-    const cats = new Set(questions.map(q => q.category))
-    return ['All', ...Array.from(cats).sort()]
+    return [...new Set(questions.map(q => q.category))].sort()
   }, [questions])
-
-  const difficulties = useMemo(() => {
-    const diffs = new Set(questions.map(q => q.difficulty.toLowerCase()))
-    return ['All', ...Array.from(diffs)]
-  }, [questions])
-
-  const competenciesFor = (category: string) => {
-    if (!category) return []
-    const comps = new Set(questions.filter(q => q.category === category).map(q => q.competency).filter(Boolean))
-    return Array.from(comps).sort()
-  }
 
   const filteredQuestions = useMemo(() => {
     return questions.filter(q => {
-      const matchesSearch =
-        q.question_text.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        q.category.toLowerCase().includes(searchTerm.toLowerCase())
-      const matchesCategory = selectedCategory === 'All' || q.category === selectedCategory
-      const matchesDifficulty =
-        selectedDifficulty === 'All' ||
-        q.difficulty.toLowerCase() === selectedDifficulty.toLowerCase()
-      return matchesSearch && matchesCategory && matchesDifficulty
+      const matchesText = !filterText || q.question_text.toLowerCase().includes(filterText.toLowerCase()) || q.category.toLowerCase().includes(filterText.toLowerCase())
+      const matchesCat = !selectedCategory || q.category === selectedCategory
+      const matchesDiff = !selectedDifficulty || q.difficulty.toLowerCase() === selectedDifficulty.toLowerCase()
+      return matchesText && matchesCat && matchesDiff
     })
-  }, [questions, searchTerm, selectedCategory, selectedDifficulty])
+  }, [questions, filterText, selectedCategory, selectedDifficulty])
 
-  const handleCreate = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const paginatedQuestions = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE
+    return filteredQuestions.slice(start, start + PAGE_SIZE)
+  }, [filteredQuestions, currentPage])
+
+  const handleCreate = async () => {
     try {
       const token = await getAuthToken()
-      const response = await fetch(`${API_BASE_URL}questions`, {
+      const res = await fetch(`${API_BASE_URL}questions`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify(createForm),
       })
-      if (!response.ok) {
-        const err = await response.json()
-        alert(`Error: ${err.message || 'Failed to create question'}`)
-        return
-      }
+      if (!res.ok) { alert('Failed to create question'); return }
       onRefresh()
       setCreateForm(emptyForm)
       setShowCreateForm(false)
-    } catch (error) {
-      console.error('Error creating question:', error)
-      alert('Failed to create question')
-    }
+    } catch { alert('Failed to create question') }
   }
 
-  const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const handleUpdate = async () => {
     if (!editingQuestion?.id) return
     try {
       const token = await getAuthToken()
-      const response = await fetch(`${API_BASE_URL}questions/${editingQuestion.id}`, {
+      const res = await fetch(`${API_BASE_URL}questions/${editingQuestion.id}`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -205,90 +164,39 @@ function QuestionsTab({
           reference_answer: editingQuestion.reference_answer,
         }),
       })
-      if (!response.ok) {
-        const err = await response.json()
-        alert(`Error: ${err.message || 'Failed to update question'}`)
-        return
-      }
+      if (!res.ok) { alert('Failed to update'); return }
       onRefresh()
       setEditingQuestion(null)
-    } catch (error) {
-      console.error('Error updating question:', error)
-      alert('Failed to update question')
-    }
+    } catch { alert('Failed to update question') }
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this question? This cannot be undone.')) return
-    try {
-      const token = await getAuthToken()
-      const response = await fetch(`${API_BASE_URL}questions/${id}`, {
-        method: 'DELETE',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      if (response.ok || response.status === 204) {
-        onRefresh()
-      } else {
-        alert('Failed to delete question')
-      }
-    } catch (error) {
-      console.error('Error deleting question:', error)
-      alert('Failed to delete question')
-    }
-  }
-
-  const toggleSelect = (id: string) => {
-    setSelectedIds(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
-  }
-
-  const toggleSelectAll = () => {
-    if (selectedIds.size === filteredQuestions.length) {
-      setSelectedIds(new Set())
-    } else {
-      setSelectedIds(new Set(filteredQuestions.map(q => q.id)))
-    }
+    if (!confirm('Delete this question?')) return
+    const token = await getAuthToken()
+    await fetch(`${API_BASE_URL}questions/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
+    onRefresh()
   }
 
   const handleBulkDelete = async () => {
-    if (!confirm(`Delete ${selectedIds.size} question${selectedIds.size !== 1 ? 's' : ''}? This cannot be undone.`)) return
+    if (!confirm(`Delete ${selectedItems.length} questions?`)) return
     const token = await getAuthToken()
-    for (const id of Array.from(selectedIds)) {
-      try {
-        await fetch(`${API_BASE_URL}questions/${id}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` },
-        })
-      } catch (error) {
-        console.error('Error deleting question:', error)
-      }
+    for (const q of selectedItems) {
+      await fetch(`${API_BASE_URL}questions/${q.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } })
     }
-    setSelectedIds(new Set())
+    setSelectedItems([])
     onRefresh()
   }
 
   const handleExportCsv = () => {
     const rows = [
       ['question_text', 'category', 'difficulty', 'reference_answer'],
-      ...questions.map(q => [
-        `"${q.question_text.replace(/"/g, '""')}"`,
-        q.category,
-        q.difficulty,
-        `"${(q.reference_answer || '').replace(/"/g, '""')}"`,
-      ]),
+      ...questions.map(q => [`"${q.question_text.replace(/"/g, '""')}"`, q.category, q.difficulty, `"${(q.reference_answer || '').replace(/"/g, '""')}"`]),
     ]
-    const csv = rows.map(r => r.join(',')).join('\n')
-    const blob = new Blob([csv], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
+    const blob = new Blob([rows.map(r => r.join(',')).join('\n')], { type: 'text/csv' })
     const a = document.createElement('a')
-    a.href = url
+    a.href = URL.createObjectURL(blob)
     a.download = 'questions.csv'
     a.click()
-    URL.revokeObjectURL(url)
   }
 
   const handleCsvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -309,264 +217,164 @@ function QuestionsTab({
           const res = await fetch(`${API_BASE_URL}questions`, {
             method: 'POST',
             headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              question_text: cols[0],
-              category: cols[1],
-              difficulty: cols[2],
-              reference_answer: cols[3] || '',
-            }),
+            body: JSON.stringify({ question_text: cols[0], category: cols[1], difficulty: cols[2], reference_answer: cols[3] || '' }),
           })
           if (res.ok) success++; else failed++
         } catch { failed++ }
       }
       setCsvResult({ success, failed })
       onRefresh()
-    } catch (error) {
-      console.error('CSV upload error:', error)
-      alert('Failed to parse CSV file')
-    } finally {
-      setCsvUploading(false)
-      e.target.value = ''
-    }
+    } catch { alert('Failed to parse CSV') }
+    finally { setCsvUploading(false); e.target.value = '' }
   }
 
-  const difficultyClass = (d: string) => `difficulty difficulty-${d.toLowerCase()}`
-  const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase()
-
   return (
-    <div className="admin-questions-tab">
-      <div className="admin-tab-actions">
-        <button
-          className="admin-btn admin-btn-create"
-          onClick={() => {
-            setShowCreateForm(!showCreateForm)
-            setEditingQuestion(null)
-          }}
-        >
-          {showCreateForm ? 'Cancel' : '+ New Question'}
-        </button>
-        <label className="admin-btn admin-btn-ghost btn-csv">
-          {csvUploading ? 'Uploading...' : '📄 Upload CSV'}
-          <input type="file" accept=".csv" onChange={handleCsvUpload} hidden disabled={csvUploading} />
-        </label>
-        <button className="admin-btn admin-btn-export" onClick={handleExportCsv}>⬇ Export CSV</button>
-        <button className="admin-btn admin-btn-ghost" onClick={onRefresh}>{loading ? 'Refreshing…' : 'Refresh'}</button>
-      </div>
-
+    <SpaceBetween size="l">
       {csvResult && (
-        <div className="csv-result">
-          ✅ {csvResult.success} added{csvResult.failed > 0 && `, ❌ ${csvResult.failed} failed`}
-          <button className="csv-dismiss" onClick={() => setCsvResult(null)}>✕</button>
-        </div>
+        <Alert type="success" dismissible onDismiss={() => setCsvResult(null)}>
+          {csvResult.success} questions added{csvResult.failed > 0 && `, ${csvResult.failed} failed`}
+        </Alert>
       )}
 
       {showCreateForm && (
-        <div className="admin-form-panel">
-          <h2>Create Question</h2>
-          <form onSubmit={handleCreate}>
-            <div className="admin-form-group">
-              <label>Question</label>
-              <textarea
-                rows={3}
-                required
-                placeholder="Enter the interview question..."
-                value={createForm.question_text}
-                onChange={e => setCreateForm({ ...createForm, question_text: e.target.value })}
-              />
-            </div>
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label>Category</label>
-                <select
-                  required
-                  value={createForm.category}
-                  onChange={e => setCreateForm({ ...createForm, category: e.target.value, competency: '' })}
-                >
-                  <option value="">Select a category…</option>
-                  {categories.slice(1).map(c => <option key={c}>{c}</option>)}
-                </select>
-              </div>
-              <div className="admin-form-group">
-                <label>Difficulty</label>
-                <select
-                  value={createForm.difficulty}
-                  onChange={e => setCreateForm({ ...createForm, difficulty: e.target.value })}
-                >
-                  <option>Easy</option>
-                  <option>Medium</option>
-                  <option>Hard</option>
-                </select>
-              </div>
-            </div>
-            {competenciesFor(createForm.category).length > 0 && (
-              <div className="admin-form-group">
-                <label>Subcategory</label>
-                <select
-                  value={createForm.competency}
-                  onChange={e => setCreateForm({ ...createForm, competency: e.target.value })}
-                >
-                  <option value="">Select a subcategory…</option>
-                  {competenciesFor(createForm.category).map(c => <option key={c}>{c}</option>)}
-                </select>
-              </div>
-            )}
-            <div className="admin-form-group">
-              <label>Practice Hint <span className="form-label-note">(shown to users in Practice Mode)</span></label>
-              <textarea
-                rows={4}
-                placeholder="What should a good answer cover? Users will see this as a hint."
-                value={createForm.reference_answer}
-                onChange={e => setCreateForm({ ...createForm, reference_answer: e.target.value })}
-              />
-            </div>
-            <button type="submit" className="admin-btn admin-btn-primary">Create</button>
-          </form>
-        </div>
+        <Container header={<Header variant="h2">Create Question</Header>}>
+          <Form actions={
+            <SpaceBetween direction="horizontal" size="xs">
+              <Button variant="link" onClick={() => setShowCreateForm(false)}>Cancel</Button>
+              <Button variant="primary" onClick={handleCreate}>Create</Button>
+            </SpaceBetween>
+          }>
+            <SpaceBetween size="m">
+              <FormField label="Question">
+                <Textarea value={createForm.question_text} onChange={({ detail }) => setCreateForm({ ...createForm, question_text: detail.value })} rows={3} />
+              </FormField>
+              <ColumnLayout columns={2}>
+                <FormField label="Category">
+                  <Select
+                    selectedOption={createForm.category ? { label: createForm.category, value: createForm.category } : null}
+                    onChange={({ detail }) => setCreateForm({ ...createForm, category: detail.selectedOption.value || '' })}
+                    options={categories.map(c => ({ label: c, value: c }))}
+                    placeholder="Select category"
+                  />
+                </FormField>
+                <FormField label="Difficulty">
+                  <Select
+                    selectedOption={{ label: createForm.difficulty, value: createForm.difficulty }}
+                    onChange={({ detail }) => setCreateForm({ ...createForm, difficulty: detail.selectedOption.value || 'Medium' })}
+                    options={[{ label: 'Easy', value: 'Easy' }, { label: 'Medium', value: 'Medium' }, { label: 'Hard', value: 'Hard' }]}
+                  />
+                </FormField>
+              </ColumnLayout>
+              <FormField label="Reference Answer">
+                <Textarea value={createForm.reference_answer} onChange={({ detail }) => setCreateForm({ ...createForm, reference_answer: detail.value })} rows={3} />
+              </FormField>
+            </SpaceBetween>
+          </Form>
+        </Container>
       )}
 
       {editingQuestion && (
-        <div className="admin-form-panel">
-          <h2>Edit Question</h2>
-          <form onSubmit={handleUpdate}>
-            <div className="admin-form-group">
-              <label>Question</label>
-              <textarea
-                rows={3}
-                required
-                value={editingQuestion.question_text}
-                onChange={e => setEditingQuestion({ ...editingQuestion, question_text: e.target.value })}
-              />
-            </div>
-            <div className="admin-form-row">
-              <div className="admin-form-group">
-                <label>Category</label>
-                <select
-                  required
-                  value={editingQuestion.category}
-                  onChange={e => setEditingQuestion({ ...editingQuestion, category: e.target.value, competency: '' })}
-                >
-                  <option value="">Select a category…</option>
-                  {categories.slice(1).map(c => <option key={c}>{c}</option>)}
-                </select>
-              </div>
-              <div className="admin-form-group">
-                <label>Difficulty</label>
-                <select
-                  value={editingQuestion.difficulty}
-                  onChange={e => setEditingQuestion({ ...editingQuestion, difficulty: e.target.value })}
-                >
-                  <option>Easy</option>
-                  <option>Medium</option>
-                  <option>Hard</option>
-                </select>
-              </div>
-            </div>
-            {competenciesFor(editingQuestion.category).length > 0 && (
-              <div className="admin-form-group">
-                <label>Subcategory</label>
-                <select
-                  value={editingQuestion.competency}
-                  onChange={e => setEditingQuestion({ ...editingQuestion, competency: e.target.value })}
-                >
-                  <option value="">Select a subcategory…</option>
-                  {competenciesFor(editingQuestion.category).map(c => <option key={c}>{c}</option>)}
-                </select>
-              </div>
-            )}
-            <div className="admin-form-group">
-              <label>Practice Hint <span className="form-label-note">(shown to users in Practice Mode)</span></label>
-              <textarea
-                rows={4}
-                placeholder="What should a good answer cover? Users will see this as a hint."
-                value={editingQuestion.reference_answer}
-                onChange={e => setEditingQuestion({ ...editingQuestion, reference_answer: e.target.value })}
-              />
-            </div>
-            <div className="admin-form-buttons">
-              <button type="submit" className="admin-btn admin-btn-primary">Save Changes</button>
-              <button type="button" className="admin-btn admin-btn-ghost" onClick={() => setEditingQuestion(null)}>Cancel</button>
-            </div>
-          </form>
-        </div>
+        <Container header={<Header variant="h2">Edit Question</Header>}>
+          <Form actions={
+            <SpaceBetween direction="horizontal" size="xs">
+              <Button variant="link" onClick={() => setEditingQuestion(null)}>Cancel</Button>
+              <Button variant="primary" onClick={handleUpdate}>Save</Button>
+            </SpaceBetween>
+          }>
+            <SpaceBetween size="m">
+              <FormField label="Question">
+                <Textarea value={editingQuestion.question_text} onChange={({ detail }) => setEditingQuestion({ ...editingQuestion, question_text: detail.value })} rows={3} />
+              </FormField>
+              <ColumnLayout columns={2}>
+                <FormField label="Category">
+                  <Select
+                    selectedOption={{ label: editingQuestion.category, value: editingQuestion.category }}
+                    onChange={({ detail }) => setEditingQuestion({ ...editingQuestion, category: detail.selectedOption.value || '' })}
+                    options={categories.map(c => ({ label: c, value: c }))}
+                  />
+                </FormField>
+                <FormField label="Difficulty">
+                  <Select
+                    selectedOption={{ label: editingQuestion.difficulty, value: editingQuestion.difficulty }}
+                    onChange={({ detail }) => setEditingQuestion({ ...editingQuestion, difficulty: detail.selectedOption.value || 'Medium' })}
+                    options={[{ label: 'Easy', value: 'Easy' }, { label: 'Medium', value: 'Medium' }, { label: 'Hard', value: 'Hard' }]}
+                  />
+                </FormField>
+              </ColumnLayout>
+              <FormField label="Reference Answer">
+                <Textarea value={editingQuestion.reference_answer || ''} onChange={({ detail }) => setEditingQuestion({ ...editingQuestion, reference_answer: detail.value })} rows={3} />
+              </FormField>
+            </SpaceBetween>
+          </Form>
+        </Container>
       )}
 
-      <div className="admin-filters">
-        <input
-          className="admin-search"
-          type="text"
-          placeholder="Search questions..."
-          value={searchTerm}
-          onChange={e => setSearchTerm(e.target.value)}
-        />
-        <select value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
-          {categories.map(c => <option key={c}>{c}</option>)}
-        </select>
-        <select value={selectedDifficulty} onChange={e => setSelectedDifficulty(e.target.value)}>
-          {difficulties.map(d => <option key={d}>{capitalize(d)}</option>)}
-        </select>
-      </div>
-
-      <div className="admin-results-bar">
-        <span className="admin-results-count">{filteredQuestions.length} of {questions.length} questions</span>
-        <div className="admin-bulk-actions">
-          <label className="select-all-label">
-            <input
-              type="checkbox"
-              checked={selectedIds.size === filteredQuestions.length && filteredQuestions.length > 0}
-              onChange={toggleSelectAll}
+      <Table
+        columnDefinitions={[
+          { id: 'question', header: 'Question', cell: (item: Question) => item.question_text, width: 400 },
+          { id: 'category', header: 'Category', cell: (item: Question) => item.category },
+          { id: 'difficulty', header: 'Difficulty', cell: (item: Question) => <Badge color={item.difficulty.toLowerCase() === 'easy' ? 'green' : item.difficulty.toLowerCase() === 'hard' ? 'red' : 'blue'}>{item.difficulty}</Badge> },
+          { id: 'actions', header: 'Actions', cell: (item: Question) => (
+            <SpaceBetween direction="horizontal" size="xs">
+              <Button variant="link" onClick={() => { setEditingQuestion(item); setShowCreateForm(false) }}>Edit</Button>
+              <Button variant="link" onClick={() => handleDelete(item.id)}>Delete</Button>
+            </SpaceBetween>
+          )},
+        ]}
+        items={paginatedQuestions}
+        loading={loading}
+        loadingText="Loading questions"
+        selectionType="multi"
+        selectedItems={selectedItems}
+        onSelectionChange={({ detail }) => setSelectedItems(detail.selectedItems)}
+        trackBy="id"
+        header={
+          <Header
+            variant="h2"
+            counter={`(${filteredQuestions.length})`}
+            actions={
+              <SpaceBetween direction="horizontal" size="xs">
+                {selectedItems.length > 0 && <Button variant="normal" onClick={handleBulkDelete}>Delete {selectedItems.length} selected</Button>}
+                <Button variant="normal" onClick={handleExportCsv}>Export CSV</Button>
+                <Button variant="normal" iconName="upload" loading={csvUploading}>
+                  <label style={{ cursor: 'pointer' }}>
+                    Upload CSV
+                    <input type="file" accept=".csv" onChange={handleCsvUpload} hidden />
+                  </label>
+                </Button>
+                <Button variant="normal" iconName="refresh" onClick={onRefresh} loading={loading} />
+                <Button variant="primary" onClick={() => { setShowCreateForm(true); setEditingQuestion(null) }}>Create Question</Button>
+              </SpaceBetween>
+            }
+          >
+            Questions
+          </Header>
+        }
+        filter={
+          <SpaceBetween direction="horizontal" size="xs">
+            <TextFilter filteringText={filterText} onChange={({ detail }) => { setFilterText(detail.filteringText); setCurrentPage(1) }} filteringPlaceholder="Search questions..." />
+            <Select
+              selectedOption={selectedCategory ? { label: selectedCategory, value: selectedCategory } : { label: 'All categories', value: '' }}
+              onChange={({ detail }) => { setSelectedCategory(detail.selectedOption.value || null); setCurrentPage(1) }}
+              options={[{ label: 'All categories', value: '' }, ...categories.map(c => ({ label: c, value: c }))]}
             />
-            Select all
-          </label>
-          {selectedIds.size > 0 && (
-            <button className="admin-btn admin-btn-delete" onClick={handleBulkDelete}>
-              🗑 Delete {selectedIds.size} selected
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="admin-questions-list">
-        {filteredQuestions.length === 0 ? (
-          <p className="admin-no-results">
-            {questions.length === 0 ? 'No questions yet. Create one above.' : 'No questions match your filters.'}
-          </p>
-        ) : (
-          filteredQuestions.map(q => (
-            <div key={q.id} className={`admin-question-card ${selectedIds.has(q.id) ? 'selected' : ''}`}>
-              <div className="admin-question-top">
-                <input
-                  type="checkbox"
-                  className="question-checkbox"
-                  checked={selectedIds.has(q.id)}
-                  onChange={() => toggleSelect(q.id)}
-                />
-                <span className={difficultyClass(q.difficulty)}>{capitalize(q.difficulty)}</span>
-                <span className="admin-question-category">{q.category}</span>
-                {!q.reference_answer && <span className="no-hint-badge">No hint</span>}
-              </div>
-              <p className="admin-question-text">{q.question_text}</p>
-              <div className="admin-question-actions">
-                <button
-                  className="admin-btn admin-btn-edit"
-                  onClick={() => {
-                    setEditingQuestion(q)
-                    setShowCreateForm(false)
-                  }}
-                >
-                  Edit
-                </button>
-                <button
-                  className="admin-btn admin-btn-delete"
-                  onClick={() => handleDelete(q.id)}
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          ))
-        )}
-      </div>
-    </div>
+            <Select
+              selectedOption={selectedDifficulty ? { label: selectedDifficulty, value: selectedDifficulty } : { label: 'All difficulties', value: '' }}
+              onChange={({ detail }) => { setSelectedDifficulty(detail.selectedOption.value || null); setCurrentPage(1) }}
+              options={[{ label: 'All difficulties', value: '' }, { label: 'Easy', value: 'easy' }, { label: 'Medium', value: 'medium' }, { label: 'Hard', value: 'hard' }]}
+            />
+          </SpaceBetween>
+        }
+        pagination={
+          <Pagination
+            currentPageIndex={currentPage}
+            pagesCount={Math.ceil(filteredQuestions.length / PAGE_SIZE)}
+            onChange={({ detail }) => setCurrentPage(detail.currentPageIndex)}
+          />
+        }
+        empty={<Box textAlign="center" color="inherit"><b>No questions</b><Box padding={{ bottom: 's' }} variant="p" color="inherit">No questions match your filters.</Box></Box>}
+      />
+    </SpaceBetween>
   )
 }
 
@@ -577,8 +385,7 @@ function UsersTab() {
   const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
-  const handleInvite = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const handleInvite = async () => {
     setSubmitting(true)
     setStatus(null)
     try {
@@ -587,56 +394,26 @@ function UsersTab() {
       setEmail('')
       setName('')
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Failed to create user'
-      setStatus({ type: 'error', message })
-    } finally {
-      setSubmitting(false)
-    }
+      setStatus({ type: 'error', message: err instanceof Error ? err.message : 'Failed to create user' })
+    } finally { setSubmitting(false) }
   }
 
   return (
-    <div className="admin-users-tab">
-      <div className="admin-users-header">
-        <h2>Invite a New User</h2>
-        <p>Creates a Cognito account and emails the user a temporary password.</p>
-      </div>
-
-      <div className="admin-form-panel">
-        <form onSubmit={handleInvite}>
-          <div className="admin-form-row">
-            <div className="admin-form-group">
-              <label>Full Name</label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. Jane Smith"
-                value={name}
-                onChange={e => setName(e.target.value)}
-              />
-            </div>
-            <div className="admin-form-group">
-              <label>Email Address</label>
-              <input
-                type="email"
-                required
-                placeholder="jane@example.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-              />
-            </div>
-          </div>
-          <button type="submit" className="admin-btn admin-btn-primary" disabled={submitting}>
-            {submitting ? 'Creating…' : 'Create User & Send Invite'}
-          </button>
-        </form>
-
-        {status && (
-          <div className={`admin-status-msg admin-status-${status.type}`}>
-            {status.message}
-          </div>
-        )}
-      </div>
-    </div>
+    <SpaceBetween size="l">
+      {status && <Alert type={status.type} dismissible onDismiss={() => setStatus(null)}>{status.message}</Alert>}
+      <Container header={<Header variant="h2" description="Creates a Cognito account and emails the user a temporary password.">Invite a New User</Header>}>
+        <Form actions={<Button variant="primary" onClick={handleInvite} loading={submitting}>Create User & Send Invite</Button>}>
+          <ColumnLayout columns={2}>
+            <FormField label="Full Name">
+              <Input value={name} onChange={({ detail }) => setName(detail.value)} placeholder="e.g. Jane Smith" />
+            </FormField>
+            <FormField label="Email Address">
+              <Input value={email} onChange={({ detail }) => setEmail(detail.value)} placeholder="jane@example.com" type="email" />
+            </FormField>
+          </ColumnLayout>
+        </Form>
+      </Container>
+    </SpaceBetween>
   )
 }
 
@@ -648,12 +425,16 @@ function Admin() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const { getAuthToken } = useAuth()
+  const { theme } = useTheme()
 
-  const activeTab: Tab = (['overview', 'questions', 'users'].includes(searchParams.get('tab') ?? '')
-    ? (searchParams.get('tab') as Tab)
-    : 'overview')
+  // Sync Cloudscape's colour mode with the app's ThemeContext
+  useEffect(() => {
+    applyMode(theme === 'dark' ? Mode.Dark : Mode.Light)
+    return () => { applyMode(Mode.Light) }
+  }, [theme])
 
-  const setTab = (tab: Tab) => setSearchParams({ tab })
+  const activeTab = searchParams.get('tab') || 'overview'
+  const setTab = (tab: string) => setSearchParams({ tab })
 
   const loadQuestions = useCallback(async () => {
     try {
@@ -663,9 +444,7 @@ function Admin() {
       setQuestions(data)
     } catch (error) {
       console.error('Error loading questions:', error)
-    } finally {
-      setLoading(false)
-    }
+    } finally { setLoading(false) }
   }, [getAuthToken])
 
   useEffect(() => {
@@ -680,8 +459,7 @@ function Admin() {
           setIsAdmin(false)
           setLoading(false)
         }
-      } catch (error) {
-        console.error('Error checking admin access:', error)
+      } catch {
         setIsAdmin(false)
         setLoading(false)
       }
@@ -690,70 +468,39 @@ function Admin() {
   }, [loadQuestions])
 
   if (loading) {
-    return (
-      <div className="admin-page">
-        <div className="admin-loading">
-          <div className="admin-spinner" />
-          <p>Loading...</p>
-        </div>
-      </div>
-    )
+    return <Box textAlign="center" padding="xxl"><Spinner size="large" /><Box variant="p">Loading...</Box></Box>
   }
 
   if (!isAdmin) {
     return (
-      <div className="admin-page">
-        <div className="admin-access-denied">
-          <h2>Access Denied</h2>
-          <p>You need to be in the Admin group to access this page.</p>
-          <button className="admin-btn admin-btn-ghost" onClick={() => navigate('/')}>Back to Home</button>
-        </div>
-      </div>
+      <Box textAlign="center" padding="xxl">
+        <SpaceBetween size="m">
+          <Header variant="h1">Access Denied</Header>
+          <Box variant="p">You need to be in the Admin group to access this page.</Box>
+          <Button onClick={() => navigate('/')}>Back to Home</Button>
+        </SpaceBetween>
+      </Box>
     )
   }
 
   return (
-    <div className="admin-page">
-      <div className="admin-header-band">
-        <div className="admin-header-inner">
-          <div className="admin-header-left">
-            <span className="admin-header-badge">Admin Console</span>
-            <h1 className="admin-header-title">InterviewU Administration</h1>
-          </div>
-          <div className="admin-header-meta">
-            <span>{questions.length} questions in platform</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="admin-tab-bar">
-        <div className="admin-tab-bar-inner">
-          {(['overview', 'questions', 'users'] as Tab[]).map(tab => (
-            <button
-              key={tab}
-              className={`admin-tab-btn ${activeTab === tab ? 'active' : ''}`}
-              onClick={() => setTab(tab)}
-            >
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="admin-content">
-        {activeTab === 'overview' && <OverviewTab questions={questions} />}
-        {activeTab === 'questions' && (
-          <QuestionsTab
-            questions={questions}
-            loading={loading}
-            onRefresh={loadQuestions}
-            getAuthToken={getAuthToken}
-          />
-        )}
-        {activeTab === 'users' && <UsersTab />}
-
-      </div>
-    </div>
+    <ContentLayout
+      header={
+        <Header variant="h1" description={`${questions.length} questions in platform`}>
+          InterviewU Administration
+        </Header>
+      }
+    >
+      <Tabs
+        activeTabId={activeTab}
+        onChange={({ detail }) => setTab(detail.activeTabId)}
+        tabs={[
+          { id: 'overview', label: 'Overview', content: <OverviewTab questions={questions} /> },
+          { id: 'questions', label: 'Questions', content: <QuestionsTab questions={questions} loading={loading} onRefresh={loadQuestions} getAuthToken={getAuthToken} /> },
+          { id: 'users', label: 'Users', content: <UsersTab /> },
+        ]}
+      />
+    </ContentLayout>
   )
 }
 
