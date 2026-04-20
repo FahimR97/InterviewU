@@ -13,14 +13,14 @@
   },
   "dependencies": {
     "@aws-amplify/ui-react": "^6.15.3",
-    "@cloudscape-design/components": "^3.0.1277",
+    "@cloudscape-design/components": "^3.0.1278",
     "@cloudscape-design/global-styles": "^1.0.57",
     "@excalidraw/excalidraw": "^0.18.0",
     "@monaco-editor/react": "^4.7.0",
-    "aws-amplify": "^6.15.9",
+    "aws-amplify": "^6.16.4",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
-    "react-router-dom": "^7.14.0",
+    "react-router-dom": "^7.14.1",
     "recharts": "^3.8.1"
   },
   "devDependencies": {
@@ -29,12 +29,12 @@
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",
-    "eslint": "^10.2.0",
-    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint": "^10.2.1",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.58.1",
-    "vite": "^8.0.8"
+    "typescript-eslint": "^8.58.2",
+    "vite": "^8.0.9"
   }
 }
