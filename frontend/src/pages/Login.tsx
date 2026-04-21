@@ -10,10 +10,10 @@ export default function Login() {
   const [rememberMe, setRememberMe] = useState(() => !!localStorage.getItem('rememberedEmail'));
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const [successMessage, setSuccessMessage] = useState(() => location.state?.message || '');
+  const [loading, setLoading] = useState(false);
   const { user, login } = useAuth();
 
   useEffect(() => {
@@ -23,12 +23,6 @@ export default function Login() {
       navigate(groups.includes('Admin') ? '/admin' : '/dashboard');
     }).catch(() => navigate('/dashboard'));
   }, [user, navigate]);
-
-  useEffect(() => {
-    if (location.state?.message) {
-      setSuccessMessage(location.state.message);
-    }
-  }, [location]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
