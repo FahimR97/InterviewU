@@ -55,7 +55,7 @@ jobs:
           scan-ref: "."
           format: "table"
           exit-code: "1"
-          severity: "CRITICAL"
+          severity: "CRITICAL,HIGH"
           ignore-unfixed: true
         continue-on-error: false
 

@@ -33,6 +33,13 @@ def handler(event, context):
                 "body": json.dumps({"error": "Missing question or answer"}),
             }
 
+        if len(question_text) > 5000 or len(user_answer) > 10000:
+            return {
+                "statusCode": 400,
+                "headers": {"Access-Control-Allow-Origin": "*"},
+                "body": json.dumps({"error": "Input exceeds maximum allowed length"}),
+            }
+
         # Extract userId from Cognito JWT claims (injected by API Gateway authorizer)
         user_id = None
         try:
@@ -115,16 +122,18 @@ Respond ONLY with valid JSON:
         if user_id and USER_ANSWERS_TABLE_NAME:
             try:
                 table = dynamodb.Table(USER_ANSWERS_TABLE_NAME)
-                table.put_item(Item={
-                    "userId": user_id,
-                    "timestamp": datetime.now(timezone.utc).isoformat(),
-                    "questionId": question_id,
-                    "category": category,
-                    "difficulty": difficulty,
-                    "mode": mode,
-                    "score": Decimal(str(feedback.get("score", 0))),
-                    "is_correct": feedback.get("is_correct", False),
-                })
+                table.put_item(
+                    Item={
+                        "userId": user_id,
+                        "timestamp": datetime.now(timezone.utc).isoformat(),
+                        "questionId": question_id,
+                        "category": category,
+                        "difficulty": difficulty,
+                        "mode": mode,
+                        "score": Decimal(str(feedback.get("score", 0))),
+                        "is_correct": feedback.get("is_correct", False),
+                    }
+                )
             except Exception as write_err:
                 print(f"Warning: failed to persist answer record: {write_err}")
 
