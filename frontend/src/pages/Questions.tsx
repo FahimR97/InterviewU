@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useMemo, useEffect, lazy, Suspense } from "react";
 import Editor from "@monaco-editor/react";
 import { useAuth } from "../contexts/AuthContext";
@@ -498,7 +499,7 @@ export default function Questions() {
   };
 
   useEffect(() => {
-    loadQuestions();
+    void loadQuestions();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 

@@ -367,9 +367,14 @@ export class ServiceStack extends cdk.Stack {
       description: 'InterviewU API',
       deployOptions: {
         tracingEnabled: true,
+        throttlingRateLimit: 100,
+        throttlingBurstLimit: 200,
       },
       defaultCorsPreflightOptions: {
-        allowOrigins: apigw.Cors.ALL_ORIGINS,
+        allowOrigins: [
+          `https://${websiteDomain}`,
+          'http://localhost:5173',
+        ],
         allowMethods: apigw.Cors.ALL_METHODS,
         allowHeaders: [
           'Content-Type',

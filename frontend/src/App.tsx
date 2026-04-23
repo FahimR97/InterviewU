@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Link, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { fetchAuthSession } from 'aws-amplify/auth'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
@@ -39,6 +39,8 @@ function ThemeToggle() {
 function NavBar() {
   const { user, logout } = useAuth()
   const [isAdmin, setIsAdmin] = useState(false)
+  const location = useLocation()
+  const onAdminPage = location.pathname.startsWith('/admin')
 
   useEffect(() => {
     if (!user) return
@@ -62,14 +64,10 @@ function NavBar() {
 
   return (
     <nav className={`navbar${user ? ' navbar-sticky' : ''}`}>
-      <div className="navbar-container">
+      <div className={`navbar-container${onAdminPage ? ' navbar-container--wide' : ''}`}>
         <Link to="/" className="navbar-brand">
-          InterviewU
+          {onAdminPage ? 'InterviewU Admin' : 'InterviewU'}
         </Link>
-
-        {/* Toggle sits between brand and links on desktop;
-            CSS order puts it in row 1 (with brand) on mobile */}
-        <ThemeToggle />
 
         <div className="navbar-links">
           {showAdmin ? (
@@ -91,14 +89,18 @@ function NavBar() {
               <span className="user-email">
                 {user.signInDetails?.loginId || user.username}
               </span>
+              <ThemeToggle />
               <button onClick={handleLogout} className="nav-link nav-button logout-btn">
                 Logout
               </button>
             </>
           ) : (
-            <Link to="/login" className="nav-link">
-              Login
-            </Link>
+            <>
+              <ThemeToggle />
+              <Link to="/login" className="nav-link">
+                Login
+              </Link>
+            </>
           )}
         </div>
       </div>

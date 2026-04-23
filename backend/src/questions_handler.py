@@ -190,11 +190,48 @@ def handler(event, context):
                             ),
                         }
 
+                valid_difficulties = ("Easy", "Medium", "Hard")
+                if body["difficulty"] not in valid_difficulties:
+                    return {
+                        "statusCode": 400,
+                        "headers": {"Access-Control-Allow-Origin": "*"},
+                        "body": json.dumps(
+                            {
+                                "error": (
+                                    "Difficulty must be one of: "
+                                    f"{', '.join(valid_difficulties)}"
+                                )
+                            }
+                        ),
+                    }
+
+                max_lengths = {
+                    "question_text": 5000,
+                    "category": 100,
+                    "competency": 100,
+                    "reference_answer": 10000,
+                }
+                for field, limit in max_lengths.items():
+                    if len(body.get(field, "")) > limit:
+                        return {
+                            "statusCode": 400,
+                            "headers": {"Access-Control-Allow-Origin": "*"},
+                            "body": json.dumps(
+                                {
+                                    "error": (
+                                        f"{field} exceeds maximum "
+                                        f"length of {limit} characters"
+                                    )
+                                }
+                            ),
+                        }
+
                 question_id = str(uuid.uuid4())
                 item = {
                     "id": question_id,
                     "question_text": body["question_text"],
                     "category": body["category"],
+                    "competency": body.get("competency", ""),
                     "difficulty": body["difficulty"],
                     "reference_answer": body.get("reference_answer", ""),
                     "created_at": datetime.now(timezone.utc).isoformat(),
@@ -202,7 +239,15 @@ def handler(event, context):
 
                 table.put_item(Item=item)
                 logger.info(
-                    "Question created", extra={**log_extra, "question_id": question_id}
+                    "Question created",
+                    extra={
+                        **log_extra,
+                        "question_id": question_id,
+                        "admin_user": event.get("requestContext", {})
+                        .get("authorizer", {})
+                        .get("claims", {})
+                        .get("sub", "unknown"),
+                    },
                 )
 
                 return {
@@ -266,6 +311,7 @@ def handler(event, context):
                 updatable_fields = [
                     "question_text",
                     "category",
+                    "competency",
                     "difficulty",
                     "reference_answer",
                 ]
@@ -293,7 +339,15 @@ def handler(event, context):
 
                 updated = table.get_item(Key={"id": question_id})
                 logger.info(
-                    "Question updated", extra={**log_extra, "question_id": question_id}
+                    "Question updated",
+                    extra={
+                        **log_extra,
+                        "question_id": question_id,
+                        "admin_user": event.get("requestContext", {})
+                        .get("authorizer", {})
+                        .get("claims", {})
+                        .get("sub", "unknown"),
+                    },
                 )
 
                 return {
@@ -309,7 +363,15 @@ def handler(event, context):
 
                 table.delete_item(Key={"id": question_id})
                 logger.info(
-                    "Question deleted", extra={**log_extra, "question_id": question_id}
+                    "Question deleted",
+                    extra={
+                        **log_extra,
+                        "question_id": question_id,
+                        "admin_user": event.get("requestContext", {})
+                        .get("authorizer", {})
+                        .get("claims", {})
+                        .get("sub", "unknown"),
+                    },
                 )
 
                 return {
