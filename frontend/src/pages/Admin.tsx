@@ -116,6 +116,7 @@ function QuestionsTab({
   const [createForm, setCreateForm] = useState<QuestionForm>(emptyForm)
   const [csvUploading, setCsvUploading] = useState(false)
   const [csvResult, setCsvResult] = useState<{ success: number; failed: number } | null>(null)
+  const [csvPreview, setCsvPreview] = useState<{ question_text: string; category: string; difficulty: string; reference_answer: string }[] | null>(null)
 
   const categories = useMemo(() => {
     return [...new Set(questions.map(q => q.category))].sort()
@@ -210,33 +211,45 @@ function QuestionsTab({
     a.click()
   }
 
-  const handleCsvUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCsvSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
-    setCsvUploading(true)
     setCsvResult(null)
-    try {
-      const text = await file.text()
+    file.text().then(text => {
       const lines = text.split('\n').filter(l => l.trim())
       const startIdx = lines[0]?.toLowerCase().includes('question_text') ? 1 : 0
-      const token = await getAuthToken()
-      let success = 0, failed = 0
+      const parsed = []
       for (const line of lines.slice(startIdx)) {
         const cols = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g)?.map(c => c.replace(/^"|"$/g, '').trim())
-        if (!cols || cols.length < 3) { failed++; continue }
-        try {
-          const res = await fetch(`${API_BASE_URL}questions`, {
-            method: 'POST',
-            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-            body: JSON.stringify({ question_text: cols[0], category: cols[1], difficulty: cols[2], reference_answer: cols[3] || '' }),
-          })
-          if (res.ok) success++; else failed++
-        } catch { failed++ }
+        if (cols && cols.length >= 3) {
+          parsed.push({ question_text: cols[0], category: cols[1], difficulty: cols[2], reference_answer: cols[3] || '' })
+        }
       }
-      setCsvResult({ success, failed })
-      onRefresh()
-    } catch { alert('Failed to parse CSV') }
-    finally { setCsvUploading(false); e.target.value = '' }
+      setCsvPreview(parsed)
+    }).catch(() => alert('Failed to parse CSV'))
+    e.target.value = ''
+  }
+
+  const handleCsvConfirm = async () => {
+    if (!csvPreview) return
+    setCsvUploading(true)
+    setCsvResult(null)
+    const token = await getAuthToken()
+    let success = 0, failed = 0
+    for (const q of csvPreview) {
+      try {
+        const res = await fetch(`${API_BASE_URL}questions`, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(q),
+        })
+        if (res.ok) success++; else failed++
+      } catch { failed++ }
+    }
+    setCsvResult({ success, failed })
+    setCsvPreview(null)
+    setCsvUploading(false)
+    onRefresh()
   }
 
   return (
@@ -245,6 +258,26 @@ function QuestionsTab({
         <Alert type="success" dismissible onDismiss={() => setCsvResult(null)}>
           {csvResult.success} questions added{csvResult.failed > 0 && `, ${csvResult.failed} failed`}
         </Alert>
+      )}
+
+      {csvPreview && (
+        <Container header={<Header variant="h2" counter={`(${csvPreview.length})`} actions={
+          <SpaceBetween direction="horizontal" size="xs">
+            <Button variant="link" onClick={() => setCsvPreview(null)}>Cancel</Button>
+            <Button variant="primary" onClick={handleCsvConfirm} loading={csvUploading}>Confirm Upload</Button>
+          </SpaceBetween>
+        }>CSV Preview — Review Before Upload</Header>}>
+          <Table
+            columnDefinitions={[
+              { id: 'question', header: 'Question', cell: item => item.question_text, width: 350 },
+              { id: 'category', header: 'Category', cell: item => item.category },
+              { id: 'difficulty', header: 'Difficulty', cell: item => item.difficulty },
+              { id: 'answer', header: 'Reference Answer', cell: item => item.reference_answer ? item.reference_answer.substring(0, 80) + (item.reference_answer.length > 80 ? '...' : '') : '' },
+            ]}
+            items={csvPreview}
+            variant="embedded"
+          />
+        </Container>
       )}
 
       {showCreateForm && (
@@ -377,7 +410,7 @@ function QuestionsTab({
                 <Button variant="normal" iconName="upload" loading={csvUploading}>
                   <label style={{ cursor: 'pointer' }}>
                     Upload CSV
-                    <input type="file" accept=".csv" onChange={handleCsvUpload} hidden />
+                    <input type="file" accept=".csv" onChange={handleCsvSelect} hidden />
                   </label>
                 </Button>
                 <Button variant="normal" iconName="refresh" onClick={onRefresh} loading={loading} />
