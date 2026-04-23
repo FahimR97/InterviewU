@@ -1,4 +1,5 @@
 """User analytics handler — aggregates answer history from DynamoDB."""
+
 import json
 import os
 import boto3
@@ -42,17 +43,19 @@ def _empty_response(by_mode: dict, message: str) -> dict:
     return {
         "statusCode": 200,
         "headers": {"Access-Control-Allow-Origin": "*"},
-        "body": json.dumps({
-            "total_attempts": 0,
-            "avg_score": None,
-            "pass_rate": 0,
-            "by_category": [],
-            "by_difficulty": [],
-            "scores_over_time": [],
-            "weak_areas": [],
-            "recommendation": message,
-            "by_mode": by_mode,
-        }),
+        "body": json.dumps(
+            {
+                "total_attempts": 0,
+                "avg_score": None,
+                "pass_rate": 0,
+                "by_category": [],
+                "by_difficulty": [],
+                "scores_over_time": [],
+                "weak_areas": [],
+                "recommendation": message,
+                "by_mode": by_mode,
+            }
+        ),
     }
 
 
@@ -77,9 +80,7 @@ def handler(event, context):
 
         table = dynamodb.Table(USER_ANSWERS_TABLE_NAME)
 
-        response = table.query(
-            KeyConditionExpression=Key("userId").eq(user_id)
-        )
+        response = table.query(KeyConditionExpression=Key("userId").eq(user_id))
         items = response.get("Items", [])
 
         while "LastEvaluatedKey" in response:
@@ -105,15 +106,23 @@ def handler(event, context):
         by_mode = {
             m: {
                 "count": len(d["scores"]),
-                "avg_score": round(sum(d["scores"]) / len(d["scores"]), 1) if d["scores"] else 0,
-                "pass_rate": round(d["correct_count"] / len(d["scores"]) * 100, 1) if d["scores"] else 0,
+                "avg_score": (
+                    round(sum(d["scores"]) / len(d["scores"]), 1) if d["scores"] else 0
+                ),
+                "pass_rate": (
+                    round(d["correct_count"] / len(d["scores"]) * 100, 1)
+                    if d["scores"]
+                    else 0
+                ),
             }
             for m, d in mode_data.items()
         }
 
         # Apply optional mode filter
         qsp = event.get("queryStringParameters") or {}
-        mode_filter = qsp.get("mode") if qsp.get("mode") in ("practice", "test") else None
+        mode_filter = (
+            qsp.get("mode") if qsp.get("mode") in ("practice", "test") else None
+        )
         if mode_filter:
             items = [i for i in items if i.get("mode", "test") == mode_filter]
 

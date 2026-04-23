@@ -29,9 +29,7 @@ NAMESPACE = "InterviewU"
 def _get_client():
     global _cloudwatch
     if _cloudwatch is None:
-        _cloudwatch = boto3.client(
-            "cloudwatch", region_name="eu-west-2"
-        )
+        _cloudwatch = boto3.client("cloudwatch", region_name="eu-west-2")
     return _cloudwatch
 
 
@@ -52,17 +50,18 @@ def _emit(
         if dimensions:
             data["Dimensions"] = dimensions
 
-        _get_client().put_metric_data(
-            Namespace=NAMESPACE, MetricData=[data]
-        )
+        _get_client().put_metric_data(Namespace=NAMESPACE, MetricData=[data])
         logger.debug(
             "Emitted metric %s=%s %s",
-            metric_name, value, unit,
+            metric_name,
+            value,
+            unit,
         )
     except Exception as exc:
         logger.warning(
             "Failed to emit metric %s: %s",
-            metric_name, exc,
+            metric_name,
+            exc,
         )
 
 
@@ -81,9 +80,7 @@ class QuestionsMetrics:
         """A single question was fetched by ID."""
         dims = []
         if category:
-            dims.append(
-                {"Name": "Category", "Value": category}
-            )
+            dims.append({"Name": "Category", "Value": category})
         _emit("QuestionViewed", 1, "Count", dims or None)
 
     @staticmethod
@@ -113,26 +110,30 @@ class EvaluationMetrics:
         _emit("AnswerEvaluated", 1, "Count")
         _emit("EvaluationScore", float(score), "None")
         _emit(
-            "EvaluationByCategory", 1, "Count",
-            [{"Name": "Category",
-              "Value": category or "unknown"}],
+            "EvaluationByCategory",
+            1,
+            "Count",
+            [{"Name": "Category", "Value": category or "unknown"}],
         )
         _emit(
-            "EvaluationByMode", 1, "Count",
-            [{"Name": "Mode",
-              "Value": mode or "practice"}],
+            "EvaluationByMode",
+            1,
+            "Count",
+            [{"Name": "Mode", "Value": mode or "practice"}],
         )
         _emit(
-            "AnswerPassRate", 1, "Count",
-            [{"Name": "IsCorrect",
-              "Value": str(is_correct)}],
+            "AnswerPassRate",
+            1,
+            "Count",
+            [{"Name": "IsCorrect", "Value": str(is_correct)}],
         )
 
     @staticmethod
     def ai_response_time(duration_ms: float) -> None:
         """Bedrock response time — p99 catches throttling."""
         _emit(
-            "MarcusResponseTime", duration_ms,
+            "MarcusResponseTime",
+            duration_ms,
             "Milliseconds",
         )
 
@@ -140,7 +141,9 @@ class EvaluationMetrics:
     def evaluation_failure(error_type: str) -> None:
         """Evaluation failed. Dimension on error type."""
         _emit(
-            "EvaluationFailure", 1, "Count",
+            "EvaluationFailure",
+            1,
+            "Count",
             [{"Name": "ErrorType", "Value": error_type}],
         )
 
