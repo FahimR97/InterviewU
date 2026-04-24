@@ -116,7 +116,7 @@ function QuestionsTab({
   const [createForm, setCreateForm] = useState<QuestionForm>(emptyForm)
   const [csvUploading, setCsvUploading] = useState(false)
   const [csvResult, setCsvResult] = useState<{ success: number; failed: number } | null>(null)
-  const [csvPreview, setCsvPreview] = useState<{ question_text: string; category: string; difficulty: string; reference_answer: string }[] | null>(null)
+  const [csvPreview, setCsvPreview] = useState<{ question_text: string; category: string; difficulty: string; reference_answer: string; competency: string }[] | null>(null)
 
   const categories = useMemo(() => {
     return [...new Set(questions.map(q => q.category))].sort()
@@ -222,7 +222,7 @@ function QuestionsTab({
       for (const line of lines.slice(startIdx)) {
         const cols = line.match(/(".*?"|[^,]+)(?=\s*,|\s*$)/g)?.map(c => c.replace(/^"|"$/g, '').trim())
         if (cols && cols.length >= 3) {
-          parsed.push({ question_text: cols[0], category: cols[1], difficulty: cols[2], reference_answer: cols[3] || '' })
+          parsed.push({ question_text: cols[0], category: cols[1], difficulty: cols[2], reference_answer: cols[3] || '', competency: cols[4] || '' })
         }
       }
       setCsvPreview(parsed)
@@ -273,6 +273,7 @@ function QuestionsTab({
               { id: 'category', header: 'Category', cell: item => item.category },
               { id: 'difficulty', header: 'Difficulty', cell: item => item.difficulty },
               { id: 'answer', header: 'Reference Answer', cell: item => item.reference_answer ? item.reference_answer.substring(0, 80) + (item.reference_answer.length > 80 ? '...' : '') : '' },
+              { id: 'subcategory', header: 'Subcategory', cell: item => item.competency || '—' },
             ]}
             items={csvPreview}
             variant="embedded"
