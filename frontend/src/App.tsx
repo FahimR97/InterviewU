@@ -18,6 +18,7 @@ import ChangePassword from "./pages/ChangePassword";
 import ForgotPassword from "./pages/ForgotPassword";
 import Dashboard from "./pages/Dashboard";
 import TestMode from "./pages/TestMode";
+import Stories from "./pages/Stories";
 import "./App.css";
 
 function ThemeToggle() {
@@ -111,6 +112,11 @@ function NavBar() {
                   Test
                 </Link>
               )}
+              {user && (
+                <Link to="/stories" className="nav-link">
+                  Stories
+                </Link>
+              )}
             </>
           )}
           {user ? (
@@ -157,6 +163,7 @@ function AppContent() {
             <Route path="/admin" element={<Admin />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/test" element={<TestMode />} />
+            <Route path="/stories" element={<Stories />} />
           </Routes>
         </main>
 

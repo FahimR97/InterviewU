@@ -238,6 +238,20 @@ export class ServiceStack extends cdk.Stack {
       description: 'DynamoDB table for per-user settings',
     });
 
+    const userStoriesTable = new dynamodb.Table(this, 'UserStories', {
+      partitionKey: { name: 'userId', type: dynamodb.AttributeType.STRING },
+      sortKey: { name: 'storyId', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST,
+      removalPolicy: cdk.RemovalPolicy.RETAIN,
+      encryption: dynamodb.TableEncryption.AWS_MANAGED,
+      pointInTimeRecovery: true,
+    });
+
+    new cdk.CfnOutput(this, 'UserStoriesTableName', {
+      value: userStoriesTable.tableName,
+      description: 'DynamoDB table for STAR stories',
+    });
+
     // Dynamo DB Table
     const table = new dynamodb.Table(this, 'InterviewQuestions', {
       partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
@@ -333,6 +347,19 @@ export class ServiceStack extends cdk.Stack {
 
     userSettingsTable.grantReadWriteData(settingsHandler);
 
+    const storiesHandler = new lambda.Function(this, 'StoriesHandler', {
+      runtime: lambda.Runtime.PYTHON_3_11,
+      handler: 'stories_handler.handler',
+      code: lambda.Code.fromAsset("../backend/src"),
+      timeout: cdk.Duration.seconds(15),
+      tracing: lambda.Tracing.ACTIVE,
+      environment: {
+        USER_STORIES_TABLE_NAME: userStoriesTable.tableName,
+      },
+    });
+
+    userStoriesTable.grantReadWriteData(storiesHandler);
+
     // Lambda for user signup (bypasses selfSignUpEnabled restriction)
     const signupHandler = new lambda.Function(this, 'SignupHandler', {
       runtime: lambda.Runtime.PYTHON_3_11,
@@ -353,6 +380,7 @@ export class ServiceStack extends cdk.Stack {
     const signupIntegration = new apigw.LambdaIntegration(signupHandler);
     const analyticsIntegration = new apigw.LambdaIntegration(userAnalyticsHandler);
     const settingsIntegration = new apigw.LambdaIntegration(settingsHandler);
+    const storiesIntegration = new apigw.LambdaIntegration(storiesHandler);
 
     const cognitoAuthorizer = new apigw.CognitoUserPoolsAuthorizer(this, 'CognitoAuthorizer', {
       cognitoUserPools: [userPool],
@@ -454,6 +482,25 @@ export class ServiceStack extends cdk.Stack {
       authorizationType: apigw.AuthorizationType.COGNITO,
     });
     settings.addMethod('PUT', settingsIntegration, {
+      authorizer: cognitoAuthorizer,
+      authorizationType: apigw.AuthorizationType.COGNITO,
+    });
+
+    const stories = api.root.addResource('stories');
+    stories.addMethod('GET', storiesIntegration, {
+      authorizer: cognitoAuthorizer,
+      authorizationType: apigw.AuthorizationType.COGNITO,
+    });
+    stories.addMethod('POST', storiesIntegration, {
+      authorizer: cognitoAuthorizer,
+      authorizationType: apigw.AuthorizationType.COGNITO,
+    });
+    const storyById = stories.addResource('{storyId}');
+    storyById.addMethod('PUT', storiesIntegration, {
+      authorizer: cognitoAuthorizer,
+      authorizationType: apigw.AuthorizationType.COGNITO,
+    });
+    storyById.addMethod('DELETE', storiesIntegration, {
       authorizer: cognitoAuthorizer,
       authorizationType: apigw.AuthorizationType.COGNITO,
     });

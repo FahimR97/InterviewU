@@ -234,3 +234,47 @@ export async function getAnalytics(authToken: string | null, mode?: 'practice' |
 
   return response.json();
 }
+
+// Stories
+export interface Story {
+  userId: string;
+  storyId: string;
+  title: string;
+  situation: string;
+  task: string;
+  action: string;
+  result: string;
+  tags: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+export async function getStories(authToken: string | null): Promise<Story[]> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  const response = await fetch(`${API_BASE_URL}stories`, { method: 'GET', headers });
+  if (!response.ok) throw new Error('Failed to fetch stories');
+  return response.json();
+}
+
+export async function createStory(story: Omit<Story, 'userId' | 'storyId' | 'created_at' | 'updated_at'>, authToken: string | null): Promise<Story> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  const response = await fetch(`${API_BASE_URL}stories`, { method: 'POST', headers, body: JSON.stringify(story) });
+  if (!response.ok) throw new Error('Failed to create story');
+  return response.json();
+}
+
+export async function updateStory(storyId: string, updates: Partial<Story>, authToken: string | null): Promise<void> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  const response = await fetch(`${API_BASE_URL}stories/${storyId}`, { method: 'PUT', headers, body: JSON.stringify(updates) });
+  if (!response.ok) throw new Error('Failed to update story');
+}
+
+export async function deleteStory(storyId: string, authToken: string | null): Promise<void> {
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`;
+  const response = await fetch(`${API_BASE_URL}stories/${storyId}`, { method: 'DELETE', headers });
+  if (!response.ok) throw new Error('Failed to delete story');
+}
