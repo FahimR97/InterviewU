@@ -28,6 +28,7 @@ import Alert from '@cloudscape-design/components/alert'
 import ColumnLayout from '@cloudscape-design/components/column-layout'
 import Form from '@cloudscape-design/components/form'
 import Spinner from '@cloudscape-design/components/spinner'
+import Modal from '@cloudscape-design/components/modal'
 
 const API_BASE_URL = awsConfig.API.REST.InterviewQuestionsAPI.endpoint
 
@@ -254,11 +255,21 @@ function QuestionsTab({
 
   return (
     <SpaceBetween size="l">
-      {csvResult && (
-        <Alert type="success" dismissible onDismiss={() => setCsvResult(null)}>
-          {csvResult.success} questions added{csvResult.failed > 0 && `, ${csvResult.failed} failed`}
-        </Alert>
-      )}
+      <Modal
+        visible={csvResult !== null}
+        onDismiss={() => setCsvResult(null)}
+        header={csvResult?.failed ? "Upload Complete (with errors)" : "Upload Successful"}
+        footer={
+          <Box float="right">
+            <Button variant="primary" onClick={() => setCsvResult(null)}>Done</Button>
+          </Box>
+        }
+      >
+        <SpaceBetween size="s">
+          <Box variant="p"><strong>{csvResult?.success}</strong> questions added successfully.</Box>
+          {csvResult?.failed ? <Box variant="p" color="text-status-error"><strong>{csvResult.failed}</strong> questions failed.</Box> : null}
+        </SpaceBetween>
+      </Modal>
 
       {csvPreview && (
         <Container header={<Header variant="h2" counter={`(${csvPreview.length})`} actions={
