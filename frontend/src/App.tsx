@@ -77,7 +77,7 @@ function NavBar() {
         className={`navbar-container${onAdminPage ? " navbar-container--wide" : ""}`}
       >
         <Link to="/" className="navbar-brand">
-          {onAdminPage ? "InterviewU Admin" : "InterviewU"}
+          {onAdminPage ? "InterviewMe Admin" : "InterviewMe"}
         </Link>
 
         <div className="navbar-links">
