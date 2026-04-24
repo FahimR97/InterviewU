@@ -17,9 +17,9 @@ describe('ServiceStack CDK tests', () => {
   test('Stack contains core resources', () => {
     const template = synthTemplate();
 
-    template.resourceCountIs('AWS::DynamoDB::Table', 3);
+    template.resourceCountIs('AWS::DynamoDB::Table', 4); // +UserStories
     // Expect 6: QuestionsHandler + EvaluateAnswerFn + AdminCreateUser + AnalyticsHandler + SettingsHandler + LogRetention
-    template.resourceCountIs('AWS::Lambda::Function', 6);
+    template.resourceCountIs('AWS::Lambda::Function', 7); // +StoriesHandler
     template.resourceCountIs('AWS::S3::Bucket', 2); // Frontend + CloudTrail
     template.resourceCountIs('AWS::CloudFront::Distribution', 1);
     template.resourceCountIs('AWS::Cognito::UserPool', 1);
