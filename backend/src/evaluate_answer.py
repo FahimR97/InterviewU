@@ -67,8 +67,12 @@ Rules:
 - Score what is actually written. Do not inflate.
 - If the story is good enough for L4, say so. Do not nitpick.
 - is_correct is true only if score >= 3.
-- Check for: specific metrics/data, clear personal actions
-  (not "we"), measurable results, relevance to the tagged LP.
+- Check for: specific metrics/data (numbers, percentages,
+  timelines, team sizes, cost savings, time saved, error
+  reduction), clear personal actions (not "we"), measurable
+  results, relevance to the tagged LP.
+- If the story lacks quantifiable data in the Result section,
+  flag it. Strong L4 stories have numbers.
 - Do NOT add filler improvements if the story is strong.
   A score of 5 should have empty improvements.
 
