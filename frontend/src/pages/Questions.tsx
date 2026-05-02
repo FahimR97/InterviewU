@@ -483,6 +483,7 @@ export default function Questions() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
   const [selectedCompetency, setSelectedCompetency] = useState("All");
+  const [selectedMastery, setSelectedMastery] = useState("All");
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -556,11 +557,16 @@ export default function Questions() {
         q.difficulty.toLowerCase() === selectedDifficulty.toLowerCase();
       const matchesCompetency =
         selectedCompetency === "All" || q.competency === selectedCompetency;
+      const matchesMastery =
+        selectedMastery === "All" ||
+        (selectedMastery === "Done" && mastered.has(q.id)) ||
+        (selectedMastery === "Not Done" && !mastered.has(q.id));
       return (
         matchesSearch &&
         matchesCategory &&
         matchesDifficulty &&
-        matchesCompetency
+        matchesCompetency &&
+        matchesMastery
       );
     });
   }, [
@@ -569,6 +575,8 @@ export default function Questions() {
     selectedCategory,
     selectedDifficulty,
     selectedCompetency,
+    selectedMastery,
+    mastered,
   ]);
 
   // Practice view replaces the full list
@@ -710,6 +718,18 @@ export default function Questions() {
                     {capitalize(d)}
                   </option>
                 ))}
+              </select>
+            </div>
+
+            <div className="filter-group">
+              <select
+                value={selectedMastery}
+                onChange={(e) => setSelectedMastery(e.target.value)}
+                disabled={loading}
+              >
+                <option value="All">All Progress</option>
+                <option value="Done">Done</option>
+                <option value="Not Done">Not Done</option>
               </select>
             </div>
 
