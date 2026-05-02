@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '../contexts/AuthContext'
-import { getStories, createStory, updateStory, deleteStory } from '../services/api'
-import type { Story } from '../services/api'
+import { getStories, createStory, updateStory, deleteStory, evaluateAnswer } from '../services/api'
+import type { Story, EvaluationResponse } from '../services/api'
 import './Stories.css'
 
 const LEADERSHIP_PRINCIPLES = [
@@ -33,6 +33,8 @@ export default function Stories() {
   const [filterTag, setFilterTag] = useState('All')
   const [search, setSearch] = useState('')
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set())
+  const [evaluating, setEvaluating] = useState<string | null>(null)
+  const [storyFeedback, setStoryFeedback] = useState<Record<string, EvaluationResponse>>({})
 
   const loadStories = async () => {
     try {
@@ -87,6 +89,25 @@ export default function Stories() {
     const token = await getAuthToken()
     await deleteStory(storyId, token)
     loadStories()
+  }
+
+  const handleEvaluateStory = async (story: Story) => {
+    setEvaluating(story.storyId)
+    try {
+      const token = await getAuthToken()
+      const storyText = `Situation: ${story.situation}\nTask: ${story.task}\nAction: ${story.action}\nResult: ${story.result}`
+      const result = await evaluateAnswer({
+        question: `Evaluate this STAR story for: ${story.tags.join(', ')}`,
+        answer: storyText,
+        competency_type: 'behavioural',
+      }, token)
+      setStoryFeedback(prev => ({ ...prev, [story.storyId]: result }))
+    } catch (err) {
+      alert('Failed to evaluate story')
+      console.error(err)
+    } finally {
+      setEvaluating(null)
+    }
   }
 
   const toggleTag = (tag: string) => {
@@ -235,6 +256,9 @@ export default function Stories() {
                       {isExpanded ? 'Collapse' : 'Expand'}
                     </button>
                     <button className="btn-sm" onClick={() => handleEdit(story)}>Edit</button>
+                    <button className="btn-sm btn-evaluate" onClick={() => handleEvaluateStory(story)} disabled={evaluating === story.storyId}>
+                      {evaluating === story.storyId ? 'Evaluating...' : '🤖 Evaluate'}
+                    </button>
                     <button className="btn-sm btn-danger" onClick={() => handleDelete(story.storyId)}>Delete</button>
                   </div>
                 </div>
@@ -262,6 +286,21 @@ export default function Stories() {
                         <p>{story[key]}</p>
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {storyFeedback[story.storyId] && (
+                  <div className="story-feedback">
+                    <div className="story-feedback-header">
+                      <span>🤖 Marcus — {storyFeedback[story.storyId].score >= 80 ? '✅' : '📝'} {storyFeedback[story.storyId].score / 20}/5 stars</span>
+                    </div>
+                    {storyFeedback[story.storyId].strengths.length > 0 && (
+                      <div className="feedback-list"><strong>Strengths:</strong> {storyFeedback[story.storyId].strengths.join('. ')}</div>
+                    )}
+                    {storyFeedback[story.storyId].improvements.length > 0 && (
+                      <div className="feedback-list"><strong>Improve:</strong> {storyFeedback[story.storyId].improvements.join('. ')}</div>
+                    )}
+                    <div className="feedback-comment">{storyFeedback[story.storyId].marcus_comment}</div>
                   </div>
                 )}
 

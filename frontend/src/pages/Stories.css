@@ -397,3 +397,10 @@
 
 .btn-danger { color: var(--danger); border-color: var(--danger); }
 .btn-danger:hover { background: var(--danger); color: white; }
+
+.btn-evaluate { color: var(--accent); border-color: var(--accent); }
+.btn-evaluate:hover { background: var(--accent); color: white; }
+.story-feedback { background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-top: 0.75rem; }
+.story-feedback-header { font-weight: 700; margin-bottom: 0.5rem; }
+.feedback-list { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.4rem; line-height: 1.5; }
+.feedback-comment { font-size: 0.9rem; color: var(--text-primary); margin-top: 0.5rem; font-style: italic; }

@@ -49,7 +49,41 @@ def handler(event, context):
             pass
 
         # Marcus evaluation prompt
-        prompt = f"""You are Marcus, an AI interview coach for AWS.
+        if competency_type == "behavioural":
+            prompt = f"""You are Marcus, an L4 interview coach at AWS.
+Evaluate this STAR story for: {question_text}
+
+Story:
+{user_answer}
+
+Score 1 to 5:
+- 1: No real story or completely generic
+- 2: Has a story but missing STAR structure
+- 3: Decent story, has S/T/A/R but lacks depth
+- 4: Strong story with clear structure and impact
+- 5: Excellent — specific, measurable, shows real L4 ownership
+
+Rules:
+- Score what is actually written. Do not inflate.
+- If the story is good enough for L4, say so. Do not nitpick.
+- is_correct is true only if score >= 3.
+- Check for: specific metrics/data, clear personal actions
+  (not "we"), measurable results, relevance to the tagged LP.
+- Do NOT add filler improvements if the story is strong.
+  A score of 5 should have empty improvements.
+
+Respond ONLY with valid JSON:
+{{
+  "is_correct": true/false,
+  "score": 1-5,
+  "strengths": ["point1", "point2"],
+  "improvements": ["point1"],
+  "suggestions": ["point1"],
+  "marcus_comment": "Honest coaching message",
+  "model_answer": ""
+}}"""
+        else:
+            prompt = f"""You are Marcus, an AI interview coach for AWS.
 You evaluate candidates for L4 Systems Engineer and Systems Development Engineer roles.
 
 Question: {question_text}
