@@ -27,6 +27,7 @@ export interface EvaluationResponse {
   improvements: string[];
   suggestions: string[];
   marcus_comment: string;
+  model_answer?: string;
 }
 
 export interface AnalyticsCategoryEntry {

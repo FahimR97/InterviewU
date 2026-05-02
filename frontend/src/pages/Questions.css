@@ -1423,3 +1423,7 @@ details[open] .practice-reference summary::before { content: '▼ '; }
 
 .question-badges { display: flex; gap: 0.5rem; align-items: center; flex-shrink: 0; }
 .badge-done { background: #22c55e; color: white; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+
+.model-answer { background: var(--card-bg); border: 1px solid var(--accent); border-radius: 10px; padding: 1rem; margin-top: 1rem; }
+.model-answer-label { font-weight: 700; color: var(--accent); font-size: 0.9rem; }
+.model-answer p { margin: 0.5rem 0 0; line-height: 1.6; color: var(--text-secondary); }

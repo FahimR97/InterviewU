@@ -75,8 +75,7 @@ Tone:
 - For scores 1–2: briefly acknowledge the attempt, then give clear actionable
   guidance on what to study
 - marcus_comment should be honest but end on an encouraging note
-- Do NOT ask follow-up questions, offer resources, or suggest the candidate
-  reach out for more help — this is a one-shot evaluation, there is no reply
+- Do NOT offer resources or suggest the candidate reach out for more help
 
 Respond ONLY with valid JSON:
 {{
@@ -85,7 +84,8 @@ Respond ONLY with valid JSON:
   "strengths": ["point1", "point2"],
   "improvements": ["point1", "point2"],
   "suggestions": ["point1", "point2"],
-  "marcus_comment": "Honest, warm, coaching message"
+  "marcus_comment": "Honest, warm, coaching message",
+  "model_answer": "A concise but thorough model answer that would score 5/5 for this question at L4 level"
 }}"""
 
         # Call Bedrock Claude 3.7 Sonnet — track latency for monitoring

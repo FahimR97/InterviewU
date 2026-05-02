@@ -460,6 +460,13 @@ function PracticeView({
               <p>{evaluation.marcus_comment}</p>
             </div>
 
+            {evaluation.model_answer && (
+              <div className="model-answer">
+                <span className="model-answer-label">📝 Model Answer</span>
+                <p>{evaluation.model_answer}</p>
+              </div>
+            )}
+
             <button
               className="btn-try-again"
               onClick={() => {
