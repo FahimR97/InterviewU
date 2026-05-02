@@ -85,7 +85,7 @@ Respond ONLY with valid JSON:
   "improvements": ["point1", "point2"],
   "suggestions": ["point1", "point2"],
   "marcus_comment": "Honest, warm, coaching message",
-  "model_answer": "A concise but thorough model answer that would score 5/5 for this question at L4 level"
+  "model_answer": "A concise model answer that would score 5/5 at L4 level"
 }}"""
 
         # Call Bedrock Claude 3.7 Sonnet — track latency for monitoring
