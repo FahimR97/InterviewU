@@ -17,7 +17,7 @@ CORS_HEADERS = {
     "Access-Control-Allow-Methods": "GET,PUT,OPTIONS",
 }
 
-ALLOWED_KEYS = {"interview_date"}
+ALLOWED_KEYS = {"interview_date", "mastered_questions"}
 
 
 def handler(event, context):

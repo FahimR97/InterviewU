@@ -176,6 +176,7 @@ export async function evaluateAnswer(
 
 export interface UserSettings {
   interview_date?: string
+  mastered_questions?: string[]
 }
 
 /**

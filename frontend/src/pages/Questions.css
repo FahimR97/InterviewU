@@ -1420,3 +1420,6 @@ details[open] .practice-reference summary::before { content: '▼ '; }
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
+
+.question-badges { display: flex; gap: 0.5rem; align-items: center; flex-shrink: 0; }
+.badge-done { background: #22c55e; color: white; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }

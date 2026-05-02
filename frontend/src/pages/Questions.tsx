@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect, lazy, Suspense } from "react";
 import Editor from "@monaco-editor/react";
 import { useAuth } from "../contexts/AuthContext";
 import { useTheme } from "../contexts/ThemeContext";
-import { getAllQuestions, evaluateAnswer } from "../services/api";
+import { getAllQuestions, evaluateAnswer, getSettings, saveSettings } from "../services/api";
 import type { Question, EvaluationResponse } from "../services/api";
 import "@excalidraw/excalidraw/index.css";
 import "./Questions.css";
@@ -148,11 +148,15 @@ function PracticeView({
   onBack,
   getAuthToken,
   theme,
+  mastered,
+  setMastered,
 }: {
   question: Question;
   onBack: () => void;
   getAuthToken: () => Promise<string | null>;
   theme: string;
+  mastered: Set<string>;
+  setMastered: React.Dispatch<React.SetStateAction<Set<string>>>;
 }) {
   const [userAnswer, setUserAnswer] = useState("");
   const [selectedLang, setSelectedLang] = useState<LangOption>(LANGUAGES[0]);
@@ -189,6 +193,14 @@ function PracticeView({
         token,
       );
       setEvaluation(result);
+      if (result.score === 100 && !mastered.has(question.id)) {
+        const updated = new Set(mastered);
+        updated.add(question.id);
+        setMastered(updated);
+        try {
+          await saveSettings({ mastered_questions: Array.from(updated) }, token);
+        } catch { /* non-critical */ }
+      }
     } catch (err) {
       console.error("Error evaluating answer:", err);
       alert(err instanceof Error ? err.message : "Failed to evaluate answer");
@@ -475,6 +487,7 @@ export default function Questions() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [practiceView, setPracticeView] = useState<Question | null>(null);
+  const [mastered, setMastered] = useState<Set<string>>(new Set());
   const { user, getAuthToken } = useAuth();
   const { theme } = useTheme();
 
@@ -490,6 +503,10 @@ export default function Questions() {
       const token = await getAuthToken();
       const data = await getAllQuestions(token);
       setQuestions(data);
+      try {
+        const settings = await getSettings(token);
+        setMastered(new Set(settings.mastered_questions || []));
+      } catch { /* no settings yet */ }
     } catch (err) {
       console.error("Error loading questions:", err);
       setError(err instanceof Error ? err.message : "Failed to load questions");
@@ -563,6 +580,8 @@ export default function Questions() {
           onBack={() => setPracticeView(null)}
           getAuthToken={getAuthToken}
           theme={theme}
+          mastered={mastered}
+          setMastered={setMastered}
         />
       </div>
     );
@@ -746,11 +765,14 @@ export default function Questions() {
                     >
                       <div className="question-header">
                         <h3>{question.question_text}</h3>
-                        <span
-                          className={`difficulty difficulty-${question.difficulty.toLowerCase()}`}
-                        >
-                          {capitalize(question.difficulty)}
-                        </span>
+                        <div className="question-badges">
+                          {mastered.has(question.id) && <span className="badge-done">✓ Done</span>}
+                          <span
+                            className={`difficulty difficulty-${question.difficulty.toLowerCase()}`}
+                          >
+                            {capitalize(question.difficulty)}
+                          </span>
+                        </div>
                       </div>
                       <div className="question-footer">
                         <span className="tag">
