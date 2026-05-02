@@ -184,8 +184,6 @@ jobs:
     defaults:
       run:
         working-directory: infrastructure
-    environment:
-      name: production
 
     steps:
       - name: Checkout repo
