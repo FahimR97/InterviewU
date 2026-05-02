@@ -44,7 +44,7 @@ export default function Stories() {
     finally { setLoading(false) }
   }
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps, react-hooks/set-state-in-effect
   useEffect(() => { if (user) loadStories() }, [user])
 
   const filtered = useMemo(() => {
