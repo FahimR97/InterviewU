@@ -119,30 +119,12 @@ export default function Stories() {
     setImporting(true)
     try {
       const text = await file.text()
-      const lines = text.split('\n').filter(l => l.trim())
-      const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g, ''))
-
       const token = await getAuthToken()
+      const stories = file.name.endsWith('.md') ? parseMdStories(text) : parseCsvStories(text)
+
       let imported = 0
-
-      for (let i = 1; i < lines.length; i++) {
-        const values = parseCsvLine(lines[i])
-        const row: Record<string, string> = {}
-        headers.forEach((h, idx) => { row[h] = values[idx]?.trim() || '' })
-
-        const tags = (row.tags || row.principles || row.principle || '')
-          .split(/[|;]/)
-          .map(t => t.trim())
-          .filter(t => LEADERSHIP_PRINCIPLES.includes(t))
-
-        await createStory({
-          title: row.title || `Imported Story ${i}`,
-          situation: row.situation || '',
-          task: row.task || '',
-          action: row.action || '',
-          result: row.result || '',
-          tags,
-        }, token)
+      for (const story of stories) {
+        await createStory(story, token)
         imported++
       }
 
@@ -150,24 +132,93 @@ export default function Stories() {
       loadStories()
     } catch (err) {
       console.error(err)
-      alert('Import failed — check CSV format')
+      alert('Import failed — check file format')
     } finally {
       setImporting(false)
       e.target.value = ''
     }
   }
 
-  function parseCsvLine(line: string): string[] {
-    const result: string[] = []
-    let current = ''
-    let inQuotes = false
-    for (const char of line) {
-      if (char === '"') { inQuotes = !inQuotes }
-      else if (char === ',' && !inQuotes) { result.push(current); current = '' }
-      else { current += char }
+  function parseMdStories(text: string) {
+    const stories: { title: string; situation: string; task: string; action: string; result: string; tags: string[] }[] = []
+    let currentPrinciple = ''
+    let currentTitle = ''
+    let currentSection = ''
+    let sections: Record<string, string> = {}
+
+    const flush = () => {
+      if (currentTitle && Object.keys(sections).length > 0) {
+        stories.push({
+          title: currentTitle,
+          situation: sections.situation || '',
+          task: sections.task || '',
+          action: sections.action || '',
+          result: sections.result || '',
+          tags: currentPrinciple ? [currentPrinciple] : [],
+        })
+      }
+      sections = {}
     }
-    result.push(current)
-    return result
+
+    for (const line of text.split('\n')) {
+      if (line.startsWith('## ')) {
+        flush()
+        currentPrinciple = line.replace('## ', '').trim()
+        currentTitle = ''
+      } else if (line.startsWith('### ')) {
+        flush()
+        currentTitle = line.replace(/^### Story \d+ — /, '').replace(/^### /, '').trim()
+        currentSection = ''
+      } else if (line.startsWith('**Situation')) {
+        currentSection = 'situation'
+      } else if (line.startsWith('**Task')) {
+        currentSection = 'task'
+      } else if (line.startsWith('**Action')) {
+        currentSection = 'action'
+      } else if (line.startsWith('**Result')) {
+        currentSection = 'result'
+      } else if (currentSection && line.trim()) {
+        sections[currentSection] = sections[currentSection] ? sections[currentSection] + ' ' + line.trim() : line.trim()
+      }
+    }
+    flush()
+    return stories
+  }
+
+  function parseCsvStories(text: string) {
+    const lines = text.split('\n').filter(l => l.trim())
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g, ''))
+    const stories: { title: string; situation: string; task: string; action: string; result: string; tags: string[] }[] = []
+
+    const parseLine = (line: string) => {
+      const result: string[] = []
+      let current = ''
+      let inQuotes = false
+      for (const char of line) {
+        if (char === '"') { inQuotes = !inQuotes }
+        else if (char === ',' && !inQuotes) { result.push(current); current = '' }
+        else { current += char }
+      }
+      result.push(current)
+      return result
+    }
+
+    for (let i = 1; i < lines.length; i++) {
+      const values = parseLine(lines[i])
+      const row: Record<string, string> = {}
+      headers.forEach((h, idx) => { row[h] = values[idx]?.trim() || '' })
+      const tags = (row.tags || row.principles || row.principle || '')
+        .split(/[|;]/).map(t => t.trim()).filter(t => LEADERSHIP_PRINCIPLES.includes(t))
+      stories.push({
+        title: row.title || `Imported Story ${i}`,
+        situation: row.situation || '',
+        task: row.task || '',
+        action: row.action || '',
+        result: row.result || '',
+        tags,
+      })
+    }
+    return stories
   }
 
   const toggleTag = (tag: string) => {
@@ -210,7 +261,7 @@ export default function Stories() {
           </button>
           <label className="btn-ghost btn-import">
             {importing ? 'Importing...' : '📄 Import CSV'}
-            <input type="file" accept=".csv" onChange={handleCsvImport} hidden disabled={importing} />
+            <input type="file" accept=".csv,.md" onChange={handleCsvImport} hidden disabled={importing} />
           </label>
         </div>
       </div>
