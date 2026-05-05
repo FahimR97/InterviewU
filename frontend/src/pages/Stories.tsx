@@ -302,31 +302,9 @@ export default function Stories() {
             const completion = STAR_META.filter(({ key }) => story[key]?.trim()).length
             return (
               <div key={story.storyId} className="story-card">
-                <div className="story-card-header">
-                  <div className="story-card-title-row">
-                    <h3>{story.title}</h3>
-                    <div className="story-completion">
-                      {STAR_META.map(({ key, letter }) => (
-                        <span
-                          key={key}
-                          className={`completion-dot completion-dot--${letter.toLowerCase()} ${story[key]?.trim() ? 'completion-dot--filled' : ''}`}
-                          title={letter}
-                        >
-                          {letter}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="story-card-actions">
-                    <button className="btn-sm" onClick={() => toggleExpanded(story.storyId)}>
-                      {isExpanded ? 'Collapse' : 'Expand'}
-                    </button>
-                    <button className="btn-sm" onClick={() => handleEdit(story)}>Edit</button>
-                    <button className="btn-sm btn-evaluate" onClick={() => handleEvaluateStory(story)} disabled={evaluating === story.storyId}>
-                      {evaluating === story.storyId ? 'Evaluating...' : '🤖 Evaluate'}
-                    </button>
-                    <button className="btn-sm btn-danger" onClick={() => handleDelete(story.storyId)}>Delete</button>
-                  </div>
+                <div className="story-card-header" onClick={() => toggleExpanded(story.storyId)}>
+                  <h3>{story.title}</h3>
+                  <span className="expand-indicator">{isExpanded ? '▲' : '▼'}</span>
                 </div>
 
                 <div className="story-tags">
@@ -343,15 +321,25 @@ export default function Stories() {
 
                 {isExpanded && (
                   <div className="star-preview">
-                    {STAR_META.map(({ key, letter, label }) => story[key] && (
-                      <div key={key} className={`star-section star-section--${letter.toLowerCase()}`}>
+                    {STAR_META.map(({ key, letter, label }) => (
+                      <div key={key} className={`star-section star-section--${letter.toLowerCase()} ${!story[key]?.trim() ? 'star-section--empty' : ''}`}>
                         <div className="star-section-label">
                           <span className={`star-letter star-letter--${letter.toLowerCase()}`}>{letter}</span>
                           <strong>{label}</strong>
                         </div>
-                        <p>{story[key]}</p>
+                        <p>{story[key]?.trim() || <em className="star-empty-hint">Not yet written</em>}</p>
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {isExpanded && (
+                  <div className="story-card-actions">
+                    <button className="btn-sm" onClick={() => handleEdit(story)}>Edit</button>
+                    <button className="btn-sm btn-evaluate" onClick={() => handleEvaluateStory(story)} disabled={evaluating === story.storyId}>
+                      {evaluating === story.storyId ? 'Evaluating...' : '🤖 Evaluate'}
+                    </button>
+                    <button className="btn-sm btn-danger" onClick={() => handleDelete(story.storyId)}>Delete</button>
                   </div>
                 )}
 

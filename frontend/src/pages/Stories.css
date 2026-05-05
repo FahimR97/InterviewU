@@ -230,23 +230,11 @@
   border-color: var(--primary);
 }
 
-.story-card-header { margin-bottom: 0.6rem; }
+.story-card-header { margin-bottom: 0.6rem; display: flex; align-items: center; justify-content: space-between; cursor: pointer; }
+.story-card-header h3 { margin: 0; flex: 1; font-size: 1rem; color: var(--text-dark); }
+.expand-indicator { font-size: 0.7rem; color: var(--text-secondary); }
 
-.story-card-title-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
-}
-
-.story-card-title-row h3 {
-  margin: 0;
-  flex: 1;
-  font-size: 1rem;
-  color: var(--text-dark);
-}
-
-.story-card-actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+.story-card-actions { display: flex; gap: 0.4rem; margin-top: 0.75rem; padding-top: 0.75rem; border-top: 1px solid var(--border); }
 
 /* ── Completion dots ────────────────────────────────────────────────────── */
 
@@ -340,6 +328,9 @@
   font-size: 0.875rem;
   color: var(--text-medium);
   line-height: 1.55;
+}
+.star-section--empty { opacity: 0.5; }
+.star-empty-hint { color: var(--text-secondary); font-size: 0.8rem; }
 }
 
 /* ── Story meta ─────────────────────────────────────────────────────────── */
