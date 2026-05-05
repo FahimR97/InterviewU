@@ -111,6 +111,65 @@ export default function Stories() {
     }
   }
 
+  const [importing, setImporting] = useState(false)
+
+  const handleCsvImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setImporting(true)
+    try {
+      const text = await file.text()
+      const lines = text.split('\n').filter(l => l.trim())
+      const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g, ''))
+
+      const token = await getAuthToken()
+      let imported = 0
+
+      for (let i = 1; i < lines.length; i++) {
+        const values = parseCsvLine(lines[i])
+        const row: Record<string, string> = {}
+        headers.forEach((h, idx) => { row[h] = values[idx]?.trim() || '' })
+
+        const tags = (row.tags || row.principles || row.principle || '')
+          .split(/[|;]/)
+          .map(t => t.trim())
+          .filter(t => LEADERSHIP_PRINCIPLES.includes(t))
+
+        await createStory({
+          title: row.title || `Imported Story ${i}`,
+          situation: row.situation || '',
+          task: row.task || '',
+          action: row.action || '',
+          result: row.result || '',
+          tags,
+        }, token)
+        imported++
+      }
+
+      alert(`Imported ${imported} stories`)
+      loadStories()
+    } catch (err) {
+      console.error(err)
+      alert('Import failed — check CSV format')
+    } finally {
+      setImporting(false)
+      e.target.value = ''
+    }
+  }
+
+  function parseCsvLine(line: string): string[] {
+    const result: string[] = []
+    let current = ''
+    let inQuotes = false
+    for (const char of line) {
+      if (char === '"') { inQuotes = !inQuotes }
+      else if (char === ',' && !inQuotes) { result.push(current); current = '' }
+      else { current += char }
+    }
+    result.push(current)
+    return result
+  }
+
   const toggleTag = (tag: string) => {
     setForm(prev => ({
       ...prev,
@@ -142,12 +201,18 @@ export default function Stories() {
             </div>
           )}
         </div>
-        <button
-          className="btn-primary"
-          onClick={() => { setShowForm(!showForm); setEditing(null); setForm(emptyForm) }}
-        >
-          {showForm ? 'Cancel' : '+ New Story'}
-        </button>
+        <div className="stories-hero-actions">
+          <button
+            className="btn-primary"
+            onClick={() => { setShowForm(!showForm); setEditing(null); setForm(emptyForm) }}
+          >
+            {showForm ? 'Cancel' : '+ New Story'}
+          </button>
+          <label className="btn-ghost btn-import">
+            {importing ? 'Importing...' : '📄 Import CSV'}
+            <input type="file" accept=".csv" onChange={handleCsvImport} hidden disabled={importing} />
+          </label>
+        </div>
       </div>
 
       {showForm && (

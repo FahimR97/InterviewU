@@ -18,6 +18,8 @@
   padding: 1.75rem 1.5rem;
   color: white;
 }
+.stories-hero-actions { display: flex; gap: 0.5rem; flex-direction: column; }
+.btn-import { cursor: pointer; font-size: 0.85rem; text-align: center; }
 
 [data-theme="dark"] .stories-hero {
   background: linear-gradient(135deg, #1e1b4b 0%, #312e81 55%, #1a1040 100%);
