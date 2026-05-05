@@ -331,7 +331,6 @@
 }
 .star-section--empty { opacity: 0.5; }
 .star-empty-hint { color: var(--text-secondary); font-size: 0.8rem; }
-}
 
 /* ── Story meta ─────────────────────────────────────────────────────────── */
 
