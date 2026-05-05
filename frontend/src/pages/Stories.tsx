@@ -291,10 +291,10 @@ export default function Stories() {
                 )}
 
                 {storyFeedback[story.storyId] && (
-                  <div className="story-feedback">
-                    <div className="story-feedback-header">
+                  <details className="story-feedback" open>
+                    <summary className="story-feedback-header">
                       <span>🤖 Marcus — {storyFeedback[story.storyId].score >= 80 ? '✅' : '📝'} {storyFeedback[story.storyId].score / 20}/5 stars</span>
-                    </div>
+                    </summary>
                     {storyFeedback[story.storyId].strengths.length > 0 && (
                       <div className="feedback-list"><strong>Strengths:</strong> {storyFeedback[story.storyId].strengths.join('. ')}</div>
                     )}
@@ -302,7 +302,7 @@ export default function Stories() {
                       <div className="feedback-list"><strong>Improve:</strong> {storyFeedback[story.storyId].improvements.join('. ')}</div>
                     )}
                     <div className="feedback-comment">{storyFeedback[story.storyId].marcus_comment}</div>
-                  </div>
+                  </details>
                 )}
 
                 <div className="story-meta">

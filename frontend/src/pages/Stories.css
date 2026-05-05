@@ -398,9 +398,12 @@
 .btn-danger { color: var(--danger); border-color: var(--danger); }
 .btn-danger:hover { background: var(--danger); color: white; }
 
-.btn-evaluate { color: var(--accent); border-color: var(--accent); }
+.btn-evaluate { color: var(--accent); border-color: var(--accent); font-size: 0.75rem; padding: 0.25rem 0.5rem; }
 .btn-evaluate:hover { background: var(--accent); color: white; }
 .story-feedback { background: var(--input-bg); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-top: 0.75rem; }
-.story-feedback-header { font-weight: 700; margin-bottom: 0.5rem; }
+.story-feedback-header { font-weight: 700; margin-bottom: 0.5rem; cursor: pointer; list-style: none; display: flex; align-items: center; gap: 0.5rem; }
+.story-feedback-header::before { content: '▼'; font-size: 0.7rem; transition: transform 0.2s; }
+.story-feedback[open] > .story-feedback-header::before { content: '▼'; }
+.story-feedback:not([open]) > .story-feedback-header::before { transform: rotate(-90deg); }
 .feedback-list { font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.4rem; line-height: 1.5; }
 .feedback-comment { font-size: 0.9rem; color: var(--text-primary); margin-top: 0.5rem; font-style: italic; }
