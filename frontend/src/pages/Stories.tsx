@@ -5,7 +5,7 @@ import type { Story, EvaluationResponse } from '../services/api'
 import './Stories.css'
 
 const LEADERSHIP_PRINCIPLES = [
-  'Customer Obsession', 'Ownership', 'Learn and Be Curious',
+  'Ownership', 'Learn and Be Curious',
   'Insist on the Highest Standards', 'Bias for Action',
   'Earn Trust', 'Dive Deep', 'Deliver Results',
   'Operational Excellence',
