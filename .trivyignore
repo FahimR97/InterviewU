@@ -1,0 +1,4 @@
+# Bundled inside aws-cdk-lib - cannot be updated independently
+CVE-2026-6321
+CVE-2026-6322
+CVE-2026-44665
