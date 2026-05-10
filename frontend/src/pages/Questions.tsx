@@ -198,7 +198,9 @@ function PracticeView({
         updated.add(question.id);
         setMastered(updated);
         try {
-          await saveSettings({ mastered_questions: Array.from(updated) }, token);
+          const current = await getSettings(token);
+          const merged = new Set([...(current.mastered_questions || []), question.id]);
+          await saveSettings({ mastered_questions: Array.from(merged) }, token);
         } catch { /* non-critical */ }
       }
     } catch (err) {
