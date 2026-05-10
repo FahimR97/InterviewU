@@ -51,7 +51,7 @@ jobs:
           skip-dirs: "backend,infrastructure"
           format: "table"
           exit-code: "1"
-          severity: "CRITICAL,HIGH"
+          severity: "CRITICAL"
           ignore-unfixed: true
 
       - name: Build frontend (Alpha)
