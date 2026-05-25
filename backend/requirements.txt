@@ -1,5 +1,5 @@
 pytest==9.0.3
-boto3==1.43.9
+boto3==1.43.14
 flake8==7.3.0
 black==26.5.1
 requests==2.34.2
