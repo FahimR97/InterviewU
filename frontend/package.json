@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@aws-amplify/ui-react": "^6.15.4",
-    "@cloudscape-design/components": "^3.0.1325",
+    "@cloudscape-design/components": "^3.0.1330",
     "@cloudscape-design/global-styles": "^1.0.62",
     "@excalidraw/excalidraw": "^0.18.1",
     "@monaco-editor/react": "^4.7.0",
@@ -34,7 +34,7 @@
     "eslint-plugin-react-refresh": "^0.5.3",
     "globals": "^17.7.0",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.63.0",
-    "vite": "^8.1.4"
+    "typescript-eslint": "^8.64.0",
+    "vite": "^8.1.5"
   }
 }
